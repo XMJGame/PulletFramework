@@ -1,0 +1,27 @@
+{
+    "name": "PulletFramework.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ddc57d55c33f19e418665cf8c80338d7",
+        "GUID:4d1926c9df5b052469a1c63448b7609a",
+        "GUID:e34a5702dd353724aa315fb8011f08c3",
+        "GUID:2373f786d14518f44b0f475db77ba4de"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.code-philosophy.hybridclr",
+            "expression": "4.0.12",
+            "define": "ENABLE_HYBRIDCLR_EDITOR"
+        }
+    ],
+    "noEngineReferences": false
+}

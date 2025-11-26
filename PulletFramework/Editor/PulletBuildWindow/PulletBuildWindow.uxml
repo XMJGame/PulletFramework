@@ -1,0 +1,42 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement name="appInfoContainer" style="cursor: initial; margin-top: 5px;">
+        <uie:EnumField label="目标平台" name="buildTarget" style="opacity: 1; display: flex; flex-direction: row; flex-basis: auto; flex-wrap: nowrap; flex-shrink: 0; flex-grow: 0; position: relative; align-items: stretch; justify-content: space-between; cursor: initial; -unity-text-outline-width: 0; -unity-text-outline-color: rgb(0, 0, 0); margin-top: 5px;" />
+        <ui:TextField picking-mode="Ignore" label="App版本" name="appVersion" style="margin-top: 5px;" />
+        <ui:TextField picking-mode="Ignore" label="App版本号" name="appVersionCode" style="margin-top: 5px;" />
+        <ui:TextField picking-mode="Ignore" label="Apk名称" name="apkName" style="margin-top: 5px;" />
+    </ui:VisualElement>
+    <ui:VisualElement name="hybridCLRContainer" style="display: flex; -unity-background-image-tint-color: rgb(255, 255, 255); margin-top: 8px;">
+        <ui:Button text="HybridCLR设置" display-tooltip-when-elided="true" name="hybridCLRSetting" />
+        <ui:VisualElement name="hybridCLRAOT" usage-hints="None" tabindex="0" style="display: flex; height: auto; position: relative; top: auto; flex-direction: row; justify-content: flex-start; align-items: center;">
+            <ui:Toggle label="生成AOTDlls" name="buildAOTDLL" value="false" style="top: auto; position: relative; width: 200px; height: auto;" />
+            <ui:Toggle label="拷贝ATODlls到Art" name="copyAOTDLL" value="false" style="top: auto; position: relative; width: 200px; height: auto; flex-direction: row; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="hybridCLRDll" usage-hints="None" tabindex="0" style="display: flex; height: auto; position: relative; top: auto; flex-direction: row; justify-content: flex-start; align-items: center;">
+            <ui:Toggle label="编译热更Dlls" name="compileDlls" value="false" style="top: auto; position: relative; width: 200px; height: auto; flex-direction: row; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start;" />
+            <ui:Toggle label="拷贝Dlls到Art" name="copyDLL" value="false" style="top: auto; position: relative; width: 200px; height: auto;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="assetBundleContainer" style="cursor: initial; margin-top: 5px;">
+        <ui:Button text="AssetBundle设置" display-tooltip-when-elided="true" name="assetBundleSetting" />
+        <ui:VisualElement name="assetBundleInfoContainer">
+            <uie:EnumField label="构建管线" name="buildPipeline" style="opacity: 1; display: flex; flex-direction: row; flex-basis: auto; flex-wrap: nowrap; flex-shrink: 0; flex-grow: 0; position: relative; align-items: stretch; justify-content: space-between; cursor: initial; -unity-text-outline-width: 0; -unity-text-outline-color: rgb(0, 0, 0);" />
+            <ui:VisualElement name="buildPackageContainer" style="height: 24px;" />
+            <ui:VisualElement name="buildModeContainer" style="height: 24px;" />
+            <ui:VisualElement name="encryptionContainer" style="height: 24px;" />
+            <uie:EnumField label="复制内置文件选项" name="copyBuildinFileOption" style="opacity: 1; display: flex; flex-direction: row; flex-basis: auto; flex-wrap: nowrap; flex-shrink: 0; flex-grow: 0; position: relative; align-items: stretch; justify-content: space-between; cursor: initial; -unity-text-outline-width: 0; -unity-text-outline-color: rgb(0, 0, 0); margin-top: 5px;" />
+            <ui:Toggle label="是否收集变体" name="shaderVariantCollector" style="top: auto; align-items: stretch; position: relative; flex-direction: row; justify-content: flex-start; width: auto; height: auto; margin-top: 10px; margin-bottom: 10px; padding-bottom: 0;" />
+            <ui:VisualElement name="copy" style="flex-direction: row;">
+                <uie:EnumField label="拷贝到指定目录操作" name="copyAssetBundleOperation" style="width: auto;" />
+                <ui:Button text="Upload" display-tooltip-when-elided="true" name="uploadBtn" style="width: 200px; background-color: rgb(40, 106, 42); height: 30px;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="copyAssetBundleContainer" style="flex-direction: row; align-items: auto; height: auto;">
+                <ui:Toggle label="拷贝到指定目录" name="copyAssetBundle" style="width: auto; margin-top: 1px; margin-bottom: 1px; padding-bottom: 0; align-items: center; flex-direction: row; height: 20px; flex-wrap: nowrap; display: none;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="BuildContainer">
+        <ui:Button text="构建AssetBundle" display-tooltip-when-elided="true" name="buildAssetBundle" style="height: 30px; justify-content: flex-start; background-color: rgb(40, 106, 42); position: relative; bottom: auto; margin-top: 5px; margin-bottom: 1px;" />
+        <ui:Toggle label="是否构建AssetBundle" name="isBuildAssetBundle" style="top: auto; align-items: stretch; position: relative; flex-direction: row; justify-content: flex-start; width: auto; height: auto; margin-top: 10px;" />
+        <ui:Button text="打包Apk(XCode)" display-tooltip-when-elided="true" name="build" style="height: 30px; justify-content: flex-start; background-color: rgb(40, 106, 42); position: relative; flex-direction: column; align-items: stretch; top: auto; margin-bottom: 1px; margin-left: 3px; margin-top: 5px;" />
+    </ui:VisualElement>
+</ui:UXML>

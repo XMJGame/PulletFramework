@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement name="android" style="margin-top: 6px;">
+        <ui:Button text="Android Settings" display-tooltip-when-elided="true" name="androidSetting" />
+        <ui:VisualElement name="androidContainer" style="cursor: initial; margin-top: 5px;">
+            <ui:TextField picking-mode="Ignore" label="签名文件相对路径" name="keystoreName" password="false" style="margin-top: 5px;" />
+            <ui:TextField picking-mode="Ignore" label="签名密码" name="keystorePass" password="false" style="margin-top: 5px;" />
+            <ui:TextField picking-mode="Ignore" label="签名别名" name="keyaliasName" style="margin-top: 5px;" />
+            <ui:TextField picking-mode="Ignore" label="签名别名密码" name="keyaliasPass" password="false" mask-character="^0-9" readonly="false" style="margin-top: 5px; flex-direction: row;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="tencentCOS" style="margin-top: 6px;">
+        <ui:Button text="TencentCOS Settings" display-tooltip-when-elided="true" name="tencentCOSSetting" />
+        <ui:VisualElement name="tencentCOSContainer" style="cursor: initial; margin-top: 5px;">
+            <ui:TextField picking-mode="Ignore" label="腾讯云 SecretId" name="secretId" password="false" style="margin-top: 5px;" />
+            <ui:TextField picking-mode="Ignore" label="腾讯云 SecretKey" name="secretKey" password="false" style="margin-top: 5px;" />
+            <ui:TextField picking-mode="Ignore" label="存储桶" name="bucket" style="margin-top: 5px;" />
+            <ui:TextField picking-mode="Ignore" label="对象键" name="cosKey" password="false" mask-character="^0-9" readonly="false" style="margin-top: 5px; flex-direction: row;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
