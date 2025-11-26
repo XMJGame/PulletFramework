@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement name="yooAssetSetting">
+        <ui:Button text="YooAsset Setting" display-tooltip-when-elided="true" name="yooAssetSettingBtn" />
+        <ui:VisualElement name="yooAssetSettingContainer" tabindex="0" focusable="false" style="padding-bottom: 0; margin-bottom: 0; opacity: 1; position: relative; align-items: stretch; justify-content: flex-start; flex-direction: column; flex-shrink: 1; flex-basis: auto;">
+            <uie:EnumField label="运行模式" name="runPlayMode" />
+            <ui:TextField picking-mode="Ignore" label="默认服务器地址" name="defaultHostServer" />
+            <ui:TextField picking-mode="Ignore" label="备用服务器地址" name="fallbackHostServer" />
+            <ui:TextField picking-mode="Ignore" label="默认资源包名" name="defaultPackageName" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="hybridCLRSetting">
+        <ui:Button text="HybridCLR Setting" display-tooltip-when-elided="true" name="hybridCLRSettingBtn" />
+        <ui:VisualElement name="hybridCLRSettingContainer" tabindex="0" focusable="false" style="padding-bottom: 0; margin-bottom: 0; opacity: 1; position: relative; align-items: stretch; justify-content: flex-start; flex-direction: column; flex-shrink: 1; flex-basis: auto;">
+            <ui:TextField picking-mode="Ignore" label="默认热更程序集名称" name="defaultHotUpdateAssembly" />
+            <uie:PropertyField name="hotUpdateAssemblies" label="热更程序 dlls" />
+            <uie:PropertyField name="aotMetaAssemblys" label="补充元数据AOT dlls" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
