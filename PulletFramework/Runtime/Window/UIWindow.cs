@@ -339,7 +339,7 @@ namespace PulletFramework.Window
         protected virtual void OnSetVisible(bool visible) { }
 
         /// <summary>
-        /// home 键 回调
+        /// 平台返回键回调。默认执行 homeKeyOperate，业务窗口可重写实现暂停等自定义行为。
         /// </summary>
         protected virtual void OnHomeDisposeCallBack()
         {
