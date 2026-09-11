@@ -432,9 +432,18 @@ namespace PulletFramework.Window
                 throw new Exception($"Instantiate window failed: {WindowName}");
             if (!mPanel.activeSelf)
                 mPanel.SetActive(true);
-            mPanel.transform.localPosition = Vector3.zero;
-            mPanel.transform.localRotation = Quaternion.identity;
-            mPanel.transform.localScale = Vector3.one;
+            Transform panelTransform = mPanel.transform;
+            panelTransform.localPosition = Vector3.zero;
+            panelTransform.localRotation = Quaternion.identity;
+            panelTransform.localScale = Vector3.one;
+            if (panelTransform is RectTransform panelRect)
+            {
+                panelRect.anchorMin = Vector2.zero;
+                panelRect.anchorMax = Vector2.one;
+                panelRect.pivot = new Vector2(0.5f, 0.5f);
+                panelRect.offsetMin = Vector2.zero;
+                panelRect.offsetMax = Vector2.zero;
+            }
 
             mCanvas = mPanel.GetComponent<Canvas>();
             if (mCanvas == null)
