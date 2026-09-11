@@ -138,6 +138,9 @@ namespace PulletFramework.Window
                 m_Canvas = m_Desktop.AddComponent<Canvas>();
                 m_Canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 m_CanvasScaler = m_Desktop.AddComponent<CanvasScaler>();
+                m_CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                m_CanvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+                m_CanvasScaler.matchWidthOrHeight = 0.5f;
                 m_GraphicRaycaster = m_Desktop.AddComponent<GraphicRaycaster>();
             }
             else
