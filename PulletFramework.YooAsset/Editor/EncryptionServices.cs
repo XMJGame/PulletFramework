@@ -1,9 +1,6 @@
-using PulletFramework.Utility;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
+using PulletFramework.YooAssetAdapter;
 using YooAsset;
 
 namespace PulletFramework.Editor
@@ -30,7 +27,7 @@ namespace PulletFramework.Editor
             byte[] fileData = File.ReadAllBytes(args.FilePath);
             for (int i = 0; i < fileData.Length; i++)
             {
-                fileData[i] ^= BundleStream.KEY;
+                fileData[i] ^= YooAssetXorStream.Key;
             }
             return new BundleEncryptResult(true, fileData);
         }

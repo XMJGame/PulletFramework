@@ -686,7 +686,7 @@ namespace PulletFramework.Window
         /// </summary>
         public static void CloseAll(bool isRecord = false)
         {
-            PLogger.Log("清理所有界面");
+            PLogger.DebugLog("清理所有界面");
             m_IsClosingAll = true;
             try
             {
@@ -996,7 +996,7 @@ namespace PulletFramework.Window
 
 #if UNITY_EDITOR
             GetWindowInfos(outinfo);
-            PLogger.Log("Window Stack Infos:" + ListToString(outinfo));
+            PLogger.DebugLog("Window Stack Infos:" + ListToString(outinfo));
 #endif
         }
         private static string ListToString(List<WindowInfo> list)

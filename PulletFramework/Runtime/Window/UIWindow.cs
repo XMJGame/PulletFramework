@@ -380,14 +380,18 @@ namespace PulletFramework.Window
 
         private void Handle_Completed(IResourceAssetHandle handle)
         {
-            if (handle.AssetObject == null)
+            if (!mIsLoading)
+                return;
+            if (!handle.IsSucceeded || !(handle.AssetObject is GameObject))
             {
-                InternalLoadFailed($"Asset load failed: {assetPath}");
+                InternalLoadFailed(string.IsNullOrEmpty(handle.Error)
+                    ? $"Window asset is not a GameObject: {assetPath}"
+                    : $"Asset load failed: {assetPath}，{handle.Error}");
                 return;
             }
             try
             {
-                PLogger.Log("[Instantiate Window] " + WindowName);
+                PLogger.DebugLog("[Instantiate Window] " + WindowName);
                 var options = new ResourceInstantiateOptions(true, PulletWindow.desktop.transform);
                 PreparePanel(handle.InstantiateSync(options));
             }
@@ -416,7 +420,7 @@ namespace PulletFramework.Window
             }
             try
             {
-                PLogger.Log("[Instantiate Window] " + WindowName);
+                PLogger.DebugLog("[Instantiate Window] " + WindowName);
                 PreparePanel(GameObject.Instantiate(assetObject, PulletWindow.desktop.transform));
             }
             catch (Exception exception)
@@ -512,7 +516,7 @@ namespace PulletFramework.Window
                     && candidatePackage.Status == EResourcePackageStatus.Succeeded
                     && candidatePackage.IsLocationValid(assetPath))
                 {
-                    PLogger.Log($"检测到 ab 存在该资源:{assetPath},改变加载策略");
+                    PLogger.DebugLog($"检测到 ab 存在该资源:{assetPath},改变加载策略");
                     isResources = false;
                 }
                 else
@@ -549,8 +553,20 @@ namespace PulletFramework.Window
                     InternalLoadFailed($"Resource package not found: {packageName}");
                     return;
                 }
-                assetHandle = package.LoadAssetAsync<GameObject>(assetPath);
-                assetHandle.Completed += Handle_Completed;
+                if (package.Status != EResourcePackageStatus.Succeeded)
+                {
+                    InternalLoadFailed($"Resource package is not ready: {package.Name}，{package.Error}");
+                    return;
+                }
+                try
+                {
+                    assetHandle = package.LoadAssetAsync<GameObject>(assetPath);
+                    assetHandle.Completed += Handle_Completed;
+                }
+                catch (Exception exception)
+                {
+                    InternalLoadFailed(exception.Message);
+                }
             }
         }
 
@@ -571,6 +587,7 @@ namespace PulletFramework.Window
             mPrepareCallback = null;
             mLoadFailedCallback = null;
             mOpenCallBack = null;
+            ReleaseAssetHandle();
         }
 
         internal bool InternalCanClose(EWindowCloseReason reason)
@@ -599,16 +616,18 @@ namespace PulletFramework.Window
             LoadError = string.IsNullOrEmpty(error) ? $"Window load failed: {WindowName}" : error;
             PLogger.Error($"[Window Load Failed] {WindowName}: {LoadError}");
             mPrepareCallback = null;
-            mLoadFailedCallback?.Invoke(this, LoadError);
+            Action<UIWindow, string> failedCallback = mLoadFailedCallback;
             mLoadFailedCallback = null;
             mOpenCallBack = null;
+            ReleaseAssetHandle();
+            failedCallback?.Invoke(this, LoadError);
         }
 
         internal void InternalCreate()
         {
             if (mIsCreate == false)
             {
-                PLogger.Log("[Create Window] " + WindowName);
+                PLogger.DebugLog("[Create Window] " + WindowName);
                 mIsCreate = true;
                 OnCreate();
             }
@@ -616,7 +635,7 @@ namespace PulletFramework.Window
 
         internal void InternalOpen(Action completed)
         {
-            PLogger.Log("[Open Window] " + WindowName);
+            PLogger.DebugLog("[Open Window] " + WindowName);
             OnOpen();
             bool completionHandled = false;
 
@@ -654,7 +673,7 @@ namespace PulletFramework.Window
 
         internal void InternalClose(EWindowCloseReason reason, bool destroy, Action completed)
         {
-            PLogger.Log("[Close Window] " + WindowName);
+            PLogger.DebugLog("[Close Window] " + WindowName);
             IsClosing = true;
             bool completionHandled = false;
 
@@ -721,7 +740,7 @@ namespace PulletFramework.Window
 
         internal void InternalDestroy()
         {
-            PLogger.Log("[Destroy Window] " + WindowName);
+            PLogger.DebugLog("[Destroy Window] " + WindowName);
             bool wasCreated = mIsCreate;
             mIsCreate = false;
 
@@ -736,7 +755,14 @@ namespace PulletFramework.Window
             IsClosing = false;
             IsTransitioning = false;
 
-            mTransition?.Cancel();
+            try
+            {
+                mTransition?.Cancel();
+            }
+            catch (Exception exception)
+            {
+                PLogger.Error($"[Window Transition Cancel Failed] {WindowName}: {exception.Message}");
+            }
             mTransition = null;
 
             // 卸载面板资源
@@ -746,22 +772,36 @@ namespace PulletFramework.Window
             }
             else
             {
-                if (assetHandle != null)
-                {
-                    assetHandle.Completed -= Handle_Completed;
-                    assetHandle.Release();
-                    assetHandle = null;
-                }
+                ReleaseAssetHandle();
             }
 
             // 销毁面板对象
             if (mPanel != null)
             {
-                if (wasCreated)
-                    OnDestroy();
-                GameObject.Destroy(mPanel);
-                mPanel = null;
+                try
+                {
+                    if (wasCreated)
+                        OnDestroy();
+                }
+                catch (Exception exception)
+                {
+                    PLogger.Error($"[Window Destroy Failed] {WindowName}: {exception.Message}");
+                }
+                finally
+                {
+                    GameObject.Destroy(mPanel);
+                    mPanel = null;
+                }
             }
+        }
+
+        private void ReleaseAssetHandle()
+        {
+            if (assetHandle == null)
+                return;
+            assetHandle.Completed -= Handle_Completed;
+            assetHandle.Release();
+            assetHandle = null;
         }
 
         /// <summary>
@@ -769,7 +809,7 @@ namespace PulletFramework.Window
         /// </summary>
         internal void InternalHomeKeyDispose()
         {
-            PLogger.Log("[Window] HomeKeyDispose:" + WindowName);
+            PLogger.DebugLog("[Window] HomeKeyDispose:" + WindowName);
             OnHomeDisposeCallBack();
         }
         #endregion

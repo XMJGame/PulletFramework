@@ -18,7 +18,7 @@ namespace PulletFramework.Editor
 			var guids = AssetDatabase.FindAssets($"t:{settingType.Name}");
 			if (guids.Length == 0)
 			{
-				Debug.LogWarning($"Create new {settingType.Name}.asset");
+				PLogger.EditorWarning($"Create new {settingType.Name}.asset");
 				var setting = ScriptableObject.CreateInstance<TSetting>();
 				string directory = string.IsNullOrWhiteSpace(pathName)
 					? "Assets/Settings"
@@ -37,7 +37,7 @@ namespace PulletFramework.Editor
 					foreach (var guid in guids)
 					{
 						string path = AssetDatabase.GUIDToAssetPath(guid);
-						Debug.LogWarning($"Found multiple file : {path}");
+						PLogger.EditorWarning($"Found multiple file : {path}");
 					}
 					throw new System.Exception($"Found multiple {settingType.Name} files !");
 				}

@@ -12,6 +12,7 @@ using PulletFramework.Form;
 using PulletFramework.Network;
 using PulletFramework.Pooling;
 using PulletFramework.Sound;
+using PulletFramework.Setting;
 using PulletFramework.Window;
 using System;
 using System.Collections;
@@ -42,6 +43,7 @@ namespace PulletFramework
 
 			if (mIsInitialize == false)
 			{
+				PLogger.Level = PulletSettingsData.Setting.logLevel;
 				// 创建驱动器
 				mIsInitialize = true;
 				mGameObject = new UnityEngine.GameObject($"[{nameof(PulletFramework)}]");
@@ -91,6 +93,7 @@ namespace PulletFramework
 			{
 				PulletForm.Destroy();
 				PulletSound.Destroy();
+				PulletPlayerPrefs.UninstallBackend();
 				PulletEvent.Destroy();
 				PulletWindow.Destroy();
 				PulletUIFeedback.Reset();
@@ -114,7 +117,6 @@ namespace PulletFramework
 			{
 				Initialize();
 			}
-			Debug.Log($"StartCoroutine: {coroutine.GetType().Name}  +   {mMono.name}");
             return mMono.StartCoroutine(coroutine);
 		}
 		public static Coroutine StartCoroutine(string methodName)

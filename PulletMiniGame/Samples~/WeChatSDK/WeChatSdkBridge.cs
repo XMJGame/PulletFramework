@@ -384,7 +384,11 @@ namespace PulletMiniGame.Platform.WeChat
         private static void Cleanup(Action action)
         {
             try { action(); }
-            catch (Exception exception) { Debug.LogException(exception); }
+            catch (Exception exception)
+            {
+                PulletFramework.PLogger.Exception(
+                    exception, "[PulletMiniGame] 微信 SDK 回调执行失败。");
+            }
         }
 
         private Task<T> Request<T>(CancellationToken cancellationToken, T shutdownResult,

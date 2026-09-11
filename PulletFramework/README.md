@@ -331,12 +331,68 @@ PulletNetwork.DestroyWebSocketClient(socket);
 
 默认 `DotNetWebSocketTransport` 适用于 Mono 和 IL2CPP 原生平台。WebGL、微信及抖音小游戏应实现 `IWebSocketTransport`，通过 `SetWebSocketTransportFactory` 注入平台 SDK；连接状态、发送队列、心跳、指数退避、重连抖动、消息大小限制和主线程事件分发仍由框架统一处理。
 
+# PulletFramework.Setting
+
+业务与框架模块统一使用 `PulletPlayerPrefs` 保存轻量设置。其 API 与 Unity `PlayerPrefs`
+保持接近，默认后端就是 Unity；可选宿主模块可以通过 `InstallBackend` 切换存储实现。
+`PulletMiniGame` 会在平台初始化成功后自动安装微信或抖音后端，业务代码无需平台判断。
+
+```csharp
+PulletPlayerPrefs.SetInt("guide.completed", 1);
+PulletPlayerPrefs.SetFloat("camera.sensitivity", 0.8f);
+PulletPlayerPrefs.SetString("language", "zh-CN");
+PulletPlayerPrefs.Save();
+```
+
+# PulletFramework.Logging
+
+框架及可选 Pullet 模块统一通过 `PLogger` 输出日志。可在 `Pullets/Workspace -> 框架设置`
+选择运行时日志等级：`Off`、`Error`、`Warning`、`Info` 或 `Debug`。等级采用包含关系，例如
+`Warning` 会输出 Warning 和 Error；窗口生命周期、网络逐包等高频诊断只在 `Debug` 下输出。
+编辑器的构建、上传及配置检查日志不受该设置影响，避免隐藏必要的工具反馈。
+
+配置保存在 `Assets/Settings/Pullets/Resources/PulletSettings.asset`，也可以在运行时临时覆盖：
+
+```csharp
+PLogger.Level = EPulletLogLevel.Warning;
+```
+
 # PulletFramework.Machine
 一个轻量级的状态机。
 
 # PulletFramework.Event
 一个轻量级的事件系统。
 
+# PulletFramework.Form
+
+`FormSingleton` 负责 TextAsset 加载、加载状态、资源句柄释放和销毁批次隔离。默认的
+`ReadFormTool` 继续解析旧版 TSV/TXT；JSON、二进制或代码生成表属于业务格式，由具体表重写
+`Parse(TextAsset)`：
+
+```csharp
+[Serializable]
+public sealed class ItemRows
+{
+    public ItemRow[] items;
+}
+
+public sealed class ItemForm : FormSingleton<ItemForm, ItemRow>
+{
+    public override string formPath => "ItemForm.json";
+
+    protected override Dictionary<int, ItemRow> Parse(TextAsset asset)
+    {
+        ItemRows rows = JsonUtility.FromJson<ItemRows>(asset.text);
+        var result = new Dictionary<int, ItemRow>();
+        foreach (ItemRow row in rows.items)
+            result.Add(row.id, row);
+        return result;
+    }
+}
+```
+
+框架不固定 JSON 根节点、主键字段或 JSON 库，业务可以选择 `JsonUtility`、Newtonsoft JSON、
+protobuf 或配置表代码生成工具。
 
 # PulletFramework.Pooling
 一个功能强大的游戏对象池系统。
@@ -352,9 +408,10 @@ PulletNetwork.DestroyWebSocketClient(socket);
 ```csharp
 using PulletFramework.YooAssetAdapter;
 
-yield return PulletYooAssetRuntime.Initialize();
-if (PulletYooAssetRuntime.Status != EPulletYooAssetStartupStatus.Succeeded)
-    throw new System.Exception(PulletYooAssetRuntime.Error);
+var resourceOperation = PulletYooAssets.PrepareDefaultPackageAsync();
+yield return resourceOperation;
+if (!resourceOperation.Succeeded)
+    throw new System.Exception(resourceOperation.Error);
 
 PulletFrameworks.Initialize();
 ```
@@ -363,7 +420,7 @@ PulletFrameworks.Initialize();
 `Assets/Settings/Pullets/YooAsset/Resources/PulletYooAssetSettings.asset`，由模块的数据入口统一加载。
 启动流程统一处理文件系统初始化、
 请求版本、加载清单、下载资源和安装 `PulletResources` 适配器；小游戏平台可通过
-`PulletYooAssetRuntime.WebFileSystemFactory` 注入自己的持久缓存与 AssetBundle 加载策略。
+`PulletYooAssets.WebFileSystemFactory` 注入自己的持久缓存与 AssetBundle 加载策略。
 
 这里的 `defaultHostServer` 是业务 AssetBundle CDN，与微信/抖音构建设置中的 Unity WebGL
 首包 CDN 是两套独立配置。URL 支持 `{platform}`、`{appVersion}`、`{package}` 占位符。
@@ -381,14 +438,19 @@ var options = new HostPlayModeOptions
 };
 ```
 
-接入其他资源系统时，实现 `IResourceAdapter`、`IResourcePackage`、
-`IResourceAssetHandle` 和 `IResourceInstanceHandle`，然后调用：
+`PulletResources` 只服务框架自身的 UI、表格、音频和对象池。接入其他资源系统时，实现
+`IResourceAdapter`、`IResourcePackage` 及最小单资源句柄，然后调用：
 
 ```csharp
 PulletResources.Install(new CustomResourceAdapter());
 ```
 
-卸载或切换适配器前，应先关闭窗口、销毁对象池并释放仍在使用的资源句柄。
+卸载或切换适配器前，应按“停止生成对象、关闭相关窗口、停止并卸载音频、
+`PulletPooling.DestroySpawner(packageName)`、卸载资源包”的顺序收口。对象池会先取消在途实例化，
+销毁缓存和活动实例，最后释放资源句柄。
+游戏业务不需要使用 `PulletResources`：选择 YooAsset 时直接使用其 `ResourcePackage`、`AssetHandle`
+和 `SceneHandle`；选择 Unity AssetBundle 或其他方案时直接使用对应官方 API。框架不重复封装完整的
+资源系统能力。
 
 ```c#
 using UnityEngine;

@@ -282,7 +282,7 @@ namespace PulletMiniGame.Diagnostics
         private void SetStatus(string value)
         {
             _status = $"[{DateTime.Now:HH:mm:ss}] {value}";
-            Debug.Log("[PulletMiniGame Diagnostics] " + value);
+            PulletFramework.PLogger.DebugLog("[PulletMiniGame Diagnostics] " + value);
         }
     }
 }

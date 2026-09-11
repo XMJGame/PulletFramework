@@ -36,7 +36,6 @@ namespace PulletFramework.Setting
 			mSetting = Resources.Load<PulletSettings>("PulletSettings");
 			if (mSetting == null)
 			{
-				PLogger.Log("Pullet use default settings.");
 				mSetting = ScriptableObject.CreateInstance<PulletSettings>();
 #if UNITY_EDITOR
 				string filePath = $"Assets/Settings/Pullets/Resources/PulletSettings.asset";
@@ -50,10 +49,6 @@ namespace PulletFramework.Setting
 				UnityEditor.AssetDatabase.SaveAssets();
 				UnityEditor.AssetDatabase.Refresh();
 #endif
-			}
-			else
-			{
-				PLogger.Log("Pullet use user settings.");
 			}
 		}
 
@@ -73,7 +68,6 @@ namespace PulletFramework.Setting
 #if UNITY_EDITOR
 				UnityEditor.EditorUtility.SetDirty(Setting);
 				UnityEditor.AssetDatabase.SaveAssets();
-				Debug.Log($"{nameof(PulletSettings)}.asset is saved!");
 #endif
 			}
 		}

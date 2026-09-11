@@ -64,6 +64,11 @@ if (PulletPlatform.TryGet(out IRewardedAdService ads))
 
 退出时先调用 `PulletMiniGames.Shutdown()`，再销毁基础框架。
 
+框架代码统一通过 `PulletPlayerPrefs` 读写轻量设置，默认后端是 Unity `PlayerPrefs`。
+平台初始化成功后，模块会自动切换后端：微信使用 `WXBase.Storage`，抖音使用
+`TT.PlayerPrefs`。音频、画质、语言和游戏业务不需要编写平台判断；无论声音系统在平台
+初始化之前还是之后启动，音频偏好都会重新从当前平台存储读取。
+
 ## 异步调用约定
 
 业务侧的一次性平台请求统一返回 `Task`，方法使用 `Async` 后缀，并接收可选的

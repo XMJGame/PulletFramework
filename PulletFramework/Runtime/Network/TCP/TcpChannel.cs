@@ -274,7 +274,7 @@ namespace PulletFramework.Network
                     bool serializeResult = false;
                     try
                     {
-                        PLogger.Log($"发送消息：" + packet.msgId);
+						PLogger.DebugLog($"发送消息：" + packet.msgId);
                         serializeResult = m_ChannelHelper.Serialize(packet, m_SendPackageStream.stream);
                     }
                     catch (Exception exception)

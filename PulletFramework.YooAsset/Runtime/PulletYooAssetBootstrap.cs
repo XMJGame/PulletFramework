@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PulletFramework.YooAssetAdapter
 {
-    /// <summary>可选场景组件；已有唯一 GameLaunch 时，直接调用 Runtime.Initialize 即可。</summary>
+    /// <summary>可选场景组件；已有唯一 GameLaunch 时可直接调用 PulletYooAssets。</summary>
     public sealed class PulletYooAssetBootstrap : MonoBehaviour
     {
         [SerializeField] private bool initializeOnStart = true;
@@ -11,7 +11,14 @@ namespace PulletFramework.YooAssetAdapter
         private IEnumerator Start()
         {
             if (initializeOnStart)
-                yield return PulletYooAssetRuntime.Initialize();
+            {
+                if (!PulletYooAssets.IsConfigured)
+                {
+                    PLogger.Error("[PulletYooAsset] 未找到 PulletYooAssetSettings 配置。");
+                    yield break;
+                }
+                yield return PulletYooAssets.PrepareDefaultPackageAsync();
+            }
         }
     }
 }

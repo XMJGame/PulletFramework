@@ -52,10 +52,19 @@ namespace PulletFramework.Pooling
                 if (_handle.IsDone == false)
                     return;
 
-                if (_handle.AssetObject == null)
+                if (!_handle.IsSucceeded)
                 {
                     _steps = ESteps.Done;
-                    SetFailed("Loaded asset is null.");
+                    SetFailed(string.IsNullOrEmpty(_handle.Error)
+                        ? "Failed to load the pool asset."
+                        : _handle.Error);
+                    return;
+                }
+
+                if (!(_handle.AssetObject is GameObject))
+                {
+                    _steps = ESteps.Done;
+                    SetFailed("The loaded pool asset is not a GameObject.");
                     return;
                 }
 

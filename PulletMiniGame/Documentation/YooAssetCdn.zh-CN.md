@@ -5,7 +5,7 @@
 小游戏工程里存在两类用途不同的 CDN，不应共用一个配置字段：
 
 1. 平台首包 CDN：承载 Unity WebGL 的 wasm、data 等启动文件，由微信/抖音转换 SDK 管理。
-2. YooAsset 业务资源 CDN：承载 AssetBundle、版本文件和资源清单，由 `PulletYooAssetRuntime` 管理。
+2. YooAsset 业务资源 CDN：承载 AssetBundle、版本文件和资源清单，由 `PulletYooAssets` 管理。
 
 两者可以使用同一个域名，但应分目录，例如：
 
@@ -22,11 +22,12 @@ https://cdn.example.com/game-assets/WebGL/v1.0/DefaultPackage/...
 private IEnumerator Start()
 {
     PulletFrameworks.Initialize();
-    yield return PulletYooAssetRuntime.Initialize();
+    var resourceOperation = PulletYooAssets.PrepareDefaultPackageAsync();
+    yield return resourceOperation;
 
-    if (PulletYooAssetRuntime.Status != EPulletYooAssetStartupStatus.Succeeded)
+    if (!resourceOperation.Succeeded)
     {
-        ShowRetry(PulletYooAssetRuntime.Error);
+        ShowRetry(resourceOperation.Error);
         yield break;
     }
 
@@ -60,7 +61,8 @@ https://cdn.example.com/game-assets/{platform}/{appVersion}/{package}
 构建 `DefaultPackage` 后，把同一版本目录完整上传，不要只上传 AssetBundle。更新时先上传带哈希的资源文件，
 再上传清单，最后更新版本文件，避免客户端取得新版本号后读不到对应清单。
 
-验证工程执行 `Build Shooter YooAsset Package` 后，会在版本目录同级的 `PublishReports` 中生成
+在 `Pullets/Workspace -> YooAsset 资源` 执行“构建当前版本”后，会在版本目录同级的
+`PublishReports` 中生成
 `DefaultPackage_<版本>_publish.json`。该文件包含待上传文件的大小、SHA-256 与顺序：
 
 1. `Payload`：哈希 AssetBundle 或原生文件；
@@ -69,8 +71,9 @@ https://cdn.example.com/game-assets/{platform}/{appVersion}/{package}
    `oneklab_DefaultPackage.version`），必须最后上传。
 
 报告会自动排除 `buildlogtep.json`、`.report` 和 `link.xml`。发布报告本身也不需要上传到 CDN。
-已经存在的版本不会被构建命令覆盖；资源有变化时应先递增 `appVersion`。只需要重新生成上传清单时，执行
-`Pullets/Mini Game/Validation/Generate Shooter Publish Report`，无需重新构建资源包。
+已经存在的 Package 版本不会被构建命令覆盖；资源有变化时应递增 YooAsset Package 版本，
+但不必修改 Player/App 版本。只需要重新生成上传清单时，在 Workspace 中执行“生成发布报告”，
+无需重新构建资源包。
 
 ## 腾讯云 COS 发布
 
@@ -106,7 +109,7 @@ https://cdn.example.com/game-assets/{platform}/{appVersion}/{package}
 `TiktokFileSystem` 与 `TTAssetBundle` 不是两套互斥方案。YooAsset 官方 Mini Game 样例的调用关系是：
 
 ```text
-PulletYooAssetRuntime
+PulletYooAssets
   -> YooAsset WebNetworkFileSystem
     -> TiktokPlatform (IWebPlatformStrategy)
       -> TTSDK.TTAssetBundle

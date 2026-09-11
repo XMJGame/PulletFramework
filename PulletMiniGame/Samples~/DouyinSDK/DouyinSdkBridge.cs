@@ -477,7 +477,12 @@ namespace PulletMiniGame.Platform.Douyin
         }
         private static void Safe(Action action)
         {
-            try { action(); } catch (Exception exception) { Debug.LogException(exception); }
+            try { action(); }
+            catch (Exception exception)
+            {
+                PulletFramework.PLogger.Exception(
+                    exception, "[PulletMiniGame] 抖音 SDK 回调执行失败。");
+            }
         }
         public bool HasKey(string key) => TT.PlayerPrefs.HasKey(key);
         public string GetString(string key, string defaultValue = "") => TT.PlayerPrefs.GetString(key, defaultValue);

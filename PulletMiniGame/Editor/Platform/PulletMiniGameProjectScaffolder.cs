@@ -40,7 +40,8 @@ namespace PulletMiniGame.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[PulletMiniGame] Mini game project structure is ready.");
+            PulletFramework.PLogger.EditorInfo(
+                "[PulletMiniGame] Mini game project structure is ready.");
         }
 
         private static void EnsureFolder(string folderPath)

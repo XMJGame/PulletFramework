@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 namespace PulletFramework.Sound
 {
@@ -21,50 +22,32 @@ namespace PulletFramework.Sound
 
         public ETrigger trigger = ETrigger.OnClick;
         public AudioClip audioClip;
-        public string audioPath = "";
+        [FormerlySerializedAs("audioPath")]
+        [Tooltip("YooAsset 中的音频资源定位地址。AudioClip 为空时使用。")]
+        public string audioLocation = "";
         [Range(0f, 1f)]
         public float volume = 1f;
-        //是否缩放
-        public bool isScale = true;
-
-        private bool IsCanPlay
-        {
-            get
-            {
-                return true;
-            }
-        }
-        private Transform mTrans;
-        private void Start()
-        {
-            mTrans = transform;
-        }
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (IsCanPlay && trigger == ETrigger.OnClick)
-            {
-                if (audioClip != null)
-                {
-                    PulletSound.PlayButSound(audioClip, volume);
-                }
-                else if (audioPath != "")
-                {
-                    PulletSound.PlayButSound(audioPath, volume);
-                }
-            }
+            if (trigger == ETrigger.OnClick) Play();
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (!isScale) return;
+            if (trigger == ETrigger.OnPress) Play();
         }
         public void OnPointerUp(PointerEventData eventData)
         {
-            if (!isScale) return;
+            if (trigger == ETrigger.OnRelease) Play();
         }
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (!isScale) return;
+        }
+
+        private void Play()
+        {
+            if (audioClip != null) PulletSound.PlaySound(audioClip, volume);
+            else if (!string.IsNullOrWhiteSpace(audioLocation)) PulletSound.PlaySound(audioLocation, volume);
         }
     }
 }

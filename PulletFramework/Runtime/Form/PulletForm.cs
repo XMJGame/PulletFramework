@@ -12,7 +12,9 @@ namespace PulletFramework.Form
     {
         private static bool m_IsInitialize = false;
         private static readonly List<Type> m_Wrappers = new List<Type>(100);
-        public static int readCount = 0;
+        private static readonly List<Action> m_Resetters = new List<Action>(100);
+        private static int m_ReadGeneration;
+        public static int readCount { get; private set; }
         private static GameObject m_GameObject;
         public static GameObject gameObject { get { return m_GameObject; } }
         public static Transform transform { get { return m_GameObject.transform; } }
@@ -41,6 +43,11 @@ namespace PulletFramework.Form
         {
             if (m_IsInitialize)
             {
+                m_ReadGeneration++;
+                readCount = 0;
+                for (int i = 0; i < m_Resetters.Count; i++)
+                    m_Resetters[i]?.Invoke();
+                m_Resetters.Clear();
                 m_Wrappers.Clear();
                 m_IsInitialize = false;
                 if (gameObject != null)
@@ -61,20 +68,19 @@ namespace PulletFramework.Form
             }
             if (Contains<T>()) return;
 
-            T module = Activator.CreateInstance<T>();
+            Activator.CreateInstance<T>();
             m_Wrappers.Add(typeof(T));
-            readCount++;
         }
 
         public static IEnumerator IsReadFinish()
         {
-            float time = Time.time;
+            float time = Time.realtimeSinceStartup;
             while (readCount != 0)
             {
                 yield return null;
             }
 
-            PLogger.Log("所有表加载完毕:"+(Time.time - time));
+            PLogger.Log("所有表加载完毕:" + (Time.realtimeSinceStartup - time));
         }
 
         /// <summary>
@@ -89,6 +95,28 @@ namespace PulletFramework.Form
                     return true;
             }
             return false;
+        }
+
+        internal static int BeginRead(Action resetter)
+        {
+            if (!m_IsInitialize)
+                Initialize();
+            if (resetter != null && !m_Resetters.Contains(resetter))
+                m_Resetters.Add(resetter);
+            readCount++;
+            return m_ReadGeneration;
+        }
+
+        internal static bool IsCurrentRead(int generation)
+        {
+            return m_IsInitialize && generation == m_ReadGeneration;
+        }
+
+        internal static void CompleteRead(int generation)
+        {
+            if (!IsCurrentRead(generation))
+                return;
+            readCount = Math.Max(0, readCount - 1);
         }
     }
 }

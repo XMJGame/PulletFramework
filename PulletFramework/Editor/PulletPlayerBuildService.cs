@@ -70,12 +70,12 @@ namespace PulletFramework.Editor
             BuildReport report = BuildPipeline.BuildPlayer(options);
             if (report.summary.result == BuildResult.Succeeded)
             {
-                Debug.Log($"[PulletPlayerBuild] 构建完成：{outputPath}");
+                PLogger.EditorInfo($"[PulletPlayerBuild] 构建完成：{outputPath}");
                 EditorUtility.RevealInFinder(outputPath);
             }
             else
             {
-                Debug.LogError($"[PulletPlayerBuild] 构建失败：{report.summary.result}");
+                PLogger.EditorError($"[PulletPlayerBuild] 构建失败：{report.summary.result}");
             }
 
             return report;

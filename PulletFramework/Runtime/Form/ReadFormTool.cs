@@ -1,118 +1,123 @@
-
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using UnityEngine;
 
 namespace PulletFramework.Form
 {
-    public class ReadFormTool
+    /// <summary>把以制表符分隔的 TextAsset 转换为配置对象。</summary>
+    public static class ReadFormTool
     {
+        // 保留旧字段供已有项目兼容，新代码请直接调用 ReadFormData。
         public static string[] mArray;
         public static List<List<string>> mFormData = new List<List<string>>();
+
         public static Dictionary<int, T> ReadFormData<T>(TextAsset textAsset)
         {
-            mFormData.Clear();
-            if (textAsset != null)
-            {
-                //读取每一行的内容
-                string[] lineArray = textAsset.text.Split("\r"[0]);
-                for (int i = 0; i < lineArray.Length; i++)
-                {
-                    string text = lineArray[i].Replace("\n", "");
-                    mArray = text.Split("\t"[0]);
-                    if (string.IsNullOrEmpty(mArray[0])) continue;
-                    //存储每行数据
-                    mFormData.Add(new List<string>(mArray));
-                }
-                return DeserializeStringToObjects<T>();
-            }
-            return null;
+            mFormData = ParseRows(textAsset);
+            return DeserializeStringToObjects<T>();
         }
 
         public static Dictionary<int, T> DeserializeStringToObjects<T>()
         {
-            //表对应的变量
-            List<string> variable = new List<string>();
-            variable = mFormData[0];
-            //创建表字典
-            Dictionary<int, T> result = new Dictionary<int, T>();
-            //对象类型
-            Type type = typeof(T);
-            FieldInfo[] fieldInfo = type.GetFields();
+            var result = new Dictionary<int, T>();
+            if (mFormData == null || mFormData.Count == 0)
+                return result;
 
-            string strError = "";
-            try
+            List<string> headers = mFormData[0];
+            var fields = new Dictionary<string, FieldInfo>(StringComparer.Ordinal);
+            FieldInfo[] publicFields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public);
+            for (int i = 0; i < publicFields.Length; i++)
+                fields[publicFields[i].Name] = publicFields[i];
+
+            for (int rowIndex = 1; rowIndex < mFormData.Count; rowIndex++)
             {
-                string objMemberName;
-                for (int row = 1; row < mFormData.Count; row++)
+                List<string> row = mFormData[rowIndex];
+                if (row.Count == 0 || string.IsNullOrWhiteSpace(row[0]) || row[0][0] == '#')
+                    continue;
+
+                int key = int.TryParse(row[0], NumberStyles.Integer, CultureInfo.InvariantCulture,
+                    out int parsedKey) ? parsedKey : rowIndex;
+                try
                 {
-                    int key = 0;
                     T model = Activator.CreateInstance<T>();
-                    List<string> rowData = mFormData[row];
-                    if (rowData[0][0] == '#')
+                    int columnCount = Math.Min(row.Count, headers.Count);
+                    for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
                     {
-                        continue;
-                    }
-                    if (!int.TryParse(rowData[0], out key))
-                    {
-                        key = row;
+                        string header = headers[columnIndex];
+                        if (string.IsNullOrWhiteSpace(header)
+                            || !fields.TryGetValue(header, out FieldInfo field))
+                            continue;
+                        field.SetValue(model, ConvertCell(row[columnIndex], field.FieldType));
                     }
 
-                    for (int line = 0; line < rowData.Count; line++)
+                    if (result.ContainsKey(key))
                     {
-                        for (int i = 0; i < fieldInfo.Length; i++)
-                        {
-                            objMemberName = fieldInfo[i].Name;
-                            if (objMemberName == variable[line])
-                            {
-                                if (key == 1409)
-                                {
-                                    strError = "";
-                                }
-                                strError = key + "----" + objMemberName + "----" + rowData[line] + "----" + fieldInfo[i].FieldType.ToString();
-                                if (fieldInfo[i].FieldType == typeof(bool))
-                                {
-                                    int num = int.Parse(rowData[line]);
-                                    fieldInfo[i].SetValue(model, Convert.ChangeType(num, fieldInfo[i].FieldType));
-                                }
-                                else
-                                {
-                                    fieldInfo[i].SetValue(model, Convert.ChangeType(rowData[line], fieldInfo[i].FieldType));
-                                }
-                                break;
-                            }
-                        }
+                        PLogger.Warning($"表格 {typeof(T).Name} 第 {rowIndex + 1} 行包含重复 ID：{key}，已忽略。");
+                        continue;
                     }
                     result.Add(key, model);
                 }
+                catch (Exception exception)
+                {
+                    PLogger.Error(
+                        $"表格 {typeof(T).Name} 第 {rowIndex + 1} 行解析失败，ID={key}：{exception.Message}");
+                }
             }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message + ":" + strError);
-            }
-            finally { }
             return result;
         }
 
-        public static void ReadConstantForm(TextAsset textAsset, ref Dictionary<string, string> result)
+        public static void ReadConstantForm(
+            TextAsset textAsset, ref Dictionary<string, string> result)
         {
-            if (textAsset != null)
+            if (result == null)
+                result = new Dictionary<string, string>();
+            List<List<string>> rows = ParseRows(textAsset);
+            for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
             {
-                //读取每一行的内容
-                string[] lineArray = textAsset.text.Split("\r"[0]);
-                for (int i = 1; i < lineArray.Length; i++)
-                {
-                    string text = lineArray[i].Replace("\n", "");
-                    mArray = text.Split("\t"[0]);
-
-                    if (mArray.Length > 2)
-                    {
-                        if (mArray[0][0] == '#') continue;
-                        result.Add(mArray[0], mArray[1]);
-                    }
-                }
+                List<string> row = rows[rowIndex];
+                if (row.Count < 2 || string.IsNullOrWhiteSpace(row[0]) || row[0][0] == '#')
+                    continue;
+                result[row[0]] = row[1];
             }
+        }
+
+        private static List<List<string>> ParseRows(TextAsset textAsset)
+        {
+            var rows = new List<List<string>>();
+            if (textAsset == null)
+                return rows;
+
+            string[] lines = textAsset.text.Split(
+                new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+            for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+            {
+                if (string.IsNullOrWhiteSpace(lines[lineIndex]))
+                    continue;
+                mArray = lines[lineIndex].Split('\t');
+                if (mArray.Length == 0 || string.IsNullOrWhiteSpace(mArray[0]))
+                    continue;
+                rows.Add(new List<string>(mArray));
+            }
+            return rows;
+        }
+
+        private static object ConvertCell(string value, Type destinationType)
+        {
+            Type targetType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+            if (targetType == typeof(string))
+                return value;
+            if (targetType == typeof(bool))
+            {
+                if (value == "1") return true;
+                if (value == "0") return false;
+                if (bool.TryParse(value, out bool parsed)) return parsed;
+                throw new FormatException($"'{value}' 不是有效的 bool 值。");
+            }
+            if (targetType.IsEnum)
+                return Enum.Parse(targetType, value, true);
+            return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
     }
 }

@@ -21,7 +21,8 @@ namespace PulletFramework.Resource
         public Quaternion Rotation { get; }
         public bool SetPositionAndRotation { get; }
 
-        public ResourceInstantiateOptions(bool isActive, Transform parent = null, bool inWorldSpace = false)
+        public ResourceInstantiateOptions(
+            bool isActive, Transform parent = null, bool inWorldSpace = false)
         {
             IsActive = isActive;
             Parent = parent;
@@ -31,7 +32,8 @@ namespace PulletFramework.Resource
             SetPositionAndRotation = false;
         }
 
-        public ResourceInstantiateOptions(bool isActive, Transform parent, Vector3 position, Quaternion rotation)
+        public ResourceInstantiateOptions(
+            bool isActive, Transform parent, Vector3 position, Quaternion rotation)
         {
             IsActive = isActive;
             Parent = parent;
@@ -42,6 +44,7 @@ namespace PulletFramework.Resource
         }
     }
 
+    /// <summary>框架加载单个资源时持有的最小句柄。</summary>
     public interface IResourceAssetHandle : IEnumerator
     {
         bool IsValid { get; }
@@ -66,15 +69,18 @@ namespace PulletFramework.Resource
         void Cancel();
     }
 
+    /// <summary>仅包含框架 UI、表格、音频和对象池需要的单资源加载能力。</summary>
     public interface IResourcePackage
     {
         string Name { get; }
         EResourcePackageStatus Status { get; }
         string Error { get; }
         bool IsLocationValid(string location);
-        IResourceAssetHandle LoadAssetAsync<TObject>(string location) where TObject : UnityEngine.Object;
+        IResourceAssetHandle LoadAssetAsync<TObject>(string location)
+            where TObject : UnityEngine.Object;
     }
 
+    /// <summary>把项目选用的资源系统接入 PulletFramework 基础模块。</summary>
     public interface IResourceAdapter
     {
         string Name { get; }
@@ -83,6 +89,9 @@ namespace PulletFramework.Resource
         IResourcePackage GetPackage(string packageName);
     }
 
+    /// <summary>
+    /// PulletFramework 内部资源服务。业务资源应直接使用项目选定资源系统的官方 API。
+    /// </summary>
     public static class PulletResources
     {
         private static IResourceAdapter _adapter;
@@ -103,18 +112,27 @@ namespace PulletFramework.Resource
 
         public static bool TryGetPackage(string packageName, out IResourcePackage package)
         {
-            packageName = string.IsNullOrEmpty(packageName) ? Adapter.DefaultPackageName : packageName;
-            return Adapter.TryGetPackage(packageName, out package);
+            if (_adapter == null)
+            {
+                package = null;
+                return false;
+            }
+            packageName = string.IsNullOrEmpty(packageName)
+                ? _adapter.DefaultPackageName
+                : packageName;
+            return _adapter.TryGetPackage(packageName, out package);
         }
 
         public static IResourcePackage GetPackage(string packageName = null)
         {
-            packageName = string.IsNullOrEmpty(packageName) ? Adapter.DefaultPackageName : packageName;
+            packageName = string.IsNullOrEmpty(packageName)
+                ? Adapter.DefaultPackageName
+                : packageName;
             return Adapter.GetPackage(packageName);
         }
 
-        public static IResourceAssetHandle LoadAssetAsync<TObject>(string location, string packageName = null)
-            where TObject : UnityEngine.Object
+        public static IResourceAssetHandle LoadAssetAsync<TObject>(
+            string location, string packageName = null) where TObject : UnityEngine.Object
         {
             return GetPackage(packageName).LoadAssetAsync<TObject>(location);
         }

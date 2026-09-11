@@ -92,7 +92,8 @@ namespace PulletMiniGame.Platform.WeChat.Editor
             if (settings.enableNativeLeaderboard)
                 PatchOpenDataTemplate(miniGameOutput, settings.nativeLeaderboardKey);
 
-            Debug.Log($"[PulletMiniGame] WeChat mini game build completed: {miniGameOutput}");
+            PulletFramework.PLogger.EditorInfo(
+                $"[PulletMiniGame] WeChat mini game build completed: {miniGameOutput}");
         }
 
         private static void ApplyConfiguration(

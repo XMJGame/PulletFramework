@@ -38,7 +38,7 @@ public class FormSample : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"{initializationOperation.Error}");
+            PLogger.Warning($"{initializationOperation.Error}");
         }
     }
 }
