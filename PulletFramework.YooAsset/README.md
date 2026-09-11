@@ -17,7 +17,10 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
 配置资产建议保存在：
 
 ```text
-Assets/Settings/Pullets/YooAsset/PulletYooAssetSettings.asset
+Assets/Settings/Pullets/YooAsset/Resources/PulletYooAssetSettings.asset
 ```
+
+运行时由 `PulletYooAssetSettingsData` 统一加载该资产，业务入口只需调用
+`PulletYooAssetRuntime.Initialize()`，不需要序列化或主动获取配置对象。
 
 业务 AssetBundle CDN 与微信、抖音导出工具使用的 Unity 首包 CDN 是两套配置。

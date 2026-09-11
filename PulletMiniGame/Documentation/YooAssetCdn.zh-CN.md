@@ -22,7 +22,7 @@ https://cdn.example.com/game-assets/WebGL/v1.0/DefaultPackage/...
 private IEnumerator Start()
 {
     PulletFrameworks.Initialize();
-    yield return PulletYooAssetRuntime.Initialize(resourceSettings);
+    yield return PulletYooAssetRuntime.Initialize();
 
     if (PulletYooAssetRuntime.Status != EPulletYooAssetStartupStatus.Succeeded)
     {
@@ -43,7 +43,7 @@ private IEnumerator Start()
 项目中两份设置职责不同：
 
 - `YooAssetSettings.asset` 是 YooAsset 官方全局设置，必须位于 `Resources`，负责缓存目录名和发布文件前缀；
-- `PulletYooAssetSettings.asset` 是 PulletFramework 运行配置，位于 `Assets/Settings/Pullets/YooAsset`，负责包名、
+- `PulletYooAssetSettings.asset` 是 PulletFramework 运行配置，位于 `Assets/Settings/Pullets/YooAsset/Resources`，负责包名、
   运行模式、CDN 地址、版本和下载策略，由 `GameLaunch` 显式引用。
 
 两者不冲突，也不应合并。修改官方 `PackageFilePrefix` 会改变版本文件与清单文件名；已经发布过资源后修改它，

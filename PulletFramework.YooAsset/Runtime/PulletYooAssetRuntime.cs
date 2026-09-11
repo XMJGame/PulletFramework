@@ -32,10 +32,21 @@ namespace PulletFramework.YooAssetAdapter
 
         public static event Action<EPulletYooAssetStartupStatus, float, string> ProgressChanged;
 
-        public static IEnumerator Initialize(PulletYooAssetSettings settings)
+        /// <summary>使用项目统一配置初始化 YooAsset，业务入口无需持有配置资产。</summary>
+        public static IEnumerator Initialize()
         {
+            PulletYooAssetSettings settings = PulletYooAssetSettingsData.Setting;
             if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
+            {
+                Fail("未找到 YooAsset 配置：请通过 Pullets/Workspace 创建 PulletYooAssetSettings。");
+                yield break;
+            }
+
+            yield return InitializeInternal(settings);
+        }
+
+        private static IEnumerator InitializeInternal(PulletYooAssetSettings settings)
+        {
             if (Status == EPulletYooAssetStartupStatus.Initializing
                 || Status == EPulletYooAssetStartupStatus.UpdatingManifest
                 || Status == EPulletYooAssetStartupStatus.Downloading)
@@ -122,13 +133,13 @@ namespace PulletFramework.YooAssetAdapter
         }
 
         /// <summary>清理失败的启动状态并重新执行完整流程。</summary>
-        public static IEnumerator RetryInitialize(PulletYooAssetSettings settings)
+        public static IEnumerator RetryInitialize()
         {
             if (Status != EPulletYooAssetStartupStatus.Failed)
                 throw new InvalidOperationException("Retry is only available after YooAsset startup failed.");
 
             Reset(true);
-            yield return Initialize(settings);
+            yield return Initialize();
         }
 
         public static void Reset(bool destroyYooAssets)

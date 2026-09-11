@@ -11,9 +11,6 @@ namespace PulletFramework.Editor
     /// <summary>按发布报告顺序将 YooAsset 版本上传到腾讯云 COS。</summary>
     public static class PulletYooAssetCosPublisher
     {
-        private const string SettingsPath =
-            "Assets/Settings/Pullets/YooAsset/PulletYooAssetSettings.asset";
-
         public static async void PublishFromMenu()
         {
             if (!EditorUtility.DisplayDialog("上传 YooAsset 资源",
@@ -85,9 +82,11 @@ namespace PulletFramework.Editor
         public static async Task<string> PublishCurrentVersionAsync()
         {
             PulletYooAssetSettings settings =
-                AssetDatabase.LoadAssetAtPath<PulletYooAssetSettings>(SettingsPath);
+                AssetDatabase.LoadAssetAtPath<PulletYooAssetSettings>(
+                    PulletYooAssetSettingsEditor.DefaultAssetPath);
             if (settings == null)
-                throw new InvalidDataException($"YooAsset settings not found: {SettingsPath}");
+                throw new InvalidDataException(
+                    $"YooAsset settings not found: {PulletYooAssetSettingsEditor.DefaultAssetPath}");
 
             string packageDirectory = Path.Combine(
                 YooAsset.Editor.BundleBuilderHelper.GetDefaultBuildOutputRoot(),
