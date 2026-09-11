@@ -97,6 +97,13 @@ https://cdn.example.com/game-assets/{platform}/{appVersion}/{package}
 
 ## 缓存策略
 
+- COS 发布器会为哈希 Bundle 和带版本号的清单写入
+  `Cache-Control: public, max-age=31536000, immutable`。这些对象的 URL 随内容或 Package 版本变化，
+  可以长期缓存。
+- `{PackageFilePrefix}_{PackageName}.version` 是可变版本指针，发布器写入
+  `Cache-Control: no-cache, max-age=0, must-revalidate`，避免 CDN 或宿主继续使用旧版本号。
+- 2026-09-11 已对验证桶中的 5 个 Bundle、清单、哈希和版本指针完成公网校验：HTTP 状态、长度、SHA-256、
+  CORS 与缓存响应头均符合发布报告。该结果只证明远端对象正确，不代表平台沙盒缓存已经通过真机验收。
 - 微信：使用 YooAsset Mini Game 样例的 `WechatFileSystem`，缓存根位于 `WX.env.USER_DATA_PATH`，
   AssetBundle 加载与卸载走 `WXAssetBundle`。
 - 抖音：使用 `TiktokPlatform` 与 `TTAssetBundle`，由平台适配层注入 YooAsset Web 文件系统。
