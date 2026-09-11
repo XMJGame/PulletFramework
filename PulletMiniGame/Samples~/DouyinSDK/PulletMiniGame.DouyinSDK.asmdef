@@ -1,0 +1,12 @@
+{
+    "name": "PulletMiniGame.DouyinSDK",
+    "references": [
+        "PulletMiniGame.Runtime",
+        "PulletMiniGame.Platform.Douyin",
+        "TTLitJson",
+        "YooAsset",
+        "PulletFramework.YooAsset"
+    ],
+    "defineConstraints": ["PULLET_PLATFORM_DOUYIN"],
+    "autoReferenced": true
+}

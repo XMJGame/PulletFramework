@@ -20,7 +20,7 @@ namespace PulletFramework.Form
         /// <summary>
         /// 初始化网络系统
         /// </summary>
-        public static void Initalize()
+        public static void Initialize()
         {
             if (m_IsInitialize)
                 throw new Exception($"{nameof(PulletForm)} is initialized !");
@@ -57,7 +57,7 @@ namespace PulletFramework.Form
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             if (Contains<T>()) return;
 

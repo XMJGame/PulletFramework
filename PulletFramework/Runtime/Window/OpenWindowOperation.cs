@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Tianzhuo Vision Vreation Technology(Beijing) Co., Ltd. All Rights Reserved.
 //  作    者：许明俊
@@ -7,10 +7,9 @@
 //
 // *********************************************************************
 #endregion
-using YooAsset;
 namespace PulletFramework.Window
 {
-    public class OpenWindowOperation : GameAsyncOperation
+    public class OpenWindowOperation : PulletAsyncOperation
     {
         private enum ESteps
         {
@@ -19,12 +18,24 @@ namespace PulletFramework.Window
             Done,
         }
 
-        private readonly AssetHandle _handle;
+        private readonly UIWindow _window;
+        private readonly string _initialError;
+        private readonly bool _ownsOpenAttempt;
         private ESteps _steps = ESteps.None;
 
-        internal OpenWindowOperation(AssetHandle handle)
+        /// <summary>
+        /// 本次打开的窗口实例。
+        /// </summary>
+        public UIWindow Window => _window;
+
+        internal OpenWindowOperation(
+            UIWindow window,
+            string initialError = null,
+            bool ownsOpenAttempt = false)
         {
-            _handle = handle;
+            _window = window;
+            _initialError = initialError;
+            _ownsOpenAttempt = ownsOpenAttempt;
         }
         protected override void OnStart()
         {
@@ -37,47 +48,51 @@ namespace PulletFramework.Window
 
             if (_steps == ESteps.Waiting)
             {
-                if (_handle.IsValid == false)
+                if (!string.IsNullOrEmpty(_initialError))
                 {
                     _steps = ESteps.Done;
-                    Status = EOperationStatus.Failed;
-                    Error = $"{nameof(AssetHandle)} is invalid.";
+                    SetFailed(_initialError);
                     return;
                 }
 
-                if (_handle.IsDone == false)
-                    return;
-
-                if (_handle.AssetObject == null)
+                if (_window == null)
                 {
                     _steps = ESteps.Done;
-                    Status = EOperationStatus.Failed;
-                    Error = $"{nameof(AssetHandle.AssetObject)} is null.";
+                    SetFailed("Window is invalid.");
                     return;
                 }
+
+                if (!string.IsNullOrEmpty(_window.LoadError))
+                {
+                    _steps = ESteps.Done;
+                    SetFailed(_window.LoadError);
+                    return;
+                }
+
+                if (!_window.IsOpenCompleted)
+                    return;
 
                 _steps = ESteps.Done;
-                Status = EOperationStatus.Succeed;
+                SetSucceeded();
             }
         }
 
-        /// <summary>
-        /// 等待异步实例化结束
-        /// </summary>
-        public void WaitForAsyncComplete()
+        protected override void OnWaitForAsyncComplete()
         {
-            if (_handle != null)
+            if (_window != null)
             {
                 if (_steps == ESteps.Done)
                     return;
-                _handle.WaitForAsyncComplete();
+                _window.WaitForLoadComplete();
                 OnUpdate();
             }
         }
 
         protected override void OnAbort()
         {
-           
+            _steps = ESteps.Done;
+            if (_window != null && _ownsOpenAttempt)
+                PulletWindow.CancelOpen(_window);
         }
     }
 }

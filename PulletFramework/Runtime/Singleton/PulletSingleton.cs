@@ -136,7 +136,7 @@ namespace PulletFramework.Singleton
 		/// <param name="priority">运行时的优先级，优先级越大越早执行。如果没有设置优先级，那么会按照添加顺序执行</param>
 		public static T CreateSingleton<T>(System.Object createParam, int priority = 0) where T : class, ISingleton
 		{
-			if (!m_IsInitialize) 
+			if (!m_IsInitialize)
 			{
 				Initialize();
 			}
@@ -145,7 +145,6 @@ namespace PulletFramework.Singleton
 
 			if (Contains<T>())
 				return GetSingleton<T>();
-				//throw new Exception($"Module is already existed : {typeof(T)}");
 
 			// 如果没有设置优先级
 			if (priority == 0)

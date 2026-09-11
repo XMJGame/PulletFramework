@@ -16,7 +16,6 @@ namespace PulletFramework.Editor
 		public static readonly Type[] DockedWindowTypes =
 		{
 			typeof(PulletSettingWindow),
-			typeof(PulletBuildWindow),
 			typeof(PulletEditorWindow)
 		};
 #endif
@@ -36,19 +35,11 @@ namespace PulletFramework.Editor
 			{
 				Debug.LogWarning($"Create new {settingType.Name}.asset");
 				var setting = ScriptableObject.CreateInstance<TSetting>();
-				string filePath = "";
-				if (pathName != "")
-				{
-					filePath = $"Assets/Settings/{pathName}/{settingType.Name}.asset";
-				}
-				else
-				{
-					filePath = $"Assets/Settings/{settingType.Name}.asset";
-				}
-				if (!File.Exists(filePath))
-				{
-					Directory.CreateDirectory(filePath);
-				}
+				string directory = string.IsNullOrWhiteSpace(pathName)
+					? "Assets/Settings"
+					: $"Assets/Settings/{pathName.Trim('/')}";
+				EnsureAssetFolder(directory);
+				string filePath = $"{directory}/{settingType.Name}.asset";
 				AssetDatabase.CreateAsset(setting, filePath);
 				AssetDatabase.SaveAssets();
 				AssetDatabase.Refresh();
@@ -69,6 +60,23 @@ namespace PulletFramework.Editor
 				string filePath = AssetDatabase.GUIDToAssetPath(guids[0]);
 				var setting = AssetDatabase.LoadAssetAtPath<TSetting>(filePath);
 				return setting;
+			}
+		}
+
+		private static void EnsureAssetFolder(string folderPath)
+		{
+			string normalizedPath = folderPath.Replace('\\', '/').TrimEnd('/');
+			if (!normalizedPath.StartsWith("Assets", StringComparison.Ordinal))
+				throw new ArgumentException("Settings must be stored below Assets.", nameof(folderPath));
+
+			string[] parts = normalizedPath.Split('/');
+			string current = parts[0];
+			for (int i = 1; i < parts.Length; i++)
+			{
+				string next = $"{current}/{parts[i]}";
+				if (!AssetDatabase.IsValidFolder(next))
+					AssetDatabase.CreateFolder(current, parts[i]);
+				current = next;
 			}
 		}
 	}

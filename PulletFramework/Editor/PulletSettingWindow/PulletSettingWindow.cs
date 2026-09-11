@@ -6,14 +6,14 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using YooAsset;
-using YooAsset.Editor;
 
 namespace PulletFramework.Editor
 {
     public class PulletSettingWindow : EditorWindow
     {
-        [MenuItem("Pullets/Settings", false, 1)]
+        private const string HybridCommandTypeName =
+            "PulletFramework.Editor.HybridCLRCommand, PulletFramework.HybridCLR.Editor";
+
         public static void OpenWindow()
         {
 #if UNITY_ANDROID
@@ -55,7 +55,7 @@ namespace PulletFramework.Editor
                 VisualElement root = this.rootVisualElement;
 
                 // 加载布局文件
-                var visualAsset = UxmlLoader.LoadWindowUXML<PulletSettingWindow>();
+                var visualAsset = PulletEditorAssetUtility.LoadWindowUxml<PulletSettingWindow>();
                 if (visualAsset == null)
                     return;
 
@@ -64,7 +64,7 @@ namespace PulletFramework.Editor
                 // app 信息
                 InitYooAsset(root);
 
-                //HybridCLR 
+                //HybridCLR
                 InitHybridCLR(root);
 
                 // 刷新窗体
@@ -84,13 +84,13 @@ namespace PulletFramework.Editor
             mYooAssetSettingContainer = root.Q<VisualElement>("yooAssetSettingContainer");
 
             mRunPlayModeEField = root.Q<EnumField>("runPlayMode");
-            mRunPlayModeEField.Init(PulletSettingsData.Setting.runPlayMode);
-            mRunPlayModeEField.SetValueWithoutNotify(PulletSettingsData.Setting.runPlayMode);
+            mRunPlayModeEField.Init(PulletSettingsData.Setting.resourcePlayMode);
+            mRunPlayModeEField.SetValueWithoutNotify(PulletSettingsData.Setting.resourcePlayMode);
             mRunPlayModeEField.style.width = 350;
             mRunPlayModeEField.RegisterValueChangedCallback(evt =>
             {
                 PulletSettingsData.IsDirty = true;
-                PulletSettingsData.Setting.runPlayMode = (EPlayMode)mRunPlayModeEField.value;
+                PulletSettingsData.Setting.resourcePlayMode = (EResourcePlayMode)mRunPlayModeEField.value;
                 RefreshWindow();
             });
             mDefaultHostServerTField = root.Q<TextField>("defaultHostServer");
@@ -122,7 +122,12 @@ namespace PulletFramework.Editor
         private void InitHybridCLR(VisualElement root)
         {
             mHybridCLRSetting = root.Q<VisualElement>("hybridCLRSetting");
-#if ENABLE_HYBRIDCLR_EDITOR
+            if (PulletEditorAssetUtility.FindType(HybridCommandTypeName) == null)
+            {
+                mHybridCLRSetting.style.display = DisplayStyle.None;
+                return;
+            }
+
             mHybridCLRSetting.style.display = DisplayStyle.Flex;
             //设置
             mHybridCLRSettingButton = root.Q<Button>("hybridCLRSettingBtn");
@@ -141,12 +146,12 @@ namespace PulletFramework.Editor
 
             PulletSettingsData.Setting.hotUpdateAssemblies.Clear();
 
-            foreach (var dll in HybridCLR.Editor.SettingsUtil.HotUpdateAssemblyNamesExcludePreserved)
+            foreach (string dll in GetHybridAssemblyNames("GetHotUpdateAssemblyNames"))
             {
                 PulletSettingsData.Setting.hotUpdateAssemblies.Add(dll);
             }
 
-                serializedObject = new SerializedObject(PulletSettingsData.Setting);
+            serializedObject = new SerializedObject(PulletSettingsData.Setting);
             mHotUpdateAssembliesPField = root.Q<PropertyField>("hotUpdateAssemblies");
             mHotUpdateAssembliesPField.BindProperty(serializedObject.FindProperty("hotUpdateAssemblies"));
             mHotUpdateAssembliesPField.SetEnabled(false);
@@ -154,7 +159,7 @@ namespace PulletFramework.Editor
 
             PulletSettingsData.Setting.aotMetaAssemblys.Clear();
 
-            foreach (var dll in HybridCLR.Editor.SettingsUtil.AOTAssemblyNames)
+            foreach (string dll in GetHybridAssemblyNames("GetAOTAssemblyNames"))
             {
                 PulletSettingsData.Setting.aotMetaAssemblys.Add(dll);
             }
@@ -163,9 +168,14 @@ namespace PulletFramework.Editor
             mAotMetaAssemblysPField.SetEnabled(false);
 
             PulletSettingsData.SaveFile();
-#else
-		mHybridCLRSetting.style.display = DisplayStyle.None;
-#endif
+        }
+
+        private static IEnumerable<string> GetHybridAssemblyNames(string methodName)
+        {
+            Type type = PulletEditorAssetUtility.FindType(HybridCommandTypeName);
+            var method = type?.GetMethod(methodName,
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            return method?.Invoke(null, null) as IEnumerable<string> ?? Array.Empty<string>();
         }
 
         public void OnDestroy()
@@ -180,7 +190,7 @@ namespace PulletFramework.Editor
             {
                 mYooAssetSettingContainer.style.display = DisplayStyle.Flex;
 
-                if (PulletSettingsData.Setting.runPlayMode == EPlayMode.HostPlayMode)
+                if (PulletSettingsData.Setting.resourcePlayMode == EResourcePlayMode.Host)
                 {
                     mDefaultHostServerTField.style.display = DisplayStyle.Flex;
                     mFallbackHostServerTField.style.display = DisplayStyle.Flex;
@@ -196,16 +206,10 @@ namespace PulletFramework.Editor
                 mYooAssetSettingContainer.style.display = DisplayStyle.None;
             }
 
-#if ENABLE_HYBRIDCLR_EDITOR
-            if (hybridCLRSetting)
-            {
-                mHybridCLRSettingContainer.style.display = DisplayStyle.Flex;
-            }
-            else
-            {
-                mHybridCLRSettingContainer.style.display = DisplayStyle.None;
-            }
-#endif
+            if (mHybridCLRSettingContainer != null)
+                mHybridCLRSettingContainer.style.display = hybridCLRSetting
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
         }
 
         #region 按钮事件

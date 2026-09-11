@@ -79,7 +79,6 @@ namespace PulletFramework.Network
         {
             NetPackage package = new NetPackage();
             package.msgId = id;
-            //package.bodyBytes = m_PackageSerializeHelper.Serialize(msg);
             if (m_Channel != null)
                 m_Channel.SendPackage(package);
         }
@@ -117,14 +116,14 @@ namespace PulletFramework.Network
                 PLogger.Error($"Network connecte error : {socketAsync.SocketError}");
             }
 
-            // 回调函数		
+            // 回调函数
             if (token.Callback != null)
                 token.Callback.Invoke(socketAsync.SocketError);
         }
 
         private void OnChannelHandleError(bool isDispose, string error)
         {
-            if (isDispose) 
+            if (isDispose)
             {
                 Dispose();
                 socketErrorCallback(SocketError.NotConnected);
@@ -133,11 +132,10 @@ namespace PulletFramework.Network
 
         private void AcceptEventArg_Completed(object sender, SocketAsyncEventArgs e)
         {
-            //PLogger.Log("AcceptEventArg_Completed:" + e.LastOperation.ToString());
             switch (e.LastOperation)
             {
                 case SocketAsyncOperation.Connect:
-     
+
                     m_SyncContext.Post(ProcessConnected, e);
                     break;
                 default:

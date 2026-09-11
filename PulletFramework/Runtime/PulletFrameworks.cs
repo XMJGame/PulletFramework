@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Xu Mingjun(Xinxiang, Henan) All Rights Reserved.
 //  作    者：许明俊
@@ -56,9 +56,9 @@ namespace PulletFramework
 		/// </summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
-		internal static GameObject AddSubsystemGameObject(string name) 
+		internal static GameObject AddSubsystemGameObject(string name)
 		{
-			if (!mIsInitialize) 
+			if (!mIsInitialize)
 			{
 				Initialize();
 			}
@@ -70,11 +70,13 @@ namespace PulletFramework
 		/// <summary>
 		/// 框架更新
 		/// </summary>
-		internal static void Update(float deltaTime, float unscaledDeltaTime) 
+		internal static void Update(float deltaTime, float unscaledDeltaTime)
 		{
+			PulletOperationSystem.Update();
 			PulletSound.Update(deltaTime, unscaledDeltaTime);
 			PulletEvent.Update(deltaTime, unscaledDeltaTime);
 			PulletWindow.Update(deltaTime, unscaledDeltaTime);
+			UISafeArea.Update();
 			PulletPooling.Update(deltaTime, unscaledDeltaTime);
 			PulletNetwork.Update(deltaTime, unscaledDeltaTime);
 		}
@@ -91,8 +93,11 @@ namespace PulletFramework
 				PulletSound.Destroy();
 				PulletEvent.Destroy();
 				PulletWindow.Destroy();
+				PulletUIFeedback.Reset();
 				PulletPooling.Destroy();
 				PulletNetwork.Destroy();
+				PulletOperationSystem.Clear();
+				Resource.PulletResources.Uninstall();
 				mIsInitialize = false;
 				if (mGameObject != null)
 					GameObject.Destroy(mGameObject);

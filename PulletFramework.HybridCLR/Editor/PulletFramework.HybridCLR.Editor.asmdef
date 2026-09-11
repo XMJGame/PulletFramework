@@ -1,0 +1,12 @@
+{
+    "name": "PulletFramework.HybridCLR.Editor",
+    "rootNamespace": "PulletFramework.Editor",
+    "references": [
+        "PulletFramework.Editor.Workspace.Contracts",
+        "HybridCLR.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}

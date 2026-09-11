@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
-using YooAsset;
+using PulletFramework.Resource;
 
 namespace PulletFramework.Pooling
 {
 	internal class GameObjectPool
 	{
 		private readonly Transform _poolRoot;
-		private readonly Queue<InstantiateOperation> _cacheOperations;
+		private readonly Queue<IResourceInstanceHandle> _cacheOperations;
 		private readonly bool _dontDestroy;
 		private readonly int _initCapacity;
 		private readonly int _maxCapacity;
@@ -17,7 +17,7 @@ namespace PulletFramework.Pooling
 		/// <summary>
 		/// 资源句柄
 		/// </summary>
-		public AssetHandle AssetHandle { private set; get; }
+		public IResourceAssetHandle AssetHandle { private set; get; }
 
 		/// <summary>
 		/// 资源定位地址
@@ -65,13 +65,13 @@ namespace PulletFramework.Pooling
 			_destroyTime = destroyTime;
 
 			// 创建缓存池
-			_cacheOperations = new Queue<InstantiateOperation>(initCapacity);
+			_cacheOperations = new Queue<IResourceInstanceHandle>(initCapacity);
 		}
 
 		/// <summary>
 		/// 创建对象池
 		/// </summary>
-		public void CreatePool(ResourcePackage resourcePackage)
+		public void CreatePool(IResourcePackage resourcePackage)
 		{
 			// 加载游戏对象
 			AssetHandle = resourcePackage.LoadAssetAsync<GameObject>(Location);
@@ -79,7 +79,8 @@ namespace PulletFramework.Pooling
 			// 创建初始对象
 			for (int i = 0; i < _initCapacity; i++)
 			{
-				var operation = AssetHandle.InstantiateAsync(_poolRoot);
+				var options = new ResourceInstantiateOptions(false, _poolRoot);
+				var operation = AssetHandle.InstantiateAsync(options);
 				_cacheOperations.Enqueue(operation);
 			}
 		}
@@ -131,7 +132,7 @@ namespace PulletFramework.Pooling
 		/// <summary>
 		/// 回收
 		/// </summary>
-		public void Restore(InstantiateOperation operation)
+		public void Restore(IResourceInstanceHandle operation)
 		{
 			if (IsDestroyed())
 			{
@@ -144,7 +145,7 @@ namespace PulletFramework.Pooling
 				_lastRestoreRealTime = Time.realtimeSinceStartup;
 
 			// 如果外部逻辑销毁了游戏对象
-			if (operation.Status == EOperationStatus.Succeed)
+			if (operation.IsSucceeded)
 			{
 				if (operation.Result == null)
 					return;
@@ -165,7 +166,7 @@ namespace PulletFramework.Pooling
 		/// <summary>
 		/// 丢弃
 		/// </summary>
-		public void Discard(InstantiateOperation operation)
+		public void Discard(IResourceInstanceHandle operation)
 		{
 			if (IsDestroyed())
 			{
@@ -185,19 +186,19 @@ namespace PulletFramework.Pooling
 		/// </summary>
 		public SpawnHandle Spawn(Transform parent, Vector3 position, Quaternion rotation, bool forceClone, params System.Object[] userDatas)
 		{
-			InstantiateOperation operation;
+			IResourceInstanceHandle operation;
 			if (forceClone == false && _cacheOperations.Count > 0)
 				operation = _cacheOperations.Dequeue();
 			else
-				operation = AssetHandle.InstantiateAsync();
+				operation = AssetHandle.InstantiateAsync(new ResourceInstantiateOptions(false));
 
 			SpawnCount++;
 			SpawnHandle handle = new SpawnHandle(this, operation, parent, position, rotation, userDatas);
-			YooAssets.StartOperation(handle);
+			PulletOperationSystem.Start(handle);
 			return handle;
 		}
 
-		private void DestroyInstantiateOperation(InstantiateOperation operation)
+		private void DestroyInstantiateOperation(IResourceInstanceHandle operation)
 		{
 			// 取消异步操作
 			operation.Cancel();

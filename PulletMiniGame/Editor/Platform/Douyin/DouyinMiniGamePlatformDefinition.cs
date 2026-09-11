@@ -1,0 +1,56 @@
+using System.Linq;
+using PulletMiniGame.Editor;
+using UnityEditor;
+
+namespace PulletMiniGame.Platform.Douyin.Editor
+{
+    public sealed class DouyinMiniGamePlatformDefinition : IMiniGamePlatformDefinition, IMiniGamePlatformDiagnostics
+    {
+        public string Id => PulletPlatformIds.Douyin;
+        public string DisplayName => "抖音";
+        public int Order => 200;
+
+        public MiniGamePlatformSettings LoadSettings() => MiniGameBuildSettingsData.Douyin;
+
+        public void DrawAdditionalSettings(MiniGamePlatformSettings settings)
+        {
+            var douyin = (DouyinPlatformSettings)settings;
+            douyin.developerToolPath = EditorGUILayout.TextField(
+                "开发者工具路径", douyin.developerToolPath);
+            douyin.iosHighPerformancePlus = EditorGUILayout.Toggle(
+                "iOS High Performance+", douyin.iosHighPerformancePlus);
+            douyin.menuButtonStyle = (EMiniGameMenuButtonStyle)EditorGUILayout.EnumPopup(
+                "胶囊按钮颜色", douyin.menuButtonStyle);
+            douyin.useLegacyBuildFormat = EditorGUILayout.Toggle(
+                "使用旧包体格式", douyin.useLegacyBuildFormat);
+        }
+
+        public bool Validate(MiniGamePlatformSettings settings, out string error)
+        {
+            error = null;
+            return true;
+        }
+
+        public void DrawDiagnostics()
+        {
+            bool sdkAvailable = System.AppDomain.CurrentDomain.GetAssemblies()
+                .Any(assembly => assembly.GetType("TTSDK.TT", false) != null);
+            bool bridgeAvailable = System.AppDomain.CurrentDomain.GetAssemblies()
+                .Any(assembly => assembly.GetType("PulletMiniGame.Platform.Douyin.DouyinSdkBridge", false) != null);
+            EditorGUILayout.HelpBox(
+                !sdkAvailable ? "TTSDK 未安装。"
+                    : bridgeAvailable ? "抖音运行时桥接与侧边栏服务已就绪。"
+                    : "TTSDK 已安装，请导入 Douyin SDK Bridge 样例，应用抖音宏并等待编译。",
+                !sdkAvailable ? MessageType.Error : bridgeAvailable ? MessageType.Info : MessageType.Warning);
+        }
+    }
+
+    [InitializeOnLoad]
+    internal static class DouyinBuildAdapterRegistration
+    {
+        static DouyinBuildAdapterRegistration()
+        {
+            PulletPlatformBuild.Register(new DouyinBuildToolAdapter());
+        }
+    }
+}

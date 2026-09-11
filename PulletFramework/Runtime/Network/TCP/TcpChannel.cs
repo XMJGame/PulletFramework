@@ -38,7 +38,7 @@ namespace PulletFramework.Network
             m_Socket.NoDelay = true;
             m_SyncContext = syncContext;
 
-            //编码解码器	
+            //编码解码器
             m_ChannelHelper = channelHelper;
             m_ChannelHelper.RigistHandleErrorCallback(HandleError);
             // 创建IOCP接收类
@@ -80,7 +80,6 @@ namespace PulletFramework.Network
         /// </summary>
         private void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
-            // PLogger.Log("SocketAsyncOperation:" + e.LastOperation.ToString());
             switch (e.LastOperation)
             {
                 case SocketAsyncOperation.Receive:

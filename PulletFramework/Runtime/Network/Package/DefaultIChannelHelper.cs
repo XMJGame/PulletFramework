@@ -20,7 +20,6 @@ namespace PulletFramework.Network
         public int HeartBeatInterval => 10;
         public void RigistHandleErrorCallback(HandleErrorDelegate callback)
         {
-           // throw new System.NotImplementedException();
         }
 
         public NetPackage GetHeartBeat()
@@ -85,4 +84,3 @@ namespace PulletFramework.Network
         }
     }
 }
-

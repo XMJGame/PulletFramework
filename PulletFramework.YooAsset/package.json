@@ -1,0 +1,27 @@
+{
+    "name": "com.xmjgame.pullet-framework.yooasset",
+    "version": "0.1.0",
+    "displayName": "Pullet Framework YooAsset Adapter",
+    "description": "Optional YooAsset runtime and editor integration for Pullet Framework.",
+    "unity": "2021.3",
+    "dependencies": {
+        "com.xmjgame.pullet-framework": "0.1.0",
+        "com.tuyoogame.yooasset": "3.0.5"
+    },
+    "author": {
+        "name": "XMJGame"
+    },
+    "keywords": [
+        "pullet",
+        "yooasset",
+        "assetbundle",
+        "cdn"
+    ],
+    "samples": [
+        {
+            "displayName": "Legacy Form Integration",
+            "description": "Legacy form scene showing Pullet Framework initialized with YooAsset.",
+            "path": "Samples~/LegacyForm"
+        }
+    ]
+}

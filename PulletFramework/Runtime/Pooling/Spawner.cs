@@ -2,22 +2,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using YooAsset;
+using PulletFramework.Resource;
 
 namespace PulletFramework.Pooling
 {
-    public class Spawner 
+    public class Spawner
     {
         private readonly List<GameObjectPool> _GameObjectPools = new List<GameObjectPool>(100);
         private readonly List<GameObjectPool> _RemoveList = new List<GameObjectPool>(100);
         private readonly GameObject _SpawnerRoot;
-        private readonly ResourcePackage _ResourcePackage;
+        private readonly IResourcePackage _resourcePackage;
 
         public string packageName
         {
             get
             {
-                return _ResourcePackage.PackageName;
+                return _resourcePackage.Name;
             }
         }
 
@@ -25,12 +25,12 @@ namespace PulletFramework.Pooling
         private Spawner()
         {
         }
-        internal Spawner(GameObject poolingRoot, ResourcePackage resourcePackage)
+        internal Spawner(GameObject poolingRoot, IResourcePackage resourcePackage)
         {
-            _SpawnerRoot = new GameObject($"{resourcePackage.PackageName}");
+            _SpawnerRoot = new GameObject(resourcePackage.Name);
             _SpawnerRoot.transform.SetParent(poolingRoot.transform);
             _SpawnerRoot.SetActive(false);
-            _ResourcePackage = resourcePackage;
+            _resourcePackage = resourcePackage;
         }
 
         /// <summary>
@@ -132,17 +132,17 @@ namespace PulletFramework.Pooling
             {
                 PLogger.Warning($"GameObject pool is already existed : {location}");
                 var operation = new CreatePoolOperation(pool.AssetHandle);
-                YooAssets.StartOperation(operation);
+                PulletOperationSystem.Start(operation);
                 return operation;
             }
             else
             {
                 pool = new GameObjectPool(_SpawnerRoot, location, dontDestroy, initCapacity, maxCapacity, destroyTime);
-                pool.CreatePool(_ResourcePackage);
+                pool.CreatePool(_resourcePackage);
                 _GameObjectPools.Add(pool);
 
                 var operation = new CreatePoolOperation(pool.AssetHandle);
-                YooAssets.StartOperation(operation);
+                PulletOperationSystem.Start(operation);
                 return operation;
             }
         }
@@ -241,7 +241,7 @@ namespace PulletFramework.Pooling
 
             // 如果不存在创建游戏对象池
             pool = new GameObjectPool(_SpawnerRoot, location, false, 0, int.MaxValue, -1f);
-            pool.CreatePool(_ResourcePackage);
+            pool.CreatePool(_resourcePackage);
             _GameObjectPools.Add(pool);
             return pool.Spawn(parent, position, rotation, forceClone, userDatas);
         }

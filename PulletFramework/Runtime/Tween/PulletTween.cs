@@ -26,7 +26,7 @@ namespace PulletFramework.Tween
 		/// <summary>
 		/// 初始化补间动画系统
 		/// </summary>
-		public static void Initalize()
+		public static void Initialize()
 		{
 			if (_isInitialize)
 				throw new Exception($"{nameof(PulletTween)} is initialized !");
@@ -87,7 +87,7 @@ namespace PulletFramework.Tween
 					_newer.Clear();
 				}
 
-				// 更新所有补间动画			
+				// 更新所有补间动画
 				float deltaTime = IgnoreTimeScale ? UnityEngine.Time.unscaledDeltaTime : UnityEngine.Time.deltaTime;
 				deltaTime *= PlaySpeed;
 				for (int i = 0; i < _tweens.Count; i++)
