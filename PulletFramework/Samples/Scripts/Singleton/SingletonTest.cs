@@ -1,4 +1,3 @@
-using UnityEngine;
 using PulletFramework.Singleton;
 public class SingletonTest : SingletonInstance<SingletonTest>, ISingleton
 {
@@ -16,6 +15,6 @@ public class SingletonTest : SingletonInstance<SingletonTest>, ISingleton
 
     public void Run()
     {
-        Debug.Log("SingletonTest");
+        PulletFramework.PLogger.DebugLog("SingletonTest");
     }
 }

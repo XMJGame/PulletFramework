@@ -54,7 +54,8 @@ namespace PulletMiniGame.Editor
                 }
                 catch (Exception exception)
                 {
-                    Debug.LogException(exception);
+                    PulletFramework.PLogger.EditorException(
+                        exception, "[PulletMiniGame] 平台定义发现失败。");
                 }
             }
 

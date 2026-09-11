@@ -139,12 +139,18 @@ namespace PulletFramework
     internal static class PulletOperationSystem
     {
         private static readonly List<PulletAsyncOperation> Operations = new List<PulletAsyncOperation>();
+        private static bool _isClearing;
 
         public static T Start<T>(T operation) where T : PulletAsyncOperation
         {
             if (operation == null)
                 throw new ArgumentNullException(nameof(operation));
             operation.StartInternal();
+            if (_isClearing && !operation.IsDone)
+            {
+                operation.Abort();
+                return operation;
+            }
             if (!operation.IsDone && !Operations.Contains(operation))
                 Operations.Add(operation);
             return operation;
@@ -163,7 +169,18 @@ namespace PulletFramework
 
         public static void Clear()
         {
-            Operations.Clear();
+            _isClearing = true;
+            try
+            {
+                PulletAsyncOperation[] pending = Operations.ToArray();
+                Operations.Clear();
+                for (int i = pending.Length - 1; i >= 0; i--)
+                    pending[i].Abort();
+            }
+            finally
+            {
+                _isClearing = false;
+            }
         }
     }
 }

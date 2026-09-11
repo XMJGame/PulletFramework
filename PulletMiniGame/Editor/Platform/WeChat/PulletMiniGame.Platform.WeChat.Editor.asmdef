@@ -2,6 +2,7 @@
     "name": "PulletMiniGame.Platform.WeChat.Editor",
     "rootNamespace": "PulletMiniGame.Platform.WeChat.Editor",
     "references": [
+        "PulletFramework.Runtime",
         "GUID:d57ab8b9d996474490f2d308955ad898",
         "GUID:c67d5a3b7b6846e3903b42aff3945a77",
         "GUID:e33460c561d2a4441bebfed8dffe9fe1"

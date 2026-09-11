@@ -6,6 +6,7 @@ using YooAsset;
 
 namespace PulletFramework.YooAssetAdapter
 {
+    /// <summary>让 PulletFramework 的基础模块通过 YooAsset 加载单个资源。</summary>
     public sealed class YooAssetResourceAdapter : IResourceAdapter
     {
         public string Name => "YooAsset";
@@ -14,14 +15,17 @@ namespace PulletFramework.YooAssetAdapter
         public YooAssetResourceAdapter(string defaultPackageName = "DefaultPackage")
         {
             if (string.IsNullOrWhiteSpace(defaultPackageName))
-                throw new ArgumentException("Default package name is required.", nameof(defaultPackageName));
+                throw new ArgumentException(
+                    "Default package name is required.", nameof(defaultPackageName));
             DefaultPackageName = defaultPackageName;
         }
 
-        public static YooAssetResourceAdapter Install(string defaultPackageName = "DefaultPackage")
+        public static YooAssetResourceAdapter Install(
+            string defaultPackageName = "DefaultPackage")
         {
             if (!YooAssets.IsInitialized)
-                throw new InvalidOperationException("Initialize YooAsset before installing its PulletFramework adapter.");
+                throw new InvalidOperationException(
+                    "Initialize YooAsset before installing its PulletFramework adapter.");
 
             var adapter = new YooAssetResourceAdapter(defaultPackageName);
             PulletResources.Install(adapter);
@@ -51,10 +55,22 @@ namespace PulletFramework.YooAssetAdapter
         private readonly ResourcePackage _package;
 
         public string Name => _package.PackageName;
-        public EResourcePackageStatus Status => ConvertStatus(_package.InitializeStatus);
-        public string Error => Status == EResourcePackageStatus.Failed
-            ? $"YooAsset package initialization failed: {_package.PackageName}"
-            : null;
+        public EResourcePackageStatus Status => _package.InitializeStatus == EOperationStatus.Succeeded
+            && !_package.PackageValid
+                ? EResourcePackageStatus.None
+                : ConvertStatus(_package.InitializeStatus);
+        public string Error
+        {
+            get
+            {
+                if (_package.InitializeStatus == EOperationStatus.Succeeded
+                    && !_package.PackageValid)
+                    return $"YooAsset package has no active manifest: {_package.PackageName}";
+                return Status == EResourcePackageStatus.Failed
+                    ? $"YooAsset package initialization failed: {_package.PackageName}"
+                    : null;
+            }
+        }
 
         public YooAssetResourcePackage(ResourcePackage package)
         {
@@ -66,7 +82,8 @@ namespace PulletFramework.YooAssetAdapter
             return _package.IsLocationValid(location);
         }
 
-        public IResourceAssetHandle LoadAssetAsync<TObject>(string location) where TObject : UnityEngine.Object
+        public IResourceAssetHandle LoadAssetAsync<TObject>(string location)
+            where TObject : UnityEngine.Object
         {
             return new YooAssetResourceHandle(_package.LoadAssetAsync<TObject>(location));
         }
@@ -94,7 +111,8 @@ namespace PulletFramework.YooAssetAdapter
 
         public bool IsValid => _handle != null && _handle.IsValid;
         public bool IsDone => _handle == null || _handle.IsDone;
-        public bool IsSucceeded => _handle != null && _handle.Status == EOperationStatus.Succeeded;
+        public bool IsSucceeded => _handle != null
+            && _handle.Status == EOperationStatus.Succeeded;
         public string Error => _handle?.Error;
         public UnityEngine.Object AssetObject => _handle?.AssetObject;
         public object Current => null;
@@ -136,7 +154,8 @@ namespace PulletFramework.YooAssetAdapter
         public IResourceInstanceHandle InstantiateAsync(ResourceInstantiateOptions options)
         {
             EnsureValid();
-            return new YooAssetInstanceHandle(_handle.InstantiateAsync(ConvertOptions(options)));
+            return new YooAssetInstanceHandle(
+                _handle.InstantiateAsync(ConvertOptions(options)));
         }
 
         public void Release()
@@ -144,8 +163,10 @@ namespace PulletFramework.YooAssetAdapter
             if (_handle == null)
                 return;
             if (_handle.IsValid)
+            {
                 _handle.Completed -= OnCompleted;
-            _handle.Release();
+                _handle.Release();
+            }
             _handle = null;
             _completed = null;
         }
@@ -160,14 +181,20 @@ namespace PulletFramework.YooAssetAdapter
         private void EnsureValid()
         {
             if (!IsValid)
-                throw new InvalidOperationException("YooAsset handle is invalid or has been released.");
+                throw new InvalidOperationException(
+                    "YooAsset handle is invalid or has been released.");
         }
 
-        private static InstantiateOptions ConvertOptions(ResourceInstantiateOptions options)
+        private static InstantiateOptions ConvertOptions(
+            ResourceInstantiateOptions options)
         {
             if (options.SetPositionAndRotation)
-                return new InstantiateOptions(options.IsActive, options.Parent, options.Position, options.Rotation);
-            return new InstantiateOptions(options.IsActive, options.Parent, options.InWorldSpace);
+            {
+                return new InstantiateOptions(
+                    options.IsActive, options.Parent, options.Position, options.Rotation);
+            }
+            return new InstantiateOptions(
+                options.IsActive, options.Parent, options.InWorldSpace);
         }
     }
 
@@ -203,20 +230,25 @@ namespace PulletFramework.YooAssetAdapter
         public YooAssetRemoteService(params string[] hostServers)
         {
             if (hostServers == null || hostServers.Length == 0)
-                throw new ArgumentException("At least one host server is required.", nameof(hostServers));
+                throw new ArgumentException(
+                    "At least one host server is required.", nameof(hostServers));
             _hostServers = hostServers;
         }
 
         public IReadOnlyList<string> GetRemoteUrls(string fileName)
         {
             if (_hostServers.Length == 2
-                && string.Equals(_hostServers[0].TrimEnd('/'), _hostServers[1].TrimEnd('/'),
+                && string.Equals(
+                    _hostServers[0].TrimEnd('/'),
+                    _hostServers[1].TrimEnd('/'),
                     StringComparison.OrdinalIgnoreCase))
+            {
                 return new[] { $"{_hostServers[0].TrimEnd('/')}/{fileName}" };
+            }
 
             var urls = new string[_hostServers.Length];
-            for (int i = 0; i < _hostServers.Length; i++)
-                urls[i] = $"{_hostServers[i].TrimEnd('/')}/{fileName}";
+            for (int index = 0; index < _hostServers.Length; index++)
+                urls[index] = $"{_hostServers[index].TrimEnd('/')}/{fileName}";
             return urls;
         }
     }

@@ -211,10 +211,17 @@ namespace PulletMiniGame.Editor
                 string actionLabel = adapter?.ActionLabel ?? "导出小游戏";
                 if (GUILayout.Button(actionLabel, GUILayout.Height(34f)))
                 {
-                    MiniGameBuildSettingsData.Save(platform);
-                    PlayerSettings.bundleVersion = common.version;
-                    PulletPlatformBuild.Export(common.selectedPlatformId, new PlatformBuildContext(
-                        platform.outputPath, common.developmentBuild, common.cleanOutput, platform));
+                    try
+                    {
+                        MiniGameBuildSettingsData.Save(platform);
+                        PlayerSettings.bundleVersion = common.version;
+                        PulletPlatformBuild.Export(common.selectedPlatformId, new PlatformBuildContext(
+                            platform.outputPath, common.developmentBuild, common.cleanOutput, platform));
+                    }
+                    catch (Exception exception)
+                    {
+                        ReportBuildFailure(definition.DisplayName, platform.outputPath, exception);
+                    }
                 }
             }
             EditorGUILayout.EndHorizontal();
@@ -223,6 +230,23 @@ namespace PulletMiniGame.Editor
                 EditorGUILayout.HelpBox(validationError, MessageType.Error);
             if (EditorApplication.isCompiling || EditorApplication.isUpdating)
                 EditorGUILayout.HelpBox("正在编译或导入资源，请完成后再导出。", MessageType.Info);
+        }
+
+        private static void ReportBuildFailure(
+            string platformName, string outputPath, Exception exception)
+        {
+            Exception rootCause = exception;
+            while (rootCause.InnerException != null)
+                rootCause = rootCause.InnerException;
+
+            string message = $"平台：{platformName}\n输出目录：{outputPath}\n\n原因：{exception.Message}";
+            if (!ReferenceEquals(rootCause, exception)
+                && !string.Equals(rootCause.Message, exception.Message, StringComparison.Ordinal))
+                message += $"\n\n系统原因：{rootCause.Message}";
+
+            PulletFramework.PLogger.EditorException(
+                exception, $"[PulletMiniGame] {platformName}小游戏构建失败。\n{message}");
+            EditorUtility.DisplayDialog($"{platformName}小游戏构建失败", message, "确定");
         }
 
         private static bool Validate(

@@ -147,7 +147,7 @@ namespace PulletMiniGame.Platform
             var entries = new LeaderboardEntry[source.Length];
             for (int i = 0; i < source.Length; i++) entries[i] = Convert(source[i]);
             LeaderboardEntry? self = result.data.self == null
-                ? null : Convert(result.data.self);
+                ? (LeaderboardEntry?)null : Convert(result.data.self);
             return PlatformResult<LeaderboardPage>.Success(new LeaderboardPage(
                 entries, self, result.data.pageNumber, result.data.totalCount));
         }

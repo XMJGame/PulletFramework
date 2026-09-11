@@ -14,6 +14,7 @@ namespace PulletMiniGame.Platform.Douyin.Editor
     {
         private const string SettingsTypeName = "TTSDK.Tool.StarkBuilderSettings";
         private const string BuildManagerTypeName = "TTSDK.Tool.API.BuildManager";
+        private const int DeleteRetryCount = 4;
 
         public string Id => PulletPlatformIds.Douyin;
         public string DisplayName => "抖音小游戏官方 TTSDK";
@@ -87,7 +88,8 @@ namespace PulletMiniGame.Platform.Douyin.Editor
                 throw new InvalidOperationException("TTSDK completed without returning an artifact path.");
 
             InjectLaunchProgressLogging(artifactPath);
-            Debug.Log($"[PulletMiniGame] Douyin mini game build completed: {artifactPath}");
+            PulletFramework.PLogger.EditorInfo(
+                $"[PulletMiniGame] Douyin mini game build completed: {artifactPath}");
         }
 
         private static void ApplyConfiguration(
@@ -192,8 +194,80 @@ namespace PulletMiniGame.Platform.Douyin.Editor
                 throw new InvalidOperationException("The Douyin output directory cannot be the Unity project root.");
 
             if (cleanOutput && Directory.Exists(normalizedOutput))
-                Directory.Delete(normalizedOutput, true);
+                ClearDirectoryContents(normalizedOutput);
             Directory.CreateDirectory(normalizedOutput);
+        }
+
+        private static void ClearDirectoryContents(string directoryPath)
+        {
+            try
+            {
+                foreach (string filePath in Directory.EnumerateFiles(directoryPath))
+                    DeleteFileWithRetry(filePath);
+
+                foreach (string childPath in Directory.EnumerateDirectories(directoryPath))
+                {
+                    var child = new DirectoryInfo(childPath);
+                    if ((child.Attributes & FileAttributes.ReparsePoint) == 0)
+                        ClearDirectoryContents(childPath);
+                    TryDeleteEmptyDirectory(childPath);
+                }
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                throw CreateOutputLockedException(directoryPath, exception);
+            }
+            catch (IOException exception)
+            {
+                throw CreateOutputLockedException(directoryPath, exception);
+            }
+        }
+
+        private static void DeleteFileWithRetry(string filePath)
+        {
+            Exception lastError = null;
+            for (int attempt = 0; attempt < DeleteRetryCount; attempt++)
+            {
+                try
+                {
+                    File.SetAttributes(filePath, FileAttributes.Normal);
+                    File.Delete(filePath);
+                    return;
+                }
+                catch (Exception exception) when (
+                    exception is IOException || exception is UnauthorizedAccessException)
+                {
+                    lastError = exception;
+                    if (attempt + 1 < DeleteRetryCount)
+                        System.Threading.Thread.Sleep(150 * (attempt + 1));
+                }
+            }
+
+            throw CreateOutputLockedException(filePath, lastError);
+        }
+
+        private static void TryDeleteEmptyDirectory(string directoryPath)
+        {
+            try
+            {
+                Directory.Delete(directoryPath, false);
+            }
+            catch (IOException)
+            {
+                // 开发者工具可能占用输出目录；内容已清空时保留目录不影响覆盖构建。
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // 同上，真正无法删除的文件已在 DeleteFileWithRetry 中报告。
+            }
+        }
+
+        private static InvalidOperationException CreateOutputLockedException(
+            string path, Exception innerException)
+        {
+            return new InvalidOperationException(
+                $"无法清理抖音输出：{path}\n请停止开发者工具中的编译/预览；若仍失败，关闭抖音开发者工具后重试。",
+                innerException);
         }
 
         private static void SetRequired(object target, string name, object value)

@@ -37,8 +37,6 @@ namespace PulletFramework.Editor
                 module.OnEnable();
                 module.OnDisable();
             }
-            Debug.Log("[PulletWorkspace] 模块检查通过：" +
-                      string.Join(", ", modules.Select(module => module.Id)));
         }
 
         private void OnEnable()
@@ -163,7 +161,7 @@ namespace PulletFramework.Editor
                 {
                     if (throwOnError)
                         throw;
-                    Debug.LogException(exception);
+                    PLogger.EditorException(exception, "[PulletWorkspace] 模块发现失败。");
                 }
             }
 
@@ -185,7 +183,7 @@ namespace PulletFramework.Editor
             }
             catch (Exception exception)
             {
-                Debug.LogError($"[PulletWorkspace] 模块 {module.Id} 执行失败。\n{exception}");
+                PLogger.EditorException(exception, $"[PulletWorkspace] 模块 {module.Id} 执行失败。");
             }
         }
 

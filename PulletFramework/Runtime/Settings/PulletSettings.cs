@@ -24,6 +24,9 @@ namespace PulletFramework.Setting
     [CreateAssetMenu(fileName = "PulletSettings", menuName = "Pullet/Create Pullet Settings")]
     public class PulletSettings : ScriptableObject
     {
+        /// <summary>框架日志等级，可在 Workspace 的框架设置中修改。</summary>
+        public EPulletLogLevel logLevel = EPulletLogLevel.Info;
+
         /// <summary>
         /// 运行时资产模式
         /// </summary>

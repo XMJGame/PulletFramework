@@ -1,6 +1,7 @@
 {
     "name": "PulletMiniGame.DouyinSDK",
     "references": [
+        "PulletFramework.Runtime",
         "PulletMiniGame.Runtime",
         "PulletMiniGame.Platform.Douyin",
         "TTLitJson",

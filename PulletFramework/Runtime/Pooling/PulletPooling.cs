@@ -117,6 +117,23 @@ namespace PulletFramework.Pooling
             return null;
         }
 
+		/// <summary>销毁指定资源包的生成器。卸载资源包前应先调用此方法。</summary>
+		public static bool DestroySpawner(string packageName)
+		{
+			if (!m_IsInitialize)
+				return false;
+			for (int i = 0; i < m_Spawners.Count; i++)
+			{
+				if (m_Spawners[i].packageName != packageName)
+					continue;
+				Spawner spawner = m_Spawners[i];
+				m_Spawners.RemoveAt(i);
+				spawner.Destroy();
+				return true;
+			}
+			return false;
+		}
+
         /// <summary>
         /// 检测游戏对象生成器是否存在
         /// </summary>

@@ -77,7 +77,11 @@ namespace PulletMiniGame.Platform
             if (!result.Succeeded)
             {
                 try { _bridge.Shutdown(); }
-                catch (Exception exception) { Debug.LogException(exception); }
+                catch (Exception exception)
+                {
+                    PulletFramework.PLogger.Exception(
+                        exception, $"[PulletMiniGame] {Id} SDK 关闭失败。");
+                }
             }
             source?.TrySetResult(result);
         }

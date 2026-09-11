@@ -37,12 +37,12 @@ namespace PulletFramework.Editor
 
             if (matches.Length == 0)
             {
-                Debug.LogError($"[PulletEditor] 找不到窗口布局：{assetName}.uxml");
+                PLogger.EditorError($"[PulletEditor] 找不到窗口布局：{assetName}.uxml");
                 return null;
             }
 
             if (matches.Length > 1)
-                Debug.LogWarning($"[PulletEditor] 找到多个 {assetName}.uxml，将使用：{matches[0]}");
+                PLogger.EditorWarning($"[PulletEditor] 找到多个 {assetName}.uxml，将使用：{matches[0]}");
             return AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(matches[0]);
         }
     }

@@ -35,7 +35,6 @@ namespace PulletFramework.Editor
 				IsDirty = false;
 				EditorUtility.SetDirty(Setting);
 				AssetDatabase.SaveAssets();
-				Debug.Log($"{nameof(PulletBuildSetting)}.asset is saved!");
 			}
 		}
 	}

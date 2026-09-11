@@ -78,14 +78,12 @@ namespace PulletAssetPublishing.Editor
             configuration.Validate();
             EnsureInitialized(configuration);
             string objectKey = CombineKey(configuration.Folder, key);
-            Debug.Log($"[TencentCOS] Uploading: {objectKey}");
 
             var transferManager = new TransferManager(s_Server, new TransferConfig());
             var uploadTask = new COSXMLUploadTask(configuration.Bucket, objectKey);
             uploadTask.SetSrcPath(sourcePath);
             uploadTask.progressCallback = (completed, total) => progress?.Invoke(completed, total);
-            COSXMLUploadTask.UploadTaskResult result = await transferManager.UploadAsync(uploadTask);
-            Debug.Log($"[TencentCOS] Uploaded: {objectKey}, ETag: {result.eTag}");
+            await transferManager.UploadAsync(uploadTask);
             return objectKey;
         }
 
@@ -116,7 +114,8 @@ namespace PulletAssetPublishing.Editor
                 string.Equals(rule.id, MiniGameCorsRuleId, StringComparison.Ordinal));
             if (IsExpectedMiniGameRule(current))
             {
-                Debug.Log("[TencentCOS] Mini game download CORS rule is already configured.");
+                PulletFramework.PLogger.EditorInfo(
+                    "[TencentCOS] Mini game download CORS rule is already configured.");
                 return false;
             }
 
@@ -133,7 +132,8 @@ namespace PulletAssetPublishing.Editor
             var request = new PutBucketCORSRequest(configuration.Bucket);
             request.SetCORSRules(rules);
             s_Server.PutBucketCORS(request);
-            Debug.Log("[TencentCOS] Mini game download CORS rule configured without removing existing rules.");
+            PulletFramework.PLogger.EditorInfo(
+                "[TencentCOS] Mini game download CORS rule configured without removing existing rules.");
             return true;
         }
 

@@ -25,7 +25,7 @@ namespace PulletFramework.Editor
             }
             catch (Exception exception)
             {
-                Debug.LogException(exception);
+                PLogger.EditorException(exception, "[PulletYooAsset] COS 上传失败。");
                 EditorUtility.DisplayDialog("上传失败", exception.Message, "确定");
             }
             finally
@@ -45,7 +45,7 @@ namespace PulletFramework.Editor
             }
             catch (Exception exception)
             {
-                Debug.LogException(exception);
+                PLogger.EditorException(exception, "[PulletYooAsset] COS 跨域配置失败。");
                 EditorUtility.DisplayDialog("COS 跨域配置失败", exception.Message, "确定");
             }
         }
@@ -59,7 +59,7 @@ namespace PulletFramework.Editor
             }
             catch (Exception exception)
             {
-                Debug.LogException(exception);
+                PLogger.EditorException(exception, "[PulletYooAsset] COS 批量跨域配置失败。");
                 EditorApplication.Exit(1);
             }
         }
@@ -70,12 +70,12 @@ namespace PulletFramework.Editor
             try
             {
                 await PublishCurrentVersionAsync();
-                Debug.Log("[PulletYooAsset] COS batch publish succeeded.");
+                PLogger.EditorInfo("[PulletYooAsset] COS batch publish succeeded.");
                 EditorApplication.Exit(0);
             }
             catch (Exception exception)
             {
-                Debug.LogException(exception);
+                PLogger.EditorException(exception, "[PulletYooAsset] COS 批量发布失败。");
                 EditorApplication.Exit(1);
             }
         }
@@ -89,22 +89,28 @@ namespace PulletFramework.Editor
                 throw new InvalidDataException(
                     $"YooAsset settings not found: {PulletYooAssetSettingsEditor.DefaultAssetPath}");
 
+            string packageVersion = PulletYooAssetSettingsEditor.RequireLastBuildVersion(settings);
+            string packageName = PulletYooAssetSettingsEditor.GetSelectedPackageName(settings);
             string packageDirectory = Path.Combine(
                 YooAsset.Editor.BundleBuilderHelper.GetDefaultBuildOutputRoot(),
                 EditorUserBuildSettings.activeBuildTarget.ToString(),
-                settings.packageName,
-                settings.appVersion);
+                packageName,
+                packageVersion);
             string reportPath = PulletYooAssetPublishReport.Create(
-                packageDirectory, settings.packageName, settings.appVersion);
+                packageDirectory, packageName, packageVersion);
             PulletYooAssetPublishReport.PublishReport report =
                 PulletYooAssetPublishReport.Load(reportPath);
             TencentCosConfiguration configuration = TencentCOS.GetConfiguration();
             configuration.Validate();
+            string appVersion = PlayerSettings.bundleVersion?.Trim();
+            if (string.IsNullOrWhiteSpace(appVersion))
+                throw new InvalidDataException("PlayerSettings.bundleVersion 不能为空。");
 
             string remotePackagePath = TencentCOS.CombineKey(
                 "game-assets",
                 EditorUserBuildSettings.activeBuildTarget.ToString(),
-                report.packageVersion,
+                appVersion,
+                settings.resourceChannel,
                 report.packageName);
             PulletYooAssetPublishReport.PublishFile[] files = report.files
                 .OrderBy(file => file.uploadPhase)
@@ -131,11 +137,13 @@ namespace PulletFramework.Editor
             }
 
             string hostTemplate = TencentCOS.CombineKey(
-                configuration.Folder, "game-assets", "{platform}", "{appVersion}", "{package}");
+                configuration.Folder, "game-assets", "{platform}", "{appVersion}",
+                "{resourceChannel}", "{package}");
             settings.defaultHostServer = configuration.BaseUrl.TrimEnd('/') + "/" + hostTemplate;
             EditorUtility.SetDirty(settings);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[PulletYooAsset] COS publish completed. Runtime URL: {settings.defaultHostServer}");
+            PLogger.EditorInfo(
+                $"[PulletYooAsset] COS publish completed. Runtime URL: {settings.defaultHostServer}");
             return settings.defaultHostServer;
         }
     }

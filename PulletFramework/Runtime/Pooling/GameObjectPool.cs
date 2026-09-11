@@ -8,11 +8,14 @@ namespace PulletFramework.Pooling
 	{
 		private readonly Transform _poolRoot;
 		private readonly Queue<IResourceInstanceHandle> _cacheOperations;
+		private readonly HashSet<IResourceInstanceHandle> _activeOperations;
+		private readonly List<IResourceInstanceHandle> _orphanedOperations;
 		private readonly bool _dontDestroy;
 		private readonly int _initCapacity;
 		private readonly int _maxCapacity;
 		private float _destroyTime;
 		private float _lastRestoreRealTime = -1f;
+		private bool _destroyed;
 
 		/// <summary>
 		/// 资源句柄
@@ -36,6 +39,9 @@ namespace PulletFramework.Pooling
 		/// 外部使用总数
 		/// </summary>
 		public int SpawnCount { private set; get; } = 0;
+
+		public bool HasLoadFailed => AssetHandle != null
+			&& AssetHandle.IsDone && !AssetHandle.IsSucceeded;
 
 		/// <summary>
 		/// 是否常驻不销毁
@@ -66,6 +72,8 @@ namespace PulletFramework.Pooling
 
 			// 创建缓存池
 			_cacheOperations = new Queue<IResourceInstanceHandle>(initCapacity);
+			_activeOperations = new HashSet<IResourceInstanceHandle>();
+			_orphanedOperations = new List<IResourceInstanceHandle>();
 		}
 
 		/// <summary>
@@ -73,8 +81,12 @@ namespace PulletFramework.Pooling
 		/// </summary>
 		public void CreatePool(IResourcePackage resourcePackage)
 		{
+			if (_destroyed)
+				throw new System.InvalidOperationException($"Pool is destroyed: {Location}");
+
 			// 加载游戏对象
 			AssetHandle = resourcePackage.LoadAssetAsync<GameObject>(Location);
+			_lastRestoreRealTime = Time.realtimeSinceStartup;
 
 			// 创建初始对象
 			for (int i = 0; i < _initCapacity; i++)
@@ -90,17 +102,20 @@ namespace PulletFramework.Pooling
 		/// </summary>
 		public void DestroyPool()
 		{
-			// 卸载资源对象
-			AssetHandle.Release();
-			AssetHandle = null;
+			if (_destroyed)
+				return;
+			_destroyed = true;
 
-			// 销毁游戏对象
+			// 先取消实例化并销毁实例，最后才能释放它们依赖的资源句柄。
 			foreach (var operation in _cacheOperations)
-			{
-				if (operation.Result != null)
-					GameObject.Destroy(operation.Result);
-			}
+				DestroyInstantiateOperation(operation);
 			_cacheOperations.Clear();
+			foreach (var operation in _activeOperations)
+				DestroyInstantiateOperation(operation);
+			_activeOperations.Clear();
+
+			AssetHandle?.Release();
+			AssetHandle = null;
 
 			SpawnCount = 0;
 		}
@@ -126,7 +141,7 @@ namespace PulletFramework.Pooling
 		/// </summary>
 		public bool IsDestroyed()
 		{
-			return AssetHandle == null;
+			return _destroyed;
 		}
 
 		/// <summary>
@@ -134,21 +149,21 @@ namespace PulletFramework.Pooling
 		/// </summary>
 		public void Restore(IResourceInstanceHandle operation)
 		{
+			if (!ReleaseActiveOperation(operation))
+			{
+				return;
+			}
 			if (IsDestroyed())
 			{
 				DestroyInstantiateOperation(operation);
 				return;
 			}
 
-			SpawnCount--;
-			if (SpawnCount <= 0)
-				_lastRestoreRealTime = Time.realtimeSinceStartup;
-
 			// 如果外部逻辑销毁了游戏对象
-			if (operation.IsSucceeded)
+			if (!operation.IsSucceeded || operation.Result == null)
 			{
-				if (operation.Result == null)
-					return;
+				DestroyInstantiateOperation(operation);
+				return;
 			}
 
 			// 如果缓存池还未满员
@@ -168,16 +183,35 @@ namespace PulletFramework.Pooling
 		/// </summary>
 		public void Discard(IResourceInstanceHandle operation)
 		{
-			if (IsDestroyed())
-			{
-				DestroyInstantiateOperation(operation);
+			if (!ReleaseActiveOperation(operation))
 				return;
+
+			DestroyInstantiateOperation(operation);
+		}
+
+		internal void Update()
+		{
+			if (_destroyed || _activeOperations.Count == 0)
+				return;
+			_orphanedOperations.Clear();
+			foreach (IResourceInstanceHandle operation in _activeOperations)
+			{
+				if (operation.IsDone && (!operation.IsSucceeded || operation.Result == null))
+					_orphanedOperations.Add(operation);
 			}
+			for (int i = 0; i < _orphanedOperations.Count; i++)
+			{
+				IResourceInstanceHandle operation = _orphanedOperations[i];
+				if (ReleaseActiveOperation(operation))
+					DestroyInstantiateOperation(operation);
+			}
+			_orphanedOperations.Clear();
+		}
 
-			SpawnCount--;
-			if (SpawnCount <= 0)
-				_lastRestoreRealTime = Time.realtimeSinceStartup;
-
+		internal void SpawnFailed(IResourceInstanceHandle operation)
+		{
+			if (!ReleaseActiveOperation(operation))
+				return;
 			DestroyInstantiateOperation(operation);
 		}
 
@@ -186,13 +220,17 @@ namespace PulletFramework.Pooling
 		/// </summary>
 		public SpawnHandle Spawn(Transform parent, Vector3 position, Quaternion rotation, bool forceClone, params System.Object[] userDatas)
 		{
+			if (_destroyed || AssetHandle == null || !AssetHandle.IsValid)
+				throw new System.InvalidOperationException($"Pool is unavailable: {Location}");
+
 			IResourceInstanceHandle operation;
 			if (forceClone == false && _cacheOperations.Count > 0)
 				operation = _cacheOperations.Dequeue();
 			else
 				operation = AssetHandle.InstantiateAsync(new ResourceInstantiateOptions(false));
 
-			SpawnCount++;
+			_activeOperations.Add(operation);
+			SpawnCount = _activeOperations.Count;
 			SpawnHandle handle = new SpawnHandle(this, operation, parent, position, rotation, userDatas);
 			PulletOperationSystem.Start(handle);
 			return handle;
@@ -200,6 +238,8 @@ namespace PulletFramework.Pooling
 
 		private void DestroyInstantiateOperation(IResourceInstanceHandle operation)
 		{
+			if (operation == null)
+				return;
 			// 取消异步操作
 			operation.Cancel();
 
@@ -209,13 +249,24 @@ namespace PulletFramework.Pooling
 				GameObject.Destroy(operation.Result);
 			}
 		}
+
+		private bool ReleaseActiveOperation(IResourceInstanceHandle operation)
+		{
+			if (operation == null || !_activeOperations.Remove(operation))
+				return false;
+			SpawnCount = _activeOperations.Count;
+			if (SpawnCount == 0)
+				_lastRestoreRealTime = Time.realtimeSinceStartup;
+			return true;
+		}
 		private void SetRestoreGameObject(GameObject gameObj)
 		{
 			if (gameObj != null)
 			{
 				gameObj.SetActive(false);
-				gameObj.transform.SetParent(_poolRoot);
-				gameObj.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+				gameObj.transform.SetParent(_poolRoot, false);
+				gameObj.transform.localPosition = Vector3.zero;
+				gameObj.transform.localRotation = Quaternion.identity;
 			}
 		}
 	}

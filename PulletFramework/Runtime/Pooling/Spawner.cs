@@ -41,6 +41,7 @@ namespace PulletFramework.Pooling
             _RemoveList.Clear();
             foreach (var pool in _GameObjectPools)
             {
+				pool.Update();
                 if (pool.CanAutoDestroy())
                     _RemoveList.Add(pool);
             }
@@ -58,7 +59,11 @@ namespace PulletFramework.Pooling
         internal void Destroy()
         {
             DestroyAll(true);
+			if (_SpawnerRoot != null)
+				UnityEngine.Object.Destroy(_SpawnerRoot);
         }
+
+		public int PoolCount => _GameObjectPools.Count;
 
         /// <summary>
         /// 销毁所有对象池及其资源
@@ -124,10 +129,22 @@ namespace PulletFramework.Pooling
         /// </summary>
         private CreatePoolOperation CreateGameObjectPoolInternal(string location, bool dontDestroy = false, int initCapacity = 0, int maxCapacity = int.MaxValue, float destroyTime = -1f)
         {
+			if (string.IsNullOrWhiteSpace(location))
+				throw new ArgumentException("Pool location is required.", nameof(location));
+			if (initCapacity < 0)
+				throw new ArgumentOutOfRangeException(nameof(initCapacity));
+			if (maxCapacity < 0)
+				throw new ArgumentOutOfRangeException(nameof(maxCapacity));
             if (maxCapacity < initCapacity)
                 throw new Exception("The max capacity value must be greater the init capacity value.");
 
             GameObjectPool pool = TryGetGameObjectPool(location);
+			if (pool != null && pool.HasLoadFailed)
+			{
+				_GameObjectPools.Remove(pool);
+				pool.DestroyPool();
+				pool = null;
+			}
             if (pool != null)
             {
                 PLogger.Warning($"GameObject pool is already existed : {location}");
@@ -176,8 +193,8 @@ namespace PulletFramework.Pooling
         /// </summary>
         /// <param name="location">资源定位地址</param>
         /// <param name="parent">父物体</param>
-        /// <param name="position">世界坐标</param>
-        /// <param name="rotation">世界角度</param>
+        /// <param name="position">相对父物体的本地坐标</param>
+        /// <param name="rotation">相对父物体的本地旋转</param>
         /// <param name="forceClone">强制克隆游戏对象，忽略缓存池里的对象</param>
         /// <param name="userDatas">用户自定义数据</param>
         public SpawnHandle SpawnAsync(string location, Transform parent, Vector3 position, Quaternion rotation, bool forceClone = false, params System.Object[] userDatas)
@@ -217,8 +234,8 @@ namespace PulletFramework.Pooling
         /// </summary>
         /// <param name="location">资源定位地址</param>
         /// <param name="parent">父物体</param>
-        /// <param name="position">世界坐标</param>
-        /// <param name="rotation">世界角度</param>
+        /// <param name="position">相对父物体的本地坐标</param>
+        /// <param name="rotation">相对父物体的本地旋转</param>
         /// <param name="forceClone">强制克隆游戏对象，忽略缓存池里的对象</param>
         /// <param name="userDatas">用户自定义数据</param>
         public SpawnHandle SpawnSync(string location, Transform parent, Vector3 position, Quaternion rotation, bool forceClone = false, params System.Object[] userDatas)
@@ -233,7 +250,15 @@ namespace PulletFramework.Pooling
         /// </summary>
         private SpawnHandle SpawnInternal(string location, Transform parent, Vector3 position, Quaternion rotation, bool forceClone, params System.Object[] userDatas)
         {
+			if (string.IsNullOrWhiteSpace(location))
+				throw new ArgumentException("Pool location is required.", nameof(location));
             var pool = TryGetGameObjectPool(location);
+			if (pool != null && pool.HasLoadFailed)
+			{
+				_GameObjectPools.Remove(pool);
+				pool.DestroyPool();
+				pool = null;
+			}
             if (pool != null)
             {
                 return pool.Spawn(parent, position, rotation, forceClone, userDatas);

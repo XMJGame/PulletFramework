@@ -1,38 +1,90 @@
-#region Copyright (C) 
-// ********************************************************************
-//  Copyright (C) 2020-2024 Xu Mingjun(Xinxiang, Henan) All Rights Reserved.
-//  ×÷    Õß£ºĞíÃ÷¿¡
-//  ´´½¨ÈÕÆÚ£º2020
-//  ¹¦ÄÜÃèÊö£ºPulletFramework ¿ò¼Ü£¨±ğÃû£ºĞ¡Ä¸¼¦¿ò¼Ü£¬Ãû×ÖÊ××ÖÄ¸¶øÆğ£©
-//
-// *********************************************************************
-#endregion
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using UnityEngine;
+using System;
 
 namespace PulletFramework
 {
-    internal static class PLogger
+    public enum EPulletLogLevel
     {
-        [Conditional("DEBUG")]
+        Off = 0,
+        Error = 1,
+        Warning = 2,
+        Info = 3,
+        Debug = 4
+    }
+
+    /// <summary>Pullet å„æ¨¡å—ç»Ÿä¸€æ—¥å¿—å…¥å£ã€‚</summary>
+    public static class PLogger
+    {
+        private const string Prefix = "[PulletFramework] ";
+        public static EPulletLogLevel Level { get; set; } = EPulletLogLevel.Info;
+
         public static void Log(string info)
         {
-            UnityEngine.Debug.Log("[PulletFramework] " + info);
+            Info(info);
+        }
+
+        public static void Info(string info)
+        {
+            if (Level < EPulletLogLevel.Info)
+                return;
+            UnityEngine.Debug.Log(Prefix + info);
         }
 
         public static void DebugLog(string info)
         {
-            UnityEngine.Debug.Log("[PulletFramework] " + info);
+            if (Level < EPulletLogLevel.Debug)
+                return;
+            UnityEngine.Debug.Log(Prefix + info);
         }
+
         public static void Warning(string info)
         {
-            UnityEngine.Debug.LogWarning("[PulletFramework] " + info);
+            if (Level < EPulletLogLevel.Warning)
+                return;
+            UnityEngine.Debug.LogWarning(Prefix + info);
         }
+
         public static void Error(string info)
         {
-            UnityEngine.Debug.LogError("[PulletFramework] " + info);
+            if (Level < EPulletLogLevel.Error)
+                return;
+            UnityEngine.Debug.LogError(Prefix + info);
         }
+
+        public static void Exception(Exception exception, string context = null)
+        {
+            if (exception == null || Level < EPulletLogLevel.Error)
+                return;
+            string message = string.IsNullOrWhiteSpace(context)
+                ? exception.ToString()
+                : context + "\n" + exception;
+            UnityEngine.Debug.LogError(Prefix + message);
+        }
+
+#if UNITY_EDITOR
+        public static void EditorInfo(string info)
+        {
+            UnityEngine.Debug.Log(Prefix + info);
+        }
+
+        public static void EditorWarning(string info)
+        {
+            UnityEngine.Debug.LogWarning(Prefix + info);
+        }
+
+        public static void EditorError(string info)
+        {
+            UnityEngine.Debug.LogError(Prefix + info);
+        }
+
+        public static void EditorException(Exception exception, string context = null)
+        {
+            if (exception == null)
+                return;
+            string message = string.IsNullOrWhiteSpace(context)
+                ? exception.ToString()
+                : context + "\n" + exception;
+            UnityEngine.Debug.LogError(Prefix + message);
+        }
+#endif
     }
 }

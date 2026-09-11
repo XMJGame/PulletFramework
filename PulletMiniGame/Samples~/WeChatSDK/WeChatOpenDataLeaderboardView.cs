@@ -99,7 +99,8 @@ namespace PulletMiniGame.Platform.WeChat
         {
             if (relationScope == ERelationScope.Group && string.IsNullOrWhiteSpace(groupShareTicket))
             {
-                Debug.LogWarning("[PulletMiniGame] 微信群排行需要有效的 shareTicket。", this);
+                PulletFramework.PLogger.Warning(
+                    "[PulletMiniGame] 微信群排行需要有效的 shareTicket。");
                 _showRequested = false;
                 return;
             }

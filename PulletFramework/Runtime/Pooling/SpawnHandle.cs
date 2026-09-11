@@ -70,13 +70,18 @@ namespace PulletFramework.Pooling
 				if (!_operation.IsSucceeded)
 				{
 					_steps = ESteps.Done;
-					SetFailed(_operation.Error);
+					string error = _operation.Error;
+					_pool.SpawnFailed(_operation);
+					_operation = null;
+					SetFailed(error);
 					return;
 				}
 
 				if (_operation.Result == null)
 				{
 					_steps = ESteps.Done;
+					_pool.SpawnFailed(_operation);
+					_operation = null;
 					SetFailed("Clone game object is null.");
 					return;
 				}
@@ -142,6 +147,11 @@ namespace PulletFramework.Pooling
 
         protected override void OnAbort()
         {
+			if (_operation == null)
+				return;
+			_steps = ESteps.Done;
+			_pool.Discard(_operation);
+			_operation = null;
         }
     }
 }

@@ -129,7 +129,7 @@ namespace PulletFramework.Machine
 				return;
 			}
 
-			PLogger.Log($"{_curNode.GetType().FullName} --> {node.GetType().FullName}");
+			PLogger.DebugLog($"{_curNode.GetType().FullName} --> {node.GetType().FullName}");
 			_preNode = _curNode;
 			_curNode.OnExit();
 			_curNode = node;

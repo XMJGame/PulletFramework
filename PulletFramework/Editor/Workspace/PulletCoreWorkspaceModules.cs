@@ -1,13 +1,49 @@
 using PulletFramework.Editor.Workspace;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace PulletFramework.Editor
 {
+    /// <summary>框架运行时的通用设置。</summary>
+    public sealed class PulletRuntimeWorkspaceModule : IPulletWorkspaceModule
+    {
+        public string Id => "framework";
+        public string DisplayName => "框架设置";
+        public string Description => "管理 PulletFramework 的运行时通用行为。";
+        public int Order => 50;
+
+        public void OnEnable() { }
+        public void OnDisable() => Save();
+
+        public void OnGUI()
+        {
+            Setting.PulletSettings settings = Setting.PulletSettingsData.Setting;
+            EditorGUI.BeginChangeCheck();
+            settings.logLevel = (EPulletLogLevel)EditorGUILayout.EnumPopup(
+                new GUIContent("日志等级"), settings.logLevel);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Setting.PulletSettingsData.IsDirty = true;
+            }
+
+            EditorGUILayout.HelpBox(
+                "仅控制游戏运行时日志，不影响构建、上传等编辑器工具反馈。Error：仅错误；Warning：警告与错误；Info：常规日志；Debug：高频诊断；Off：关闭。",
+                MessageType.Info);
+        }
+
+        private static void Save()
+        {
+            if (Setting.PulletSettingsData.IsDirty)
+                Setting.PulletSettingsData.SaveFile();
+        }
+    }
+
     /// <summary>通用 Player 配置。资源和小游戏配置由各自模块提供。</summary>
     public sealed class PulletPlayerWorkspaceModule : IPulletWorkspaceModule
     {
         private bool _showSigningSettings;
+        private bool _showBuildScenes = true;
 
         public string Id => "player";
         public string DisplayName => "Player 构建";
@@ -20,6 +56,8 @@ namespace PulletFramework.Editor
         public void OnGUI()
         {
             DrawPlayerSettings();
+            GUILayout.Space(12f);
+            DrawBuildScenes();
             if (PulletBuildSettingData.Setting.buildTarget == EBuildTarget.Android)
             {
                 GUILayout.Space(12f);
@@ -27,6 +65,163 @@ namespace PulletFramework.Editor
             }
             GUILayout.Space(12f);
             DrawActions();
+        }
+
+        private void DrawBuildScenes()
+        {
+            EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
+            int enabledCount = PulletPlayerBuildService.GetEnabledScenes().Length;
+            _showBuildScenes = EditorGUILayout.Foldout(
+                _showBuildScenes, $"构建场景 ({enabledCount}/{scenes.Length})", true);
+            if (!_showBuildScenes)
+                return;
+
+            EditorGUI.indentLevel++;
+            int moveFrom = -1;
+            int moveTo = -1;
+            int removeIndex = -1;
+            bool changed = false;
+            int buildIndex = 0;
+
+            if (scenes.Length == 0)
+                EditorGUILayout.HelpBox("尚未添加构建场景。", MessageType.Warning);
+
+            for (int index = 0; index < scenes.Length; index++)
+            {
+                EditorBuildSettingsScene scene = scenes[index];
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    bool enabled = EditorGUILayout.Toggle(scene.enabled, GUILayout.Width(18f));
+                    if (enabled != scene.enabled)
+                    {
+                        scene.enabled = enabled;
+                        changed = true;
+                    }
+
+                    using (new EditorGUI.DisabledScope(true))
+                        EditorGUILayout.TextField(
+                            scene.enabled ? (buildIndex++).ToString() : "-", GUILayout.Width(30f));
+
+                    SceneAsset sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path);
+                    SceneAsset selectedAsset = (SceneAsset)EditorGUILayout.ObjectField(
+                        sceneAsset, typeof(SceneAsset), false);
+                    if (selectedAsset != sceneAsset && selectedAsset != null)
+                    {
+                        scene.path = AssetDatabase.GetAssetPath(selectedAsset);
+                        changed = true;
+                    }
+
+                    using (new EditorGUI.DisabledScope(index == 0))
+                    {
+                        if (GUILayout.Button("上移", GUILayout.Width(44f)))
+                        {
+                            moveFrom = index;
+                            moveTo = index - 1;
+                        }
+                    }
+                    using (new EditorGUI.DisabledScope(index == scenes.Length - 1))
+                    {
+                        if (GUILayout.Button("下移", GUILayout.Width(44f)))
+                        {
+                            moveFrom = index;
+                            moveTo = index + 1;
+                        }
+                    }
+                    if (GUILayout.Button("移除", GUILayout.Width(44f)))
+                        removeIndex = index;
+                }
+
+                if (string.IsNullOrWhiteSpace(scene.path)
+                    || AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path) == null)
+                {
+                    EditorGUILayout.HelpBox(
+                        $"场景文件不存在：{scene.path}", MessageType.Error);
+                }
+                else
+                {
+                    EditorGUILayout.LabelField(scene.path, EditorStyles.miniLabel);
+                }
+            }
+
+            if (moveFrom >= 0)
+            {
+                EditorBuildSettingsScene temporary = scenes[moveFrom];
+                scenes[moveFrom] = scenes[moveTo];
+                scenes[moveTo] = temporary;
+                changed = true;
+            }
+            if (removeIndex >= 0)
+            {
+                var updated = new EditorBuildSettingsScene[scenes.Length - 1];
+                if (removeIndex > 0)
+                    System.Array.Copy(scenes, 0, updated, 0, removeIndex);
+                if (removeIndex < scenes.Length - 1)
+                    System.Array.Copy(scenes, removeIndex + 1, updated, removeIndex,
+                        scenes.Length - removeIndex - 1);
+                scenes = updated;
+                changed = true;
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("添加当前场景", GUILayout.Height(28f)))
+                    changed |= AddCurrentScene(ref scenes);
+                if (GUILayout.Button("移除无效场景", GUILayout.Height(28f)))
+                    changed |= RemoveMissingScenes(ref scenes);
+            }
+
+            if (changed)
+                EditorBuildSettings.scenes = scenes;
+            EditorGUI.indentLevel--;
+        }
+
+        private static bool AddCurrentScene(ref EditorBuildSettingsScene[] scenes)
+        {
+            Scene activeScene = SceneManager.GetActiveScene();
+            if (!activeScene.IsValid())
+                return false;
+            if (string.IsNullOrWhiteSpace(activeScene.path))
+            {
+                EditorUtility.DisplayDialog("无法添加场景", "请先保存当前场景。", "确定");
+                return false;
+            }
+            foreach (EditorBuildSettingsScene scene in scenes)
+            {
+                if (string.Equals(scene.path, activeScene.path,
+                        System.StringComparison.OrdinalIgnoreCase))
+                {
+                    scene.enabled = true;
+                    return true;
+                }
+            }
+
+            System.Array.Resize(ref scenes, scenes.Length + 1);
+            scenes[scenes.Length - 1] = new EditorBuildSettingsScene(activeScene.path, true);
+            return true;
+        }
+
+        private static bool RemoveMissingScenes(ref EditorBuildSettingsScene[] scenes)
+        {
+            int validCount = 0;
+            foreach (EditorBuildSettingsScene scene in scenes)
+            {
+                if (!string.IsNullOrWhiteSpace(scene.path)
+                    && AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path) != null)
+                    validCount++;
+            }
+            if (validCount == scenes.Length)
+                return false;
+
+            var validScenes = new EditorBuildSettingsScene[validCount];
+            int destination = 0;
+            foreach (EditorBuildSettingsScene scene in scenes)
+            {
+                if (!string.IsNullOrWhiteSpace(scene.path)
+                    && AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path) != null)
+                    validScenes[destination++] = scene;
+            }
+            scenes = validScenes;
+            return true;
         }
 
         private static void DrawPlayerSettings()

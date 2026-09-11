@@ -27,7 +27,6 @@ namespace PulletFramework.Editor
         {
             string[] hotUpdateAssemblies = GetHotUpdateAssemblyNames();
             string[] aotAssemblies = GetAOTAssemblyNames();
-            Debug.Log($"[PulletHybridCLR] API 检查通过：HotUpdate={hotUpdateAssemblies.Length}, AOT={aotAssemblies.Length}");
         }
 
         /// <summary>
@@ -108,12 +107,12 @@ namespace PulletFramework.Editor
                 string srcDllPath = $"{aotAssembliesSrcDir}/{dll}.dll";
                 if (!System.IO.File.Exists(srcDllPath))
                 {
-                    Debug.LogError($"ab中添加AOT补充元数据dll:{srcDllPath} 时发生错误,文件不存在。裁剪后的AOT dll在BuildPlayer时才能生成，因此需要你先构建一次游戏App后再打包。");
+                    PLogger.Error($"ab中添加AOT补充元数据dll:{srcDllPath} 时发生错误,文件不存在。裁剪后的AOT dll在BuildPlayer时才能生成，因此需要你先构建一次游戏App后再打包。");
                     continue;
                 }
                 string dllBytesPath = $"{aotAssembliesDstDir}/{dll}.bytes";
                 System.IO.File.Copy(srcDllPath, dllBytesPath, true);
-                Debug.Log($"[CopyAOTAssembliesToStreamingAssets] copy AOT dll {srcDllPath} -> {dllBytesPath}");
+                PLogger.DebugLog($"[CopyAOTAssembliesToStreamingAssets] copy AOT dll {srcDllPath} -> {dllBytesPath}");
             }
 
             AssetDatabase.Refresh();
@@ -143,7 +142,7 @@ namespace PulletFramework.Editor
                 string dllPath = $"{hotfixDllSrcDir}/{dll}.dll";
                 string dllBytesPath = $"{hotfixAssembliesDstDir}/{dll}.bytes";
                 System.IO.File.Copy(dllPath, dllBytesPath, true);
-                Debug.Log($"[CopyHotUpdateAssembliesToStreamingAssets] copy hotfix dll {dllPath} -> {dllBytesPath}");
+                PLogger.DebugLog($"[CopyHotUpdateAssembliesToStreamingAssets] copy hotfix dll {dllPath} -> {dllBytesPath}");
             }
             AssetDatabase.Refresh();
             AssetDatabase.Refresh();

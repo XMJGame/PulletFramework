@@ -106,7 +106,7 @@ namespace PulletMiniGame.Editor
         public Task<PlatformResult> ShareAsync(PlatformShareRequest request,
             CancellationToken cancellationToken = default)
         {
-            Debug.Log($"[PulletPlatform] Simulated share: {request.Title}");
+            PulletFramework.PLogger.EditorInfo($"[PulletPlatform] Simulated share: {request.Title}");
             return CancelledOr(PlatformResult.Success(), cancellationToken);
         }
 
@@ -118,7 +118,7 @@ namespace PulletMiniGame.Editor
 
         public void Track(string eventName, IReadOnlyDictionary<string, object> parameters = null)
         {
-            Debug.Log($"[PulletPlatform] Analytics: {eventName}");
+            PulletFramework.PLogger.EditorInfo($"[PulletPlatform] Analytics: {eventName}");
         }
 
         public void SimulateShow(PlatformLaunchContext context)
@@ -135,7 +135,7 @@ namespace PulletMiniGame.Editor
         public Task<PlatformResult> NavigateToSidebarAsync(string activityId,
             CancellationToken cancellationToken = default)
         {
-            Debug.Log("[PulletPlatform] Simulated navigate to sidebar.");
+            PulletFramework.PLogger.EditorInfo("[PulletPlatform] Simulated navigate to sidebar.");
             return CancelledOr(PlatformResult.Success(), cancellationToken);
         }
 
@@ -189,7 +189,8 @@ namespace PulletMiniGame.Editor
         public Task<PlatformResult> OpenLeaderboardAsync(LeaderboardViewRequest request,
             CancellationToken cancellationToken = default)
         {
-            Debug.Log($"[PulletPlatform] Simulated leaderboard: {request.Query.BoardId}");
+            PulletFramework.PLogger.EditorInfo(
+                $"[PulletPlatform] Simulated leaderboard: {request.Query.BoardId}");
             return CancelledOr(ValidateQuery(request.Query, out string error)
                 ? PlatformResult.Success()
                 : PlatformResult.Failure(error), cancellationToken);

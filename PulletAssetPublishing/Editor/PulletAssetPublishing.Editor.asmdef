@@ -2,6 +2,7 @@
     "name": "PulletAssetPublishing.Editor",
     "rootNamespace": "PulletAssetPublishing.Editor",
     "references": [
+        "PulletFramework.Runtime",
         "PulletFramework.Editor.Workspace.Contracts"
     ],
     "includePlatforms": [

@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using PulletFramework.Setting;
+using PulletFramework.Sound;
 using PulletMiniGame.Platform;
 using UnityEngine;
 
@@ -13,21 +15,34 @@ namespace PulletMiniGame
         public static bool IsInstalled => PulletPlatform.IsInstalled;
         public static bool IsInitialized => PulletPlatform.IsInitialized;
 
-        public static Task<PlatformResult> InitializeAsync(IPlatformAdapter adapter,
+        public static async Task<PlatformResult> InitializeAsync(IPlatformAdapter adapter,
             CancellationToken cancellationToken = default)
         {
             if (adapter == null)
                 throw new ArgumentNullException(nameof(adapter));
-            if (cancellationToken.IsCancellationRequested)
-                return Task.FromCanceled<PlatformResult>(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             EnsureDriver();
             PulletPlatform.Install(adapter);
-            return PulletPlatform.InitializeAsync(cancellationToken);
+            PlatformResult result = await PulletPlatform.InitializeAsync(cancellationToken);
+            if (result.Succeeded
+                && PulletPlatform.TryGet(out IPlatformStorageService storage))
+            {
+                PulletPlayerPrefs.InstallBackend(new PlatformPlayerPrefsBackend(storage));
+                if (PulletSound.IsInitialized)
+                    PulletSound.LoadPreferences();
+            }
+            return result;
         }
 
         public static void Shutdown()
         {
+            if (PulletPlatform.IsInitialized
+                && PulletPlatform.TryGet(out IPlatformStorageService _))
+            {
+                PulletSound.SavePreferences();
+                PulletPlayerPrefs.UninstallBackend();
+            }
             PulletPlatform.Uninstall();
             if (_driverObject != null)
                 UnityEngine.Object.Destroy(_driverObject);
