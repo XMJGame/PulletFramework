@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Tianzhuo Vision Vreation Technology(Beijing) Co., Ltd. All Rights Reserved.
 //  作    者：许明俊
@@ -24,7 +24,7 @@ namespace PulletFramework.Utility
             request = UnityWebRequest.Get(path);
             request.SendWebRequest();
             while (!request.isDone) { }
-            if (string.IsNullOrEmpty(request.error)) 
+            if (string.IsNullOrEmpty(request.error))
             {
                       Debug.Log("FileExists："+ request.error);
                 request.Dispose();
@@ -39,7 +39,6 @@ namespace PulletFramework.Utility
             Debug.Log("No FileExists："+ exception.Message);
             return false;
         }
-		//return System.IO.File.Exists(System.IO.Path.Combine(Application.streamingAssetsPath, filePath));
 #else
             return System.IO.File.Exists(path);
 #endif

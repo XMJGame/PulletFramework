@@ -1,0 +1,15 @@
+{
+    "name": "PulletFramework.Samples",
+    "references": [
+        "GUID:ddc57d55c33f19e418665cf8c80338d7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

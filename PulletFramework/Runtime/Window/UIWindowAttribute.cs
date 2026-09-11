@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Tianzhuo Vision Vreation Technology(Beijing) Co., Ltd. All Rights Reserved.
 //  作    者：许明俊
@@ -23,11 +23,27 @@ namespace PulletFramework.Window
 		/// </summary>
 		public bool fullScreen = true;
 
+		/// <summary>
+		/// 当前窗口显示时是否隐藏 NavigationLayer 窗口。
+		/// </summary>
+		public bool hidePersistent = false;
+
+		/// <summary>
+		/// 窗口关闭后的资源保留策略。
+		/// </summary>
+		public EWindowCachePolicy cachePolicy = EWindowCachePolicy.Cache;
+
 		public UIWindowAttribute() { }
-		public UIWindowAttribute(EWindowLayer windowLayer, bool fullScreen = true)
+		public UIWindowAttribute(
+			EWindowLayer windowLayer,
+			bool fullScreen = true,
+			bool hidePersistent = false,
+			EWindowCachePolicy cachePolicy = EWindowCachePolicy.Cache)
 		{
 			this.windowLayer = windowLayer;
 			this.fullScreen = fullScreen;
+			this.hidePersistent = hidePersistent;
+			this.cachePolicy = cachePolicy;
 		}
 	}
 }

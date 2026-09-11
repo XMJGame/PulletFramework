@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Xu Mingjun(Xinxiang, Henan) All Rights Reserved.
 //  作    者：许明俊
@@ -12,7 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using YooAsset;
+using PulletFramework.Resource;
 
 namespace PulletFramework.Window
 {
@@ -32,23 +32,23 @@ namespace PulletFramework.Window
     /// </summary>
     public abstract class UIWindow
     {
-        //public const int WINDOW_HIDE_LAYER = 2; // Ignore Raycast
-        //public const int WINDOW_SHOW_LAYER = 5; // UI
-        internal AssetHandle assetHandle { private set; get; }
+        internal IResourceAssetHandle assetHandle { private set; get; }
         internal GameObject resAsset { private set; get; }
         private System.Action<UIWindow> mPrepareCallback;
+        private Action<UIWindow, string> mLoadFailedCallback;
         private Action<UIWindow> mOpenCallBack;
         private System.Object[] mUserDatas;
 
         private bool mIsCreate = false;
+        private bool mIsLoading = false;
         public bool isCreate { get { return mIsCreate; } }
 
         private GameObject mPanel;
         private Canvas mCanvas;
         private Canvas[] mChildCanvas;
-        //private GraphicRaycaster mRaycaster;
-        //private GraphicRaycaster[] mChildRaycaster;
         private CanvasGroup mCanvasGroup;
+        private IUIWindowTransition mTransition;
+        private bool mGlobalInputAllowed = true;
 
 
         /// <summary>
@@ -103,12 +103,31 @@ namespace PulletFramework.Window
         /// <summary>
         ///  窗口层级
         /// </summary>
-        public EWindowLayer WindowLayer { private set; get; }
+        public EWindowLayer WindowLayer { internal set; get; }
 
         /// <summary>
         /// 是否为全屏窗口
         /// </summary>
         public bool FullScreen { private set; get; }
+
+        /// <summary>
+        /// 窗口显示时是否隐藏常驻界面。
+        /// </summary>
+        public bool HidePersistent { private set; get; }
+
+        /// <summary>
+        /// 窗口关闭后的资源保留策略。
+        /// </summary>
+        public EWindowCachePolicy CachePolicy { private set; get; }
+
+        /// <summary>
+        /// 最近一次资源加载错误。
+        /// </summary>
+        public string LoadError { private set; get; }
+
+        public bool IsTransitioning { private set; get; }
+        public bool IsClosing { private set; get; }
+        internal bool IsOpenCompleted { private set; get; }
 
         /// <summary>
         /// 窗口深度值
@@ -171,14 +190,16 @@ namespace PulletFramework.Window
                 if (mCanvasGroup != null)
                 {
                     mCanvasGroup.alpha = visible ? 1 : 0;
-                    // 交互设置
-                    Interactable = visible;
+                    RefreshInteractable();
 
                     // 虚函数
                     if (mIsCreate)
                     {
                         OnSetVisible(visible);
-                        //PLogger.Log("[OnSetVisible Window] " + WindowName + " Visible:" + visible);
+                        if (visible)
+                            OnResume();
+                        else
+                            OnPause();
                     }
                 }
             }
@@ -216,14 +237,16 @@ namespace PulletFramework.Window
             {
                 if (isResources)
                 {
-                    return resAsset;
+                    return resAsset != null || !string.IsNullOrEmpty(LoadError);
                 }
                 else
                 {
-                    return assetHandle.IsDone;
+                    return assetHandle != null && assetHandle.IsDone;
                 }
             }
         }
+
+        internal bool IsLoading => mIsLoading;
 
         /// <summary>
         /// 是否准备完毕
@@ -266,13 +289,13 @@ namespace PulletFramework.Window
         /// <summary>
         /// 窗口创建
         /// </summary>
-        public abstract void OnCreate();
+        public virtual void OnCreate() { }
 
         /// <summary>
         /// 打开窗口
         /// </summary>
         /// <param name="param"></param>
-        protected abstract void OnOpen();
+        protected virtual void OnOpen() { }
 
         /// <summary>
         /// 关闭窗口
@@ -283,12 +306,27 @@ namespace PulletFramework.Window
         /// <summary>
         /// 窗口更新
         /// </summary>
-        public abstract void OnUpdate();
+        public virtual void OnUpdate() { }
 
         /// <summary>
         /// 窗口销毁
         /// </summary>
-        public abstract void OnDestroy();
+        public virtual void OnDestroy() { }
+
+        /// <summary>
+        /// 窗口从遮挡或关闭状态恢复可见。
+        /// </summary>
+        protected virtual void OnResume() { }
+
+        /// <summary>
+        /// 窗口被全屏窗口遮挡或关闭。
+        /// </summary>
+        protected virtual void OnPause() { }
+
+        /// <summary>
+        /// 返回 false 可阻止返回、Tab 切换等关闭操作。
+        /// </summary>
+        protected virtual bool CanClose(EWindowCloseReason reason) => true;
 
         /// <summary>
         /// 当触发窗口的层级排序
@@ -332,56 +370,71 @@ namespace PulletFramework.Window
             PulletWindow.CloseWindow(this.GetType(), destroy);
         }
 
-        private void Handle_Completed(AssetHandle handle)
+        /// <summary>
+        /// 关闭窗口并向 OpenWindowForResultAsync 的调用方提交结果。
+        /// </summary>
+        protected bool CloseWithResult<TResult>(TResult result, bool destroy = false)
+        {
+            return PulletWindow.CloseWindowWithResult(this, result, destroy);
+        }
+
+        private void Handle_Completed(IResourceAssetHandle handle)
         {
             if (handle.AssetObject == null)
+            {
+                InternalLoadFailed($"Asset load failed: {assetPath}");
                 return;
-            PLogger.Log("[Instantiate Window] " + WindowName);
-            // 实例化对象
-            mPanel = handle.InstantiateSync(PulletWindow.desktop.transform);
-            if (!mPanel.activeSelf)
-                mPanel.SetActive(true);
-            mPanel.transform.localPosition = Vector3.zero;
-            mPanel.transform.localRotation = Quaternion.identity;
+            }
+            try
+            {
+                PLogger.Log("[Instantiate Window] " + WindowName);
+                var options = new ResourceInstantiateOptions(true, PulletWindow.desktop.transform);
+                PreparePanel(handle.InstantiateSync(options));
+            }
+            catch (Exception exception)
+            {
+                InternalLoadFailed(exception.Message);
+            }
+        }
 
-            // 获取组件
-            mCanvas = mPanel.GetComponent<Canvas>();
-            if (mCanvas == null)
-                throw new Exception($"Not found {nameof(Canvas)} in panel {WindowName}");
-            mCanvas.overrideSorting = true;
-            mCanvas.sortingOrder = 0;
-            mCanvas.sortingLayerName = "Default";
-
-            // 获取组件
-            mChildCanvas = mPanel.GetComponentsInChildren<Canvas>(true);
-            //_Raycaster = mPanel.GetComponent<GraphicRaycaster>();       
-            //_ChildRaycaster = mPanel.GetComponentsInChildren<GraphicRaycaster>(true);
-
-            mCanvasGroup = mPanel.GetComponent<CanvasGroup>();
-            if (mCanvasGroup == null)
-                mCanvasGroup = mPanel.AddComponent<CanvasGroup>();
-            //mCanvasGroup.alpha = 0;
-            // 通知UI管理器
-            IsPrepare = true;
-            mPrepareCallback?.Invoke(this);
+        /// <summary>
+        /// 获取指定位置的强类型打开参数。
+        /// </summary>
+        protected T GetUserData<T>(int index = 0)
+        {
+            if (mUserDatas == null || index < 0 || index >= mUserDatas.Length)
+                return default(T);
+            return mUserDatas[index] is T value ? value : default(T);
         }
 
         private void ResAsset_Completed(GameObject assetObject)
         {
             if (assetObject == null)
             {
-                PLogger.Error("[Window Not Asset] " + WindowName);
+                InternalLoadFailed($"Resources asset not found: {resAssetPath}");
                 return;
             }
-            PLogger.Log("[Instantiate Window] " + WindowName);
-            // 实例化对象
-            mPanel = GameObject.Instantiate(assetObject, PulletWindow.desktop.transform);//handle.InstantiateSync(PulletWindow.desktop.transform);
+            try
+            {
+                PLogger.Log("[Instantiate Window] " + WindowName);
+                PreparePanel(GameObject.Instantiate(assetObject, PulletWindow.desktop.transform));
+            }
+            catch (Exception exception)
+            {
+                InternalLoadFailed(exception.Message);
+            }
+        }
+
+        private void PreparePanel(GameObject panel)
+        {
+            mPanel = panel;
+            if (mPanel == null)
+                throw new Exception($"Instantiate window failed: {WindowName}");
             if (!mPanel.activeSelf)
                 mPanel.SetActive(true);
             mPanel.transform.localPosition = Vector3.zero;
             mPanel.transform.localRotation = Quaternion.identity;
 
-            // 获取组件
             mCanvas = mPanel.GetComponent<Canvas>();
             if (mCanvas == null)
                 throw new Exception($"Not found {nameof(Canvas)} in panel {WindowName}");
@@ -389,37 +442,65 @@ namespace PulletFramework.Window
             mCanvas.sortingOrder = 0;
             mCanvas.sortingLayerName = "Default";
 
-            // 获取组件
             mChildCanvas = mPanel.GetComponentsInChildren<Canvas>(true);
-            //_Raycaster = mPanel.GetComponent<GraphicRaycaster>();       
-            //_ChildRaycaster = mPanel.GetComponentsInChildren<GraphicRaycaster>(true);
-
             mCanvasGroup = mPanel.GetComponent<CanvasGroup>();
             if (mCanvasGroup == null)
                 mCanvasGroup = mPanel.AddComponent<CanvasGroup>();
-            //mCanvasGroup.alpha = 0;
-            // 通知UI管理器
+
+            MonoBehaviour[] behaviours = mPanel.GetComponents<MonoBehaviour>();
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                if (behaviours[i] is IUIWindowTransition transition)
+                {
+                    mTransition = transition;
+                    break;
+                }
+            }
+
+            mIsLoading = false;
             IsPrepare = true;
             mPrepareCallback?.Invoke(this);
+            mPrepareCallback = null;
+            mLoadFailedCallback = null;
         }
         #endregion
 
         #region 内部 调用
 
-        internal void Init(string name, EWindowLayer windowLayer, bool fullScreen = true)
+        internal void Init(
+            string name,
+            EWindowLayer windowLayer,
+            bool fullScreen = true,
+            bool hidePersistent = false,
+            EWindowCachePolicy cachePolicy = EWindowCachePolicy.Cache)
         {
             WindowName = name;
             this.WindowLayer = windowLayer;
             this.FullScreen = fullScreen;
+            this.HidePersistent = hidePersistent;
+            this.CachePolicy = cachePolicy;
         }
 
-        internal void InternalLoad(System.Action<UIWindow> prepareCallback, System.Object[] userDatas, Action<UIWindow> openCallBack)
+        internal void InternalLoad(
+            System.Action<UIWindow> prepareCallback,
+            Action<UIWindow, string> loadFailedCallback,
+            System.Object[] userDatas,
+            Action<UIWindow> openCallBack)
         {
             mUserDatas = userDatas;
             mOpenCallBack = openCallBack;
+            mLoadFailedCallback = loadFailedCallback;
+            LoadError = null;
+            mIsLoading = true;
+            IsOpenCompleted = false;
+            IsClosing = false;
             if (isResources)
             {
-                if (YooAssets.CheckLocationValid(assetPath))
+                string targetPackageName = string.IsNullOrEmpty(packageName) ? null : packageName;
+                if (PulletResources.IsConfigured
+                    && PulletResources.TryGetPackage(targetPackageName, out IResourcePackage candidatePackage)
+                    && candidatePackage.Status == EResourcePackageStatus.Succeeded
+                    && candidatePackage.IsLocationValid(assetPath))
                 {
                     PLogger.Log($"检测到 ab 存在该资源:{assetPath},改变加载策略");
                     isResources = false;
@@ -429,7 +510,9 @@ namespace PulletFramework.Window
                     //res 资源
                     if (resAsset)
                     {
+                        mIsLoading = false;
                         prepareCallback?.Invoke(this);
+                        mLoadFailedCallback = null;
                     }
                     else
                     {
@@ -444,17 +527,71 @@ namespace PulletFramework.Window
             //AB 资源
             if (assetHandle != null)
             {
+                mIsLoading = false;
                 prepareCallback?.Invoke(this);
+                mLoadFailedCallback = null;
             }
             else
             {
                 mPrepareCallback = prepareCallback;
-                if (string.IsNullOrEmpty(packageName))
+                if (!PulletResources.TryGetPackage(packageName, out IResourcePackage package))
                 {
-                    assetHandle = YooAssets.LoadAssetAsync<GameObject>(assetPath);
-                    assetHandle.Completed += Handle_Completed;
+                    InternalLoadFailed($"Resource package not found: {packageName}");
+                    return;
                 }
+                assetHandle = package.LoadAssetAsync<GameObject>(assetPath);
+                assetHandle.Completed += Handle_Completed;
             }
+        }
+
+        internal void WaitForLoadComplete()
+        {
+            if (assetHandle != null && !assetHandle.IsDone)
+                assetHandle.WaitForCompletion();
+            if (IsTransitioning)
+                mTransition?.CompleteImmediately();
+        }
+
+        internal void InternalCancelLoad()
+        {
+            if (!mIsLoading)
+                return;
+            LoadError = $"Window load cancelled: {WindowName}";
+            mIsLoading = false;
+            mPrepareCallback = null;
+            mLoadFailedCallback = null;
+            mOpenCallBack = null;
+        }
+
+        internal bool InternalCanClose(EWindowCloseReason reason)
+        {
+            if (IsClosing)
+                return false;
+            try
+            {
+                return CanClose(reason);
+            }
+            catch (Exception exception)
+            {
+                PLogger.Error($"[Window CanClose Failed] {WindowName}: {exception.Message}");
+                return false;
+            }
+        }
+
+        internal void InternalMarkOpenFailed(string error)
+        {
+            LoadError = string.IsNullOrEmpty(error) ? $"Window open failed: {WindowName}" : error;
+        }
+
+        private void InternalLoadFailed(string error)
+        {
+            mIsLoading = false;
+            LoadError = string.IsNullOrEmpty(error) ? $"Window load failed: {WindowName}" : error;
+            PLogger.Error($"[Window Load Failed] {WindowName}: {LoadError}");
+            mPrepareCallback = null;
+            mLoadFailedCallback?.Invoke(this, LoadError);
+            mLoadFailedCallback = null;
+            mOpenCallBack = null;
         }
 
         internal void InternalCreate()
@@ -467,29 +604,100 @@ namespace PulletFramework.Window
             }
         }
 
-        internal void InternalOpen()
+        internal void InternalOpen(Action completed)
         {
             PLogger.Log("[Open Window] " + WindowName);
             OnOpen();
-            if (mOpenCallBack != null)
+            bool completionHandled = false;
+
+            void CompleteOpen()
             {
-                mOpenCallBack.Invoke(this);
+                if (completionHandled || !IsPrepare)
+                    return;
+                completionHandled = true;
+                IsTransitioning = false;
+                IsOpenCompleted = true;
+                RefreshInteractable();
+                mOpenCallBack?.Invoke(this);
                 mOpenCallBack = null;
+                completed?.Invoke();
+            }
+
+            if (mTransition == null)
+            {
+                CompleteOpen();
+                return;
+            }
+
+            IsTransitioning = true;
+            RefreshInteractable();
+            try
+            {
+                mTransition.PlayEnter(CompleteOpen);
+            }
+            catch (Exception exception)
+            {
+                PLogger.Error($"[Window Enter Transition Failed] {WindowName}: {exception.Message}");
+                CompleteOpen();
             }
         }
 
-        internal void InternalClose(bool destroy = false)
+        internal void InternalClose(EWindowCloseReason reason, bool destroy, Action completed)
         {
             PLogger.Log("[Close Window] " + WindowName);
-            Visible = false;
-            OnClose(destroy);
+            IsClosing = true;
+            bool completionHandled = false;
+
+            void CompleteClose()
+            {
+                if (completionHandled || !IsPrepare)
+                    return;
+                completionHandled = true;
+                IsTransitioning = false;
+                Visible = false;
+                try
+                {
+                    OnClose(destroy);
+                }
+                catch (Exception exception)
+                {
+                    PLogger.Error($"[Window Close Failed] {WindowName}: {exception.Message}");
+                }
+                finally
+                {
+                    completed?.Invoke();
+                }
+            }
+
+            if (mTransition == null)
+            {
+                CompleteClose();
+                return;
+            }
+
+            IsTransitioning = true;
+            RefreshInteractable();
+            try
+            {
+                mTransition.PlayExit(CompleteClose);
+            }
+            catch (Exception exception)
+            {
+                PLogger.Error($"[Window Exit Transition Failed] {WindowName}: {exception.Message}");
+                CompleteClose();
+            }
         }
 
-        //internal void InternalRouse()
-        //{
-        //    PLogger.Log("[Rouse Window] " + WindowName);
-        //    OnRouse();
-        //}
+        internal void InternalSetGlobalInputAllowed(bool allowed)
+        {
+            mGlobalInputAllowed = allowed;
+            RefreshInteractable();
+        }
+
+        private void RefreshInteractable()
+        {
+            Interactable = visible && mGlobalInputAllowed && !IsTransitioning && !IsClosing;
+        }
 
         internal void InternalUpdate()
         {
@@ -502,10 +710,22 @@ namespace PulletFramework.Window
         internal void InternalDestroy()
         {
             PLogger.Log("[Destroy Window] " + WindowName);
+            bool wasCreated = mIsCreate;
             mIsCreate = false;
 
             // 注销回调函数
             mPrepareCallback = null;
+            mLoadFailedCallback = null;
+            mOpenCallBack = null;
+            mUserDatas = null;
+            IsPrepare = false;
+            mIsLoading = false;
+            IsOpenCompleted = false;
+            IsClosing = false;
+            IsTransitioning = false;
+
+            mTransition?.Cancel();
+            mTransition = null;
 
             // 卸载面板资源
             if (isResources)
@@ -516,6 +736,7 @@ namespace PulletFramework.Window
             {
                 if (assetHandle != null)
                 {
+                    assetHandle.Completed -= Handle_Completed;
                     assetHandle.Release();
                     assetHandle = null;
                 }
@@ -524,7 +745,8 @@ namespace PulletFramework.Window
             // 销毁面板对象
             if (mPanel != null)
             {
-                OnDestroy();
+                if (wasCreated)
+                    OnDestroy();
                 GameObject.Destroy(mPanel);
                 mPanel = null;
             }
@@ -550,7 +772,6 @@ namespace PulletFramework.Window
         protected GameObject Find(string name)
         {
             return Find(gameObject, name);
-            //return transform.Find(name).gameObject;
         }
 
 
@@ -649,5 +870,13 @@ namespace PulletFramework.Window
 
 
         #endregion
+    }
+
+    /// <summary>
+    /// 带强类型打开参数的窗口基类。
+    /// </summary>
+    public abstract class UIWindow<TArguments> : UIWindow
+    {
+        protected TArguments Arguments => GetUserData<TArguments>();
     }
 }

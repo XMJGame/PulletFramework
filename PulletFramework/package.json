@@ -1,0 +1,16 @@
+{
+    "name": "com.xmjgame.pullet-framework",
+    "version": "0.1.0",
+    "displayName": "Pullet Framework",
+    "description": "Reusable runtime and editor foundations for Unity games.",
+    "unity": "2021.3",
+    "author": {
+        "name": "XMJGame"
+    },
+    "keywords": [
+        "framework",
+        "ui",
+        "network",
+        "resources"
+    ]
+}

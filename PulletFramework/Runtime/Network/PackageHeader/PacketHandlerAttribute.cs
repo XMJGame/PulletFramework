@@ -6,7 +6,6 @@ namespace PulletFramework.Network
     {
         public PacketHandlerAttribute(int msgId)
         {
-           //MessageDistribute.AddNetPackageHandler(msgId);
         }
     }
 }

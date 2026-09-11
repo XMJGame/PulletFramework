@@ -10,7 +10,7 @@ namespace PulletFramework.Network
     {
         private static bool m_IsInitialize = false;
         private static Dictionary<int, List<NetMessageHandler>> mNetMessageHandlerDict = new Dictionary<int, List<NetMessageHandler>>();
-        public static void Initalize()
+        public static void Initialize()
         {
             if (!m_IsInitialize)
             {
@@ -77,13 +77,13 @@ namespace PulletFramework.Network
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             if (packet.bodyBytes != null)
                 PLogger.DebugLog($"接收到消息:{packet.msgId}，byteLength:{packet.bodyBytes.Length}");
             else
                 PLogger.DebugLog($"接收到消息:{packet.msgId}");
-            
+
             List<NetMessageHandler> packetHandlerBaseTypes;
             if (mNetMessageHandlerDict.TryGetValue(packet.msgId, out packetHandlerBaseTypes))
             {

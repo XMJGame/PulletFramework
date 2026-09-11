@@ -1,0 +1,16 @@
+{
+    "name": "PulletMiniGame.WeChatSDK",
+    "rootNamespace": "PulletMiniGame.Platform.WeChat",
+    "references": [
+        "PulletMiniGame.Runtime",
+        "PulletMiniGame.Platform.WeChat",
+        "Wx",
+        "YooAsset",
+        "PulletFramework.YooAsset"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "PULLET_PLATFORM_WECHAT || MINIGAME_SUBPLATFORM_WEIXIN",
+        "UNITY_EDITOR || UNITY_WEBGL || WEIXINMINIGAME"
+    ]
+}

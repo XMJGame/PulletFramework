@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using YooAsset;
+using PulletFramework.Resource;
 
 namespace PulletFramework.Form
 {
@@ -36,9 +36,10 @@ namespace PulletFramework.Form
 
         public IEnumerator PreLoadTextAsset()
         {
-            AssetHandle assetHandle = YooAssets.LoadAssetAsync<TextAsset>(formPath);
+            IResourceAssetHandle assetHandle = PulletResources.LoadAssetAsync<TextAsset>(formPath);
             yield return assetHandle;
             Read(assetHandle.AssetObject as TextAsset);
+            assetHandle.Release();
             PulletForm.readCount--;
         }
 

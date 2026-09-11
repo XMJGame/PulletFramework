@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Xu Mingjun(Xinxiang, Henan) All Rights Reserved.
 //  作    者：许明俊
@@ -41,12 +41,11 @@ namespace PulletFramework.Event
 		/// <summary>
 		/// 初始化事件系统
 		/// </summary>
-		public static void Initalize()
+		public static void Initialize()
         {
 			if (m_IsInitialize)
 			{
 				return;
-				throw new Exception($"{nameof(PulletEvent)} is initialized !");
 			}
 
             if (m_IsInitialize == false)
@@ -128,9 +127,9 @@ namespace PulletFramework.Event
         /// </summary>
         public static void AddListener(int eventId, System.Action<IEventMessage> listener)
 		{
-			if (!m_IsInitialize) 
+			if (!m_IsInitialize)
 			{
-				Initalize();
+				Initialize();
 			}
 			if (m_Listeners.ContainsKey(eventId) == false)
 				m_Listeners.Add(eventId, new LinkedList<Action<IEventMessage>>());
@@ -165,7 +164,7 @@ namespace PulletFramework.Event
 		{
 			if (!m_IsInitialize)
 			{
-				Initalize();
+				Initialize();
 			}
 			if (m_Listeners.ContainsKey(eventId))
 			{
@@ -231,7 +230,7 @@ namespace PulletFramework.Event
 		{
 			if (!m_IsInitialize)
 			{
-				Initalize();
+				Initialize();
 			}
 			var wrapper = new PostWrapper();
 			wrapper.postFrame = UnityEngine.Time.frameCount;

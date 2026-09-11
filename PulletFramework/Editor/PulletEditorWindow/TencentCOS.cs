@@ -1,91 +1,171 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using COSXML;
 using COSXML.Auth;
-using COSXML.Model.Object;
-using COSXML.Model.Bucket;
 using COSXML.CosException;
-using System;
-using System.Threading.Tasks;
+using COSXML.Model.Bucket;
+using COSXML.Model.Tag;
 using COSXML.Transfer;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using UnityEngine;
-using PulletFramework.Utility;
-using UnityEditor;
 
 namespace PulletFramework.Editor
 {
-    /// <summary>
-    /// 腾讯COS
-    /// </summary>
-    public class TencentCOS
+    public sealed class TencentCosConfiguration
     {
-        internal static CosXmlServer cosXml;
-        private static bool mInit = false;
-        public static void Init()
+        public string SecretId;
+        public string SecretKey;
+        public string Bucket;
+        public string Region;
+        public string Folder;
+        public string BaseUrl;
+
+        public void Validate()
         {
-            if (mInit) return;
-            mInit = true;
-            //// 腾讯云 SecretId
-            //string secretId = "";
-            //// 腾讯云 SecretKey
-            //string secretKey = "";
-            // 存储桶所在地域
-            string region = "ap-guangzhou";
+            if (string.IsNullOrWhiteSpace(SecretId)) throw new InvalidOperationException("COS SecretId is required.");
+            if (string.IsNullOrWhiteSpace(SecretKey)) throw new InvalidOperationException("COS SecretKey is required.");
+            if (string.IsNullOrWhiteSpace(Bucket)) throw new InvalidOperationException("COS bucket is required.");
+            if (string.IsNullOrWhiteSpace(Region)) throw new InvalidOperationException("COS region is required.");
+        }
+    }
 
-            // 普通初始化方式
-            CosXmlConfig config = new CosXmlConfig.Builder()
-                .SetRegion(region)
-                .SetDebugLog(true)
-                .Build();
+    /// <summary>腾讯云 COS 编辑器上传服务。环境变量优先，旧编辑器配置作为兼容回退。</summary>
+    public static class TencentCOS
+    {
+        private const string MiniGameCorsRuleId = "pullet-minigame-public-assets";
+        private static CosXmlServer s_Server;
+        private static string s_ConfigurationFingerprint;
 
-
-            long keyDurationSecond = 600;
-            QCloudCredentialProvider qCloudCredentialProvider = new DefaultQCloudCredentialProvider(PulletEditorSettingData.Setting.secretId, PulletEditorSettingData.Setting.secretKey, keyDurationSecond);
-
-            // service 初始化完成
-            cosXml = new CosXmlServer(config, qCloudCredentialProvider);
+        public static TencentCosConfiguration GetConfiguration()
+        {
+            PulletEditorSetting setting = PulletEditorSettingData.Setting;
+            string bucket = GetValue("COS_BUCKET", setting.bucket);
+            string region = GetValue("COS_REGION", "ap-guangzhou");
+            string baseUrl = GetValue("COS_BASE_URL",
+                string.IsNullOrWhiteSpace(bucket) ? string.Empty : $"https://{bucket}.cos.{region}.myqcloud.com");
+            return new TencentCosConfiguration
+            {
+                SecretId = GetValue("COS_SECRET_ID", setting.secretId),
+                SecretKey = GetValue("COS_SECRET_KEY", setting.secretKey),
+                Bucket = bucket,
+                Region = region,
+                Folder = NormalizeKey(GetValue("COS_FOLDER", setting.cosKey)),
+                BaseUrl = baseUrl.TrimEnd('/')
+            };
         }
 
-        public static async Task<String> PutObject(string key, string srcPath)
+        public static async Task<string> PutObject(string key, string sourcePath)
         {
-            if (!mInit)
-                Init();
+            return await PutObjectAsync(key, sourcePath);
+        }
 
-      
-            string cosKey = $"{PulletEditorSettingData.Setting.cosKey}/{key}";// PulletEditorSettingData.Setting.cosKey+ key;
-            // 初始化 TransferConfig
-            TransferConfig transferConfig = new TransferConfig();
+        public static async Task<string> PutObjectAsync(
+            string key, string sourcePath, Action<long, long> progress = null)
+        {
+            if (!File.Exists(sourcePath))
+                throw new FileNotFoundException("COS upload source file not found.", sourcePath);
 
-            // 初始化 TransferManager
-            TransferManager transferManager = new TransferManager(cosXml, transferConfig);
+            TencentCosConfiguration configuration = GetConfiguration();
+            configuration.Validate();
+            EnsureInitialized(configuration);
+            string objectKey = CombineKey(configuration.Folder, key);
+            Debug.Log($"[TencentCOS] Uploading: {objectKey}");
 
-            //对象在存储桶中的位置标识符，即称对象键
-            String cosPath = cosKey;
-            //本地文件绝对路径
-            //String srcPath = srcPath;// @"D:\XuMingJun\New_HeHan\Clinet\AssetBundles\MainArt\1.0.2.zip";
-            Debug.Log("开始上传:" + cosKey);
-            // 上传对象
-            COSXMLUploadTask uploadTask = new COSXMLUploadTask(PulletEditorSettingData.Setting.bucket, cosPath);
-            uploadTask.SetSrcPath(srcPath);
+            var transferManager = new TransferManager(s_Server, new TransferConfig());
+            var uploadTask = new COSXMLUploadTask(configuration.Bucket, objectKey);
+            uploadTask.SetSrcPath(sourcePath);
+            uploadTask.progressCallback = (completed, total) => progress?.Invoke(completed, total);
+            COSXMLUploadTask.UploadTaskResult result = await transferManager.UploadAsync(uploadTask);
+            Debug.Log($"[TencentCOS] Uploaded: {objectKey}, ETag: {result.eTag}");
+            return objectKey;
+        }
 
-            uploadTask.progressCallback = delegate (long completed, long total)
-            {
-                Debug.Log(String.Format("progress = {0:##.##}%", completed * 100.0 / total));
-            };
+        public static string CombineKey(params string[] parts)
+        {
+            return NormalizeKey(string.Join("/", parts ?? Array.Empty<string>()));
+        }
 
+        /// <summary>合并小游戏静态资源所需的公开下载 CORS 规则，不删除桶内其他规则。</summary>
+        public static bool EnsureMiniGameDownloadCors()
+        {
+            TencentCosConfiguration configuration = GetConfiguration();
+            configuration.Validate();
+            EnsureInitialized(configuration);
+
+            List<CORSConfiguration.CORSRule> rules;
             try
             {
-                COSXML.Transfer.COSXMLUploadTask.UploadTaskResult result = await
-                    transferManager.UploadAsync(uploadTask);
-                Debug.Log(result.GetResultInfo());
-                string eTag = result.eTag;
-                EditorUtility.ClearProgressBar();
+                var result = s_Server.GetBucketCORS(new GetBucketCORSRequest(configuration.Bucket));
+                rules = result.corsConfiguration?.corsRules ?? new List<CORSConfiguration.CORSRule>();
             }
-            catch (Exception e)
+            catch (CosServerException exception) when (exception.statusCode == 404)
             {
-                Debug.LogError("CosException: " + e);
+                rules = new List<CORSConfiguration.CORSRule>();
             }
-            return cosKey;
+
+            CORSConfiguration.CORSRule current = rules.FirstOrDefault(rule =>
+                string.Equals(rule.id, MiniGameCorsRuleId, StringComparison.Ordinal));
+            if (IsExpectedMiniGameRule(current))
+            {
+                Debug.Log("[TencentCOS] Mini game download CORS rule is already configured.");
+                return false;
+            }
+
+            rules.RemoveAll(rule => string.Equals(rule.id, MiniGameCorsRuleId, StringComparison.Ordinal));
+            rules.Add(new CORSConfiguration.CORSRule
+            {
+                id = MiniGameCorsRuleId,
+                allowedOrigins = new List<string> { "*" },
+                allowedMethods = new List<string> { "GET", "HEAD" },
+                allowedHeaders = new List<string> { "*" },
+                exposeHeaders = new List<string> { "ETag", "Content-Length" },
+                maxAgeSeconds = 3600
+            });
+            var request = new PutBucketCORSRequest(configuration.Bucket);
+            request.SetCORSRules(rules);
+            s_Server.PutBucketCORS(request);
+            Debug.Log("[TencentCOS] Mini game download CORS rule configured without removing existing rules.");
+            return true;
+        }
+
+        private static void EnsureInitialized(TencentCosConfiguration configuration)
+        {
+            string fingerprint = $"{configuration.SecretId}|{configuration.Bucket}|{configuration.Region}";
+            if (s_Server != null && s_ConfigurationFingerprint == fingerprint)
+                return;
+
+            var config = new CosXmlConfig.Builder()
+                .SetRegion(configuration.Region)
+                .SetDebugLog(false)
+                .Build();
+            var credentials = new DefaultQCloudCredentialProvider(
+                configuration.SecretId, configuration.SecretKey, 600);
+            s_Server = new CosXmlServer(config, credentials);
+            s_ConfigurationFingerprint = fingerprint;
+        }
+
+        private static string GetValue(string environmentName, string fallback)
+        {
+            string value = Environment.GetEnvironmentVariable(environmentName);
+            return string.IsNullOrWhiteSpace(value) ? fallback ?? string.Empty : value.Trim();
+        }
+
+        private static string NormalizeKey(string value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? string.Empty
+                : value.Replace('\\', '/').Trim('/');
+        }
+
+        private static bool IsExpectedMiniGameRule(CORSConfiguration.CORSRule rule)
+        {
+            return rule != null
+                && rule.allowedOrigins != null && rule.allowedOrigins.Contains("*")
+                && rule.allowedMethods != null && rule.allowedMethods.Contains("GET")
+                && rule.allowedMethods.Contains("HEAD")
+                && rule.allowedHeaders != null && rule.allowedHeaders.Contains("*");
         }
     }
 }

@@ -57,20 +57,14 @@ namespace PulletFramework.Sound
         public void OnPointerDown(PointerEventData eventData)
         {
             if (!isScale) return;
-            //transform.DOKill();
-            //transform.DOScale(0.95f, 0.01f).SetUpdate(true);
         }
         public void OnPointerUp(PointerEventData eventData)
         {
             if (!isScale) return;
-            //transform.DOKill();
-            //transform.DOScale(1f, 0.01f).SetUpdate(true);
         }
         public void OnPointerExit(PointerEventData eventData)
         {
             if (!isScale) return;
-            //transform.DOKill();
-            //transform.DOScale(1f, 0.01f).SetUpdate(true);
         }
     }
 }

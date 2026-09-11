@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using YooAsset;
+using PulletFramework.Resource;
 
 namespace PulletFramework.Pooling
 {
@@ -20,7 +20,7 @@ namespace PulletFramework.Pooling
         /// <summary>
         /// 初始化游戏对象池系统
         /// </summary>
-        public static void Initalize()
+        public static void Initialize()
         {
             if (m_IsInitialize)
                 throw new Exception($"{nameof(PulletPooling)} is initialized !");
@@ -77,18 +77,17 @@ namespace PulletFramework.Pooling
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             // 获取资源包
-            var assetPackage = YooAssets.GetPackage(packageName);
-            if (assetPackage == null)
+            if (!PulletResources.TryGetPackage(packageName, out IResourcePackage assetPackage))
                 throw new Exception($"Not found asset package : {packageName}");
 
             // 检测资源包初始化状态
-            if (assetPackage.InitializeStatus == EOperationStatus.None)
+            if (assetPackage.Status == EResourcePackageStatus.None || assetPackage.Status == EResourcePackageStatus.Initializing)
                 throw new Exception($"Asset package {packageName} not initialize !");
-            if (assetPackage.InitializeStatus == EOperationStatus.Failed)
-                throw new Exception($"Asset package {packageName} initialize failed !");
+            if (assetPackage.Status == EResourcePackageStatus.Failed)
+                throw new Exception($"Asset package {packageName} initialize failed: {assetPackage.Error}");
 
             if (HasSpawner(packageName))
                 return GetSpawner(packageName);
@@ -106,7 +105,7 @@ namespace PulletFramework.Pooling
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             foreach (var spawner in m_Spawners)
             {
@@ -126,7 +125,7 @@ namespace PulletFramework.Pooling
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             foreach (var spawner in m_Spawners)
             {

@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Xu Mingjun(Xinxiang, Henan) All Rights Reserved.
 //  作    者：许明俊
@@ -10,22 +10,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using YooAsset;
 
 namespace PulletFramework.Setting
 {
+    public enum EResourcePlayMode
+    {
+        EditorSimulate,
+        Offline,
+        Host,
+        Web
+    }
+
     [CreateAssetMenu(fileName = "PulletSettings", menuName = "Pullet/Create Pullet Settings")]
     public class PulletSettings : ScriptableObject
     {
         /// <summary>
-        /// 默认的构建管线
-        /// </summary>
-        public EDefaultBuildPipeline defaultBuildPipeline = EDefaultBuildPipeline.BuiltinBuildPipeline;
-
-        /// <summary>
         /// 运行时资产模式
         /// </summary>
-        public EPlayMode runPlayMode = EPlayMode.HostPlayMode;
+        public EResourcePlayMode resourcePlayMode = EResourcePlayMode.Host;
 
         /// <summary>
         /// 默认服务器

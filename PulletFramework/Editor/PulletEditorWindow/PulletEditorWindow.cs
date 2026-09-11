@@ -9,14 +9,11 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
-using YooAsset;
-using YooAsset.Editor;
 
 namespace PulletFramework.Editor
 {
     public class PulletEditorWindow : EditorWindow
     {
-        [MenuItem("Pullets/PulletEditor Setting", false, 3)]
         public static void OpenWindow()
         {
             PulletEditorWindow window = GetWindow<PulletEditorWindow>("Editor Setting", true, WindowsDefine.DockedWindowTypes);
@@ -46,13 +43,13 @@ namespace PulletFramework.Editor
                 VisualElement root = this.rootVisualElement;
 
                 // 加载布局文件
-                var visualAsset = UxmlLoader.LoadWindowUXML<PulletEditorWindow>();
+                var visualAsset = PulletEditorAssetUtility.LoadWindowUxml<PulletEditorWindow>();
                 if (visualAsset == null)
                     return;
 
                 visualAsset.CloneTree(root);
 
-                //android 
+                //android
                 mAndroidSettingBtn = root.Q<Button>("androidSetting");
                 mAndroidSettingBtn.clicked += OnAndroidSettingBtnCallBack;
 
@@ -95,7 +92,7 @@ namespace PulletFramework.Editor
                 });
 
 
-                // tencent cos 
+                // tencent cos
                 mTencentCOSSettingBtn = root.Q<Button>("tencentCOSSetting");
                 mTencentCOSSettingBtn.clicked += OnTencentCOSSettingBtnCallBack;
 
@@ -162,7 +159,7 @@ namespace PulletFramework.Editor
             {
                 mAndroidContainer.style.display = DisplayStyle.Flex;
             }
-            else 
+            else
             {
                 mAndroidContainer.style.display = DisplayStyle.None;
             }

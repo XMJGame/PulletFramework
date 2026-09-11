@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Tianzhuo Vision Vreation Technology(Beijing) Co., Ltd. All Rights Reserved.
 //  作    者：许明俊
@@ -8,11 +8,11 @@
 // *********************************************************************
 #endregion
 using UnityEngine;
-using YooAsset;
+using PulletFramework.Resource;
 
 namespace PulletFramework.Pooling
 {
-    public class CreatePoolOperation : GameAsyncOperation
+    public class CreatePoolOperation : PulletAsyncOperation
     {
         private enum ESteps
         {
@@ -21,13 +21,13 @@ namespace PulletFramework.Pooling
             Done,
         }
 
-        private readonly AssetHandle _handle;
+        private readonly IResourceAssetHandle _handle;
         private ESteps _steps = ESteps.None;
         public GameObject AssetObject
         {
             get { return _handle != null ? (GameObject)_handle.AssetObject : null; }
         }
-        internal CreatePoolOperation(AssetHandle handle)
+        internal CreatePoolOperation(IResourceAssetHandle handle)
         {
             _handle = handle;
         }
@@ -45,8 +45,7 @@ namespace PulletFramework.Pooling
                 if (_handle.IsValid == false)
                 {
                     _steps = ESteps.Done;
-                    Status = EOperationStatus.Failed;
-                    Error = $"{nameof(AssetHandle)} is invalid.";
+                    SetFailed("Resource asset handle is invalid.");
                     return;
                 }
 
@@ -56,33 +55,28 @@ namespace PulletFramework.Pooling
                 if (_handle.AssetObject == null)
                 {
                     _steps = ESteps.Done;
-                    Status = EOperationStatus.Failed;
-                    Error = $"{nameof(AssetHandle.AssetObject)} is null.";
+                    SetFailed("Loaded asset is null.");
                     return;
                 }
 
                 _steps = ESteps.Done;
-                Status = EOperationStatus.Succeed;
+                SetSucceeded();
             }
         }
 
-        /// <summary>
-        /// 等待异步实例化结束
-        /// </summary>
-        public void WaitForAsyncComplete()
+        protected override void OnWaitForAsyncComplete()
         {
             if (_handle != null)
             {
                 if (_steps == ESteps.Done)
                     return;
-                _handle.WaitForAsyncComplete();
+                _handle.WaitForCompletion();
                 OnUpdate();
             }
         }
 
         protected override void OnAbort()
         {
-           // throw new System.NotImplementedException();
         }
     }
 }

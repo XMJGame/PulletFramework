@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
-using YooAsset;
+using PulletFramework.Resource;
 
 namespace PulletFramework.Sound
 {
@@ -30,7 +30,7 @@ namespace PulletFramework.Sound
         /// 背景音量
         /// </summary>
         private static float _BgmVolume = 1;
-        public static float bgmVolume 
+        public static float bgmVolume
         {
             get { return _BgmVolume; }
             set { _BgmVolume = value; m_BGMSource.volume = _BgmVolume; }
@@ -40,7 +40,7 @@ namespace PulletFramework.Sound
         /// 播报音量
         /// </summary>
         private static float m_BroadcastVolume = 1;
-        public static float broadcastVolume 
+        public static float broadcastVolume
         {
             get { return m_BroadcastVolume; }
             set { m_BroadcastVolume = value; m_BroadcastSource.volume = m_BroadcastVolume; }
@@ -49,7 +49,7 @@ namespace PulletFramework.Sound
         /// 初始化声音系统
         /// </summary>
         /// <param name="createParam"></param>
-        public static void Initalize()
+        public static void Initialize()
         {
             if (m_IsInitialize)
                 throw new Exception($"{nameof(PulletSound)} is initialized !");
@@ -85,7 +85,7 @@ namespace PulletFramework.Sound
         /// </summary>
         internal static void Update(float deltaTime, float unscaledDeltaTime)
         {
-  
+
         }
 
         #region 背景声音相关
@@ -121,7 +121,7 @@ namespace PulletFramework.Sound
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             m_BGMSource.clip = audioClip;
             m_BGMSource.volume = _BgmVolume;
@@ -159,7 +159,7 @@ namespace PulletFramework.Sound
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             m_BroadcastSource.clip = audioClip;
             m_BroadcastSource.volume = m_BroadcastVolume;
@@ -197,7 +197,6 @@ namespace PulletFramework.Sound
                 //异步加载资源
                 PulletFrameworks.StartCoroutine(PrepareAudioClip(path, delegate (AudioClip audioClip)
                 {
-                    //mAudioClipList.Add(path, audioClip);
                     PlayButSound(audioClip, volume, isLoop);
                 }));
             }
@@ -207,7 +206,7 @@ namespace PulletFramework.Sound
         {
             if (!m_IsInitialize)
             {
-                Initalize();
+                Initialize();
             }
             m_BtnSource.clip = audioClip;
             m_BtnSource.volume = volume;
@@ -224,7 +223,7 @@ namespace PulletFramework.Sound
                 action?.Invoke(_AudioClipList[path]);
                 yield break;
             }
-            AssetHandle assetHandle = YooAssets.LoadAssetAsync<AudioClip>(path);
+            IResourceAssetHandle assetHandle = PulletResources.LoadAssetAsync<AudioClip>(path);
             yield return assetHandle;
 
             AudioClip audioClip = assetHandle.AssetObject as AudioClip;

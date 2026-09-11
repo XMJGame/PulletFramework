@@ -1,4 +1,4 @@
-#region Copyright (C) 
+#region Copyright (C)
 // ********************************************************************
 //  Copyright (C) 2020-2024 Xu Mingjun(Xinxiang, Henan) All Rights Reserved.
 //  作    者：许明俊
@@ -12,7 +12,7 @@ using UnityEngine;
 namespace PulletFramework.Setting
 {
 	/// <summary>
-	/// 
+	///
 	/// </summary>
     public class PulletSettingsData
     {
@@ -42,7 +42,9 @@ namespace PulletFramework.Setting
 				string filePath = $"Assets/Settings/Pullets/Resources/PulletSettings.asset";
 				if (!System.IO.File.Exists(filePath))
 				{
-					System.IO.Directory.CreateDirectory(filePath);
+					string directory = System.IO.Path.GetDirectoryName(filePath);
+					if (!string.IsNullOrEmpty(directory))
+						System.IO.Directory.CreateDirectory(directory);
 				}
 				UnityEditor.AssetDatabase.CreateAsset(mSetting, filePath);
 				UnityEditor.AssetDatabase.SaveAssets();

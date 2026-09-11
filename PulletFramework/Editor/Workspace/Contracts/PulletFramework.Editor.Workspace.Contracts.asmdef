@@ -1,0 +1,9 @@
+{
+    "name": "PulletFramework.Editor.Workspace.Contracts",
+    "rootNamespace": "PulletFramework.Editor.Workspace",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}

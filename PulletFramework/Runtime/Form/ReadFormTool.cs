@@ -64,14 +64,6 @@ namespace PulletFramework.Form
                         for (int i = 0; i < fieldInfo.Length; i++)
                         {
                             objMemberName = fieldInfo[i].Name;
-                            //字一个字母大写
-                            //if (char.IsUpper(objMemberName[0]) && objMemberName == variable[line])
-                            //{
-                            //    IList data = GetTList(fieldInfo[i].FieldType, rowData[line]);
-                            //    fieldInfo[i].SetValue(model, data);
-
-                            //    break;
-                            //}
                             if (objMemberName == variable[line])
                             {
                                 if (key == 1409)
@@ -105,7 +97,6 @@ namespace PulletFramework.Form
 
         public static void ReadConstantForm(TextAsset textAsset, ref Dictionary<string, string> result)
         {
-            //TextAsset textAsset = ResourcesManager.Instance.ResourcesLoad<TextAsset>("Forms/" + fileName);
             if (textAsset != null)
             {
                 //读取每一行的内容

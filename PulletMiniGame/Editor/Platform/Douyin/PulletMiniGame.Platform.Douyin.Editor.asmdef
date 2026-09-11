@@ -1,0 +1,13 @@
+{
+    "name": "PulletMiniGame.Platform.Douyin.Editor",
+    "rootNamespace": "PulletMiniGame.Platform.Douyin.Editor",
+    "references": [
+        "GUID:d57ab8b9d996474490f2d308955ad898",
+        "GUID:c67d5a3b7b6846e3903b42aff3945a77",
+        "GUID:9f9946aff6f4d78428a40c4ae83d2ced"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}
