@@ -434,6 +434,7 @@ namespace PulletFramework.Window
                 mPanel.SetActive(true);
             mPanel.transform.localPosition = Vector3.zero;
             mPanel.transform.localRotation = Quaternion.identity;
+            mPanel.transform.localScale = Vector3.one;
 
             mCanvas = mPanel.GetComponent<Canvas>();
             if (mCanvas == null)
