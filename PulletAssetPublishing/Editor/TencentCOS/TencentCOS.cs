@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace PulletFramework.Editor
+namespace PulletAssetPublishing.Editor
 {
     public sealed class TencentCosConfiguration
     {
@@ -31,7 +31,7 @@ namespace PulletFramework.Editor
         }
     }
 
-    /// <summary>腾讯云 COS 编辑器上传服务。优先读取独立资源发布配置，旧配置仅作迁移回退。</summary>
+    /// <summary>腾讯云 COS 编辑器上传服务，只读取当前资源发布配置。</summary>
     public static class TencentCOS
     {
         private const string MiniGameCorsRuleId = "pullet-minigame-public-assets";
@@ -40,22 +40,25 @@ namespace PulletFramework.Editor
 
         public static TencentCosConfiguration GetConfiguration()
         {
-            PulletEditorSetting setting = PulletEditorSettingData.Setting;
-            string providerId = GetConfiguredValue("providerId", "tencent-cos");
+            string providerId = PulletAssetPublishingSettingsBridge.GetValue("providerId");
             if (!string.Equals(providerId, "tencent-cos", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"当前资源发布供应商不是腾讯云 COS：{providerId}");
 
-            string bucket = GetConfiguredValue("bucket", setting.bucket);
-            string region = GetConfiguredValue("region", "ap-guangzhou");
-            string baseUrl = GetConfiguredValue("publicBaseUrl",
-                string.IsNullOrWhiteSpace(bucket) ? string.Empty : $"https://{bucket}.cos.{region}.myqcloud.com");
+            string bucket = PulletAssetPublishingSettingsBridge.GetValue("bucket");
+            string region = PulletAssetPublishingSettingsBridge.GetValue("region");
+            string configuredBaseUrl = PulletAssetPublishingSettingsBridge.GetValue("publicBaseUrl");
+            string baseUrl = string.IsNullOrWhiteSpace(configuredBaseUrl)
+                ? (string.IsNullOrWhiteSpace(bucket)
+                    ? string.Empty
+                    : $"https://{bucket}.cos.{region}.myqcloud.com")
+                : configuredBaseUrl;
             return new TencentCosConfiguration
             {
-                SecretId = GetConfiguredValue("accessKeyId", setting.secretId),
-                SecretKey = GetConfiguredValue("accessKeySecret", setting.secretKey),
+                SecretId = PulletAssetPublishingSettingsBridge.GetValue("accessKeyId"),
+                SecretKey = PulletAssetPublishingSettingsBridge.GetValue("accessKeySecret"),
                 Bucket = bucket,
                 Region = region,
-                Folder = NormalizeKey(GetConfiguredValue("rootFolder", setting.cosKey)),
+                Folder = NormalizeKey(PulletAssetPublishingSettingsBridge.GetValue("rootFolder")),
                 BaseUrl = baseUrl.TrimEnd('/')
             };
         }
@@ -148,18 +151,6 @@ namespace PulletFramework.Editor
                 configuration.SecretId, configuration.SecretKey, 600);
             s_Server = new CosXmlServer(config, credentials);
             s_ConfigurationFingerprint = fingerprint;
-        }
-
-        private static string GetConfiguredValue(string name, string legacyFallback)
-        {
-            const string bridgeTypeName =
-                "PulletAssetPublishing.Editor.PulletAssetPublishingSettingsBridge, PulletAssetPublishing.Editor";
-            Type bridgeType = Type.GetType(bridgeTypeName, false);
-            var method = bridgeType?.GetMethod("GetValue",
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            if (method != null)
-                return (method.Invoke(null, new object[] { name }) as string ?? string.Empty).Trim();
-            return legacyFallback?.Trim() ?? string.Empty;
         }
 
         private static string NormalizeKey(string value)

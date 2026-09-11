@@ -32,7 +32,6 @@ namespace PulletMiniGame.Editor
 
             _ = PulletSettingsData.Setting;
             _ = PulletBuildSettingData.Setting;
-            _ = PulletEditorSettingData.Setting;
             _ = MiniGameBuildSettingsData.Common;
             _ = MiniGameBuildSettingsData.WeChat;
             _ = MiniGameBuildSettingsData.Douyin;
