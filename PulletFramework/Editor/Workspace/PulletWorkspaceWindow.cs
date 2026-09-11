@@ -125,16 +125,22 @@ namespace PulletFramework.Editor
             _moduleTitle.text = module.DisplayName;
             _moduleDescription.text = module.Description ?? string.Empty;
             _moduleContent.Clear();
+            var pageHost = new VisualElement { name = $"module-page-{module.Id}" };
+            pageHost.style.flexGrow = 1f;
+            _moduleContent.Add(pageHost);
 
             if (module is IPulletWorkspaceVisualModule visualModule)
             {
-                TryInvoke(module, () => visualModule.CreateGUI(_moduleContent));
+                TryInvoke(module, () => visualModule.CreateGUI(pageHost));
                 return;
             }
 
             var compatibilityContainer = new IMGUIContainer(() => TryInvoke(module, module.OnGUI));
             compatibilityContainer.style.flexGrow = 1f;
-            _moduleContent.Add(compatibilityContainer);
+            var scrollView = new ScrollView();
+            scrollView.style.flexGrow = 1f;
+            scrollView.Add(compatibilityContainer);
+            pageHost.Add(scrollView);
         }
 
         private static List<IPulletWorkspaceModule> DiscoverModules(bool throwOnError)

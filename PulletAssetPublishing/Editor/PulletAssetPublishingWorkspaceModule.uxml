@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
-    <ui:VisualElement class="publishing-page">
+    <ui:ScrollView class="publishing-page">
         <ui:Label text="发布凭据仅保存在编辑器配置中，不会被运行时加载。请避免将真实密钥提交到公共仓库。" class="publishing-warning" />
         <ui:VisualElement class="publishing-section">
             <ui:Label text="供应商" class="publishing-section-title" />
@@ -24,5 +24,5 @@
             <ui:Button name="locate" text="定位配置资产" />
         </ui:VisualElement>
         <ui:Label name="status" class="publishing-status" />
-    </ui:VisualElement>
+    </ui:ScrollView>
 </ui:UXML>
