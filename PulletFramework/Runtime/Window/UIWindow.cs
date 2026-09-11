@@ -675,6 +675,8 @@ namespace PulletFramework.Window
                 }
                 finally
                 {
+                    IsClosing = false;
+                    IsOpenCompleted = false;
                     completed?.Invoke();
                 }
             }
