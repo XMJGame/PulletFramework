@@ -8,13 +8,15 @@
 | 模块 | 必需 | 用途 |
 | --- | --- | --- |
 | `PulletFramework` | 是 | UI、网络、对象池、事件及资源抽象 |
-| `PulletFramework.YooAsset` | 否 | YooAsset 3.x 初始化、资源构建、CDN 与 COS 发布 |
+| `PulletFramework.YooAsset` | 否 | YooAsset 3.x 初始化、资源构建与 CDN 加载 |
+| `PulletAssetPublishing` | 否 | 对象存储供应商、凭据、CORS 与资源发布 |
 | `PulletMiniGame` | 否 | 微信、抖音等小游戏平台能力和发布配置 |
 | `PulletFramework.HybridCLR` | 否 | HybridCLR 构建与程序集复制工具，已验证 8.14.1 |
 
 ```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
+https://github.com/XMJGame/PulletFramework.git?path=/PulletAssetPublishing
 https://github.com/XMJGame/PulletFramework.git?path=/PulletMiniGame
 ```
 
@@ -35,16 +37,17 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.HybridCLR
 
 - `Player 构建`：通用 Player 版本、目标平台、本机签名参数和 Unity 构建入口。
 - `YooAsset 资源`：资源运行模式、CDN、资源版本、收集器和构建器。
+- `资源发布`：选择对象存储供应商，配置凭据、下载域名和发布目录。
 - `小游戏发布`：安装 `PulletMiniGame` 后出现，管理微信、抖音、平台宏和导出参数。
 - `HybridCLR`：安装并启用 HybridCLR 后出现，管理 AOT 与热更新程序集流程。
 
-旧编辑器窗口的实现仍然保留，但不再占用 `Pullets` 菜单；迁移期可在各页面的“兼容工具”中打开核对。
+旧编辑器设置、旧 YooAsset 构建窗口及兼容入口均已移除，所有配置统一从 Workspace 对应模块进入。
 
 扩展模块只需让自己的 Editor 程序集引用 `PulletFramework.Editor.Workspace.Contracts`，并实现
 `IPulletWorkspaceModule`。工作台使用 `TypeCache` 自动发现页面，框架主体不需要反向引用业务或平台程序集。
 
 `PulletFramework.YooAsset.Editor` 已作为独立包和程序集提供资源页面；没有安装相应模块时，不会注册该页面。
-通用 Player 构建统一由 `PulletPlayerBuildService` 执行，Workspace 和旧 BuildWindow 共用这一实现。默认输出到
+通用 Player 构建统一由 `PulletPlayerBuildService` 执行。默认输出到
 `Builds/Player/{BuildTarget}`，构建前会检查平台支持、活动平台和启用场景，不会自动触发平台切换或构建。
 
 CI 或升级检查可以执行以下方法验证模块 ID、构造和初始化：

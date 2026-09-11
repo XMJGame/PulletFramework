@@ -7,21 +7,6 @@ using UnityEngine;
 
 namespace PulletFramework.Editor
 {
-	public class WindowsDefine
-	{
-#if UNITY_2019_4_OR_NEWER
-		/// <summary>
-		/// 停靠窗口类型集合
-		/// </summary>
-		public static readonly Type[] DockedWindowTypes =
-		{
-			typeof(PulletSettingWindow),
-			typeof(PulletEditorWindow)
-		};
-#endif
-	}
-
-
 	public class SettingLoader
 	{
 		/// <summary>

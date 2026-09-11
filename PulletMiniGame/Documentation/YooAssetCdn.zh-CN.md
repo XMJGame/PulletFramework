@@ -84,8 +84,8 @@ https://cdn.example.com/game-assets/{platform}/{appVersion}/{package}
 
 配置资产保存在
 `Assets/Settings/Pullets/Publishing/PulletAssetPublishingSettings.asset`，不进入 `Resources`，
-运行时不会加载。上传流程不再读取环境变量。迁移期间旧版 `PulletEditorSetting` 只在未安装
-`PulletAssetPublishing` 模块时回退使用，完成验证后会随旧窗口一起删除。
+运行时不会加载，上传流程也不再读取环境变量。旧版 `PulletEditorSetting` 和旧上传窗口已移除，
+发布参数只有这一处来源。
 
 “YooAsset 资源”页负责生成发布报告并发起上传；“资源发布”页只负责供应商、凭据和存储位置。
 上传成功后会把运行时 CDN 模板回填到 `PulletYooAssetSettings.defaultHostServer`。

@@ -108,6 +108,8 @@ namespace PulletFramework.Editor
                 GeneratePublishReport();
             if (GUILayout.Button("上传当前版本到腾讯云 COS", GUILayout.Height(30f)))
                 PulletYooAssetCosPublisher.PublishFromMenu();
+            if (GUILayout.Button("配置腾讯云 COS 下载跨域", GUILayout.Height(30f)))
+                PulletYooAssetCosPublisher.ConfigureDownloadCors();
         }
 
         private void Draw(string propertyName, string label)

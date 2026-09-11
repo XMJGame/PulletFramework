@@ -7,8 +7,7 @@ namespace PulletFramework.Editor
     /// <summary>通用 Player 配置。资源和小游戏配置由各自模块提供。</summary>
     public sealed class PulletPlayerWorkspaceModule : IPulletWorkspaceModule
     {
-        private bool _showLocalSettings;
-        private bool _showLegacyTools;
+        private bool _showSigningSettings;
 
         public string Id => "player";
         public string DisplayName => "Player 构建";
@@ -22,7 +21,7 @@ namespace PulletFramework.Editor
         {
             DrawPlayerSettings();
             GUILayout.Space(12f);
-            DrawLocalSettings();
+            DrawSigningSettings();
             GUILayout.Space(12f);
             DrawActions();
         }
@@ -58,22 +57,22 @@ namespace PulletFramework.Editor
             }
         }
 
-        private void DrawLocalSettings()
+        private void DrawSigningSettings()
         {
-            _showLocalSettings = EditorGUILayout.Foldout(_showLocalSettings, "本机发布参数", true);
-            if (!_showLocalSettings)
+            _showSigningSettings = EditorGUILayout.Foldout(
+                _showSigningSettings, "Android 签名", true);
+            if (!_showSigningSettings)
                 return;
 
             EditorGUI.indentLevel++;
-            PulletEditorSetting setting = PulletEditorSettingData.Setting;
+            PulletBuildSetting setting = PulletBuildSettingData.Setting;
             EditorGUI.BeginChangeCheck();
             setting.keystoreName = EditorGUILayout.TextField("Android Keystore", setting.keystoreName);
             setting.keystorePass = EditorGUILayout.PasswordField("Keystore 密码", setting.keystorePass);
             setting.keyaliasName = EditorGUILayout.TextField("Key Alias", setting.keyaliasName);
             setting.keyaliasPass = EditorGUILayout.PasswordField("Alias 密码", setting.keyaliasPass);
-            setting.assetBundleCopyPath = EditorGUILayout.TextField("兼容资源输出目录", setting.assetBundleCopyPath);
             if (EditorGUI.EndChangeCheck())
-                PulletEditorSettingData.IsDirty = true;
+                PulletBuildSettingData.IsDirty = true;
             EditorGUI.indentLevel--;
         }
 
@@ -109,33 +108,12 @@ namespace PulletFramework.Editor
                 }
             }
 
-            _showLegacyTools = EditorGUILayout.Foldout(_showLegacyTools, "兼容工具", true);
-            if (_showLegacyTools)
-            {
-                EditorGUILayout.HelpBox("旧窗口代码仍被保留，仅用于迁移期核对功能。", MessageType.Info);
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    if (GUILayout.Button("旧版构建窗口"))
-                    {
-                        if (!PulletEditorAssetUtility.InvokeStatic(
-                                "PulletFramework.Editor.PulletBuildWindow, PulletFramework.YooAsset.Editor",
-                                "OpenWindow"))
-                            EditorUtility.DisplayDialog("模块未安装", "旧版构建窗口属于 YooAsset 模块。", "确定");
-                    }
-                    if (GUILayout.Button("旧版编辑器设置"))
-                        PulletEditorWindow.OpenWindow();
-                    if (GUILayout.Button("旧版框架设置"))
-                        PulletSettingWindow.OpenWindow();
-                }
-            }
         }
 
         private static void Save()
         {
             if (PulletBuildSettingData.IsDirty)
                 PulletBuildSettingData.SaveFile();
-            if (PulletEditorSettingData.IsDirty)
-                PulletEditorSettingData.SaveFile();
         }
     }
 

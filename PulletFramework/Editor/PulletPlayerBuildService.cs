@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace PulletFramework.Editor
 {
-    /// <summary>通用 Player 构建入口，供 Workspace、旧窗口和自动化流程复用。</summary>
+    /// <summary>通用 Player 构建入口，供 Workspace 和自动化流程复用。</summary>
     public static class PulletPlayerBuildService
     {
         public static bool Validate(PulletBuildSetting setting, out string error)
@@ -88,8 +88,6 @@ namespace PulletFramework.Editor
                 target.ToString()));
             string fileName = SanitizeFileName(
                 $"{PlayerSettings.productName}-{setting.appVersion}");
-            setting.apkName = fileName;
-
             switch (target)
             {
                 case BuildTarget.Android:
@@ -122,14 +120,13 @@ namespace PulletFramework.Editor
                 return;
 
             PlayerSettings.Android.bundleVersionCode = Math.Max(1, setting.appVersionCode);
-            PulletEditorSetting editorSetting = PulletEditorSettingData.Setting;
-            if (string.IsNullOrWhiteSpace(editorSetting.keystoreName))
+            if (string.IsNullOrWhiteSpace(setting.keystoreName))
                 return;
 
-            PlayerSettings.Android.keystoreName = editorSetting.keystoreName;
-            PlayerSettings.Android.keystorePass = editorSetting.keystorePass;
-            PlayerSettings.Android.keyaliasName = editorSetting.keyaliasName;
-            PlayerSettings.Android.keyaliasPass = editorSetting.keyaliasPass;
+            PlayerSettings.Android.keystoreName = setting.keystoreName;
+            PlayerSettings.Android.keystorePass = setting.keystorePass;
+            PlayerSettings.Android.keyaliasName = setting.keyaliasName;
+            PlayerSettings.Android.keyaliasPass = setting.keyaliasPass;
         }
 
         private static bool IsDirectoryOutput(BuildTarget target)
