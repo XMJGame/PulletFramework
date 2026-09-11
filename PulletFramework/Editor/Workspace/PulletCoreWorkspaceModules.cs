@@ -20,8 +20,11 @@ namespace PulletFramework.Editor
         public void OnGUI()
         {
             DrawPlayerSettings();
-            GUILayout.Space(12f);
-            DrawSigningSettings();
+            if (PulletBuildSettingData.Setting.buildTarget == EBuildTarget.Android)
+            {
+                GUILayout.Space(12f);
+                DrawSigningSettings();
+            }
             GUILayout.Space(12f);
             DrawActions();
         }
@@ -33,9 +36,12 @@ namespace PulletFramework.Editor
             serialized.Update();
 
             EditorGUILayout.LabelField("Player", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serialized.FindProperty("buildTarget"), new GUIContent("目标平台"));
+            SerializedProperty buildTarget = serialized.FindProperty("buildTarget");
+            EditorGUILayout.PropertyField(buildTarget, new GUIContent("目标平台"));
             EditorGUILayout.PropertyField(serialized.FindProperty("appVersion"), new GUIContent("Player 版本"));
-            EditorGUILayout.PropertyField(serialized.FindProperty("appVersionCode"), new GUIContent("Android 版本号"));
+            if ((EBuildTarget)buildTarget.enumValueIndex == EBuildTarget.Android)
+                EditorGUILayout.PropertyField(serialized.FindProperty("appVersionCode"),
+                    new GUIContent("Android 版本号"));
 
             int sceneCount = 0;
             foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
