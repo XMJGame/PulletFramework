@@ -9,7 +9,7 @@ namespace PulletFramework.Editor
     public sealed class PulletYooAssetSettingsEditor : UnityEditor.Editor
     {
         internal const string DefaultAssetPath =
-            "Assets/Settings/Pullets/YooAsset/PulletYooAssetSettings.asset";
+            "Assets/Settings/Pullets/YooAsset/Resources/PulletYooAssetSettings.asset";
 
         public static void OpenOrCreate()
         {

@@ -349,7 +349,7 @@ PulletNetwork.DestroyWebSocketClient(socket);
 ```csharp
 using PulletFramework.YooAssetAdapter;
 
-yield return PulletYooAssetRuntime.Initialize(resourceSettings);
+yield return PulletYooAssetRuntime.Initialize();
 if (PulletYooAssetRuntime.Status != EPulletYooAssetStartupStatus.Succeeded)
     throw new System.Exception(PulletYooAssetRuntime.Error);
 
@@ -357,7 +357,8 @@ PulletFrameworks.Initialize();
 ```
 
 `PulletYooAssetSettings` 建议保存在
-`Assets/Settings/Pullets/YooAsset/PulletYooAssetSettings.asset`。启动流程统一处理文件系统初始化、
+`Assets/Settings/Pullets/YooAsset/Resources/PulletYooAssetSettings.asset`，由模块的数据入口统一加载。
+启动流程统一处理文件系统初始化、
 请求版本、加载清单、下载资源和安装 `PulletResources` 适配器；小游戏平台可通过
 `PulletYooAssetRuntime.WebFileSystemFactory` 注入自己的持久缓存与 AssetBundle 加载策略。
 
