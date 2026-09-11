@@ -5,6 +5,7 @@ using COSXML;
 using COSXML.Auth;
 using COSXML.CosException;
 using COSXML.Model.Bucket;
+using COSXML.Model.Object;
 using COSXML.Model.Tag;
 using COSXML.Transfer;
 using System.Collections.Generic;
@@ -69,7 +70,8 @@ namespace PulletAssetPublishing.Editor
         }
 
         public static async Task<string> PutObjectAsync(
-            string key, string sourcePath, Action<long, long> progress = null)
+            string key, string sourcePath, Action<long, long> progress = null,
+            string cacheControl = null)
         {
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException("COS upload source file not found.", sourcePath);
@@ -80,7 +82,10 @@ namespace PulletAssetPublishing.Editor
             string objectKey = CombineKey(configuration.Folder, key);
 
             var transferManager = new TransferManager(s_Server, new TransferConfig());
-            var uploadTask = new COSXMLUploadTask(configuration.Bucket, objectKey);
+            var request = new PutObjectRequest(configuration.Bucket, objectKey, sourcePath);
+            if (!string.IsNullOrWhiteSpace(cacheControl))
+                request.SetRequestHeader("Cache-Control", cacheControl);
+            var uploadTask = new COSXMLUploadTask(request);
             uploadTask.SetSrcPath(sourcePath);
             uploadTask.progressCallback = (completed, total) => progress?.Invoke(completed, total);
             await transferManager.UploadAsync(uploadTask);

@@ -97,6 +97,9 @@ GameObject 由业务或对象池负责销毁、回收。
 3. “构建当前版本”读取当前平台、Pullet 包名与资源版本，并沿用资源构建器保存的压缩、首包拷贝、加密等参数；
 4. “上传当前版本到腾讯云 COS”按照资源、清单、版本指针的顺序发布。
 
+COS 上传时，哈希 Bundle 与带版本号的清单使用一年 immutable 缓存；可变的 `.version` 指针使用
+`no-cache, max-age=0, must-revalidate`。因此资源文件可以长期复用，同时客户端仍会检查最新 Package 版本。
+
 `resourceChannel` 是客户端兼容通道（例如 `v1`），普通资源更新时保持不变。
 `packageVersion` 是 YooAsset 资源清单版本，资源发生变化后应递增它，再构建和上传。
 这不会改变 Player/App 版本，也不要求重新提交小游戏审核。已存在的资源包版本不会被覆盖，

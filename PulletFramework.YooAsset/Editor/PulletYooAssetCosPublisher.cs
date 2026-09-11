@@ -12,6 +12,9 @@ namespace PulletFramework.Editor
     /// <summary>按发布报告顺序将 YooAsset 版本上传到腾讯云 COS。</summary>
     public static class PulletYooAssetCosPublisher
     {
+        private const string ImmutableCacheControl = "public, max-age=31536000, immutable";
+        private const string VersionCacheControl = "no-cache, max-age=0, must-revalidate";
+
         public static async void PublishFromMenu()
         {
             if (!EditorUtility.DisplayDialog("上传 YooAsset 资源",
@@ -128,7 +131,8 @@ namespace PulletFramework.Editor
                     string sourcePath = Path.Combine(report.sourceDirectory,
                         file.relativePath.Replace('/', Path.DirectorySeparatorChar));
                     string objectKey = TencentCOS.CombineKey(remotePackagePath, file.relativePath);
-                    await TencentCOS.PutObjectAsync(objectKey, sourcePath);
+                    await TencentCOS.PutObjectAsync(objectKey, sourcePath, cacheControl:
+                        GetCacheControl(file));
                 }
             }
             finally
@@ -145,6 +149,13 @@ namespace PulletFramework.Editor
             PLogger.EditorInfo(
                 $"[PulletYooAsset] COS publish completed. Runtime URL: {settings.defaultHostServer}");
             return settings.defaultHostServer;
+        }
+
+        private static string GetCacheControl(PulletYooAssetPublishReport.PublishFile file)
+        {
+            return string.Equals(file.role, "VersionPointer", StringComparison.Ordinal)
+                ? VersionCacheControl
+                : ImmutableCacheControl;
         }
     }
 }
