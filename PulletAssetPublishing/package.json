@@ -1,0 +1,19 @@
+{
+    "name": "com.xmjgame.pullet-asset-publishing",
+    "version": "0.1.0",
+    "displayName": "Pullet Asset Publishing",
+    "description": "Pluggable editor-only asset publishing profiles and storage providers.",
+    "unity": "2021.3",
+    "dependencies": {
+        "com.xmjgame.pullet-framework": "0.1.0"
+    },
+    "author": {
+        "name": "XMJGame"
+    },
+    "keywords": [
+        "pullet",
+        "publishing",
+        "cdn",
+        "object-storage"
+    ]
+}

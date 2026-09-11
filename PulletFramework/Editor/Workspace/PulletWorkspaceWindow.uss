@@ -1,0 +1,12 @@
+.workspace-root { flex-grow: 1; flex-direction: row; }
+.workspace-sidebar { width: 196px; padding: 12px; border-right-width: 1px; border-right-color: rgb(55, 55, 55); background-color: rgb(41, 41, 41); }
+.workspace-brand { -unity-font-style: bold; font-size: 15px; margin-bottom: 2px; }
+.workspace-caption { color: rgb(155, 155, 155); font-size: 11px; margin-bottom: 12px; }
+.workspace-module-list { flex-grow: 1; }
+.workspace-module-button { height: 30px; margin-bottom: 4px; -unity-text-align: middle-left; padding-left: 12px; }
+.workspace-module-button--selected { background-color: rgb(52, 101, 145); color: white; }
+.workspace-reload { height: 25px; margin-top: 8px; }
+.workspace-main { flex-grow: 1; padding: 14px 16px 10px 16px; }
+.workspace-title { -unity-font-style: bold; font-size: 18px; margin-bottom: 3px; }
+.workspace-description { color: rgb(160, 160, 160); margin-bottom: 10px; white-space: normal; }
+.workspace-content { flex-grow: 1; }

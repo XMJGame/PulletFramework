@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="workspace-root" class="workspace-root">
+        <ui:VisualElement class="workspace-sidebar">
+            <ui:Label text="Pullet Workspace" class="workspace-brand" />
+            <ui:Label text="模块化开发与发布" class="workspace-caption" />
+            <ui:ScrollView name="module-list" class="workspace-module-list" />
+            <ui:Button name="reload-modules" text="重新扫描模块" class="workspace-reload" />
+        </ui:VisualElement>
+        <ui:VisualElement class="workspace-main">
+            <ui:Label name="module-title" class="workspace-title" />
+            <ui:Label name="module-description" class="workspace-description" />
+            <ui:ScrollView name="module-content" class="workspace-content" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
