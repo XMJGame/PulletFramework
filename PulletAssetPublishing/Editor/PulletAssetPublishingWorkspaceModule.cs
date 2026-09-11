@@ -40,6 +40,7 @@ namespace PulletAssetPublishing.Editor
 
         public void CreateGUI(VisualElement root)
         {
+            root.Clear();
             VisualTreeAsset layout = LoadLayout();
             if (layout == null)
             {
