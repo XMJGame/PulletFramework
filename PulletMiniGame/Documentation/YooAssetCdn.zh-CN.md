@@ -74,21 +74,23 @@ https://cdn.example.com/game-assets/{platform}/{appVersion}/{package}
 
 ## 腾讯云 COS 发布
 
-编辑器菜单 `Pullets/YooAsset/Upload Current Version to Tencent COS` 会读取发布报告并按三个阶段串行上传。
-上传成功后会自动把运行时 CDN 模板回填到 `PulletYooAssetSettings.defaultHostServer`。配置优先从本机或 CI
-环境变量读取，未设置时才兼容读取旧版 `PulletEditorSetting`：
+在 `Pullets/Workspace` 的“资源发布”页选择“腾讯云 COS”，直接填写以下配置并保存：
 
-```text
-COS_SECRET_ID
-COS_SECRET_KEY
-COS_BUCKET
-COS_REGION
-COS_BASE_URL
-COS_FOLDER
-```
+- `AccessKey ID / SecretId` 与 `AccessKey Secret / SecretKey`：编辑器上传凭据；
+- `Bucket` 与 `Region`：对象存储桶位置；
+- `远端根目录`：项目在桶内的发布根路径；
+- `公开下载域名`：YooAsset 客户端使用的 CDN 或 COS 下载域名；
+- `自定义 Endpoint`：预留给代理或兼容对象存储服务，腾讯云 COS 默认可留空。
 
-不要把长期 SecretId/SecretKey 提交到项目。正式 CI 推荐改用最小权限子账号或临时密钥，只授予目标资源目录
-的上传、覆盖与查询权限。命令行执行 `PublishCurrentVersionBatch` 时不要附加 `-quit`，任务会在结束时主动退出。
+配置资产保存在
+`Assets/Settings/Pullets/Publishing/PulletAssetPublishingSettings.asset`，不进入 `Resources`，
+运行时不会加载。上传流程不再读取环境变量。迁移期间旧版 `PulletEditorSetting` 只在未安装
+`PulletAssetPublishing` 模块时回退使用，完成验证后会随旧窗口一起删除。
+
+“YooAsset 资源”页负责生成发布报告并发起上传；“资源发布”页只负责供应商、凭据和存储位置。
+上传成功后会把运行时 CDN 模板回填到 `PulletYooAssetSettings.defaultHostServer`。
+不要把长期 SecretId/SecretKey 提交到公共仓库；正式项目应使用最小权限子账号，只授予目标资源目录的上传、
+覆盖与查询权限。命令行执行 `PublishCurrentVersionBatch` 时不要附加 `-quit`，任务会在结束时主动退出。
 
 ## 缓存策略
 

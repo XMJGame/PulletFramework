@@ -1,0 +1,11 @@
+{
+    "name": "PulletAssetPublishing.Editor",
+    "rootNamespace": "PulletAssetPublishing.Editor",
+    "references": [
+        "PulletFramework.Editor.Workspace.Contracts"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}

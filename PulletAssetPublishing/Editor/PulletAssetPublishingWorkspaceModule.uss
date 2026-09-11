@@ -1,0 +1,9 @@
+.publishing-page { flex-grow: 1; padding-right: 8px; }
+.publishing-warning { margin-bottom: 10px; padding: 8px 10px; color: rgb(222, 188, 118); background-color: rgb(67, 56, 35); border-left-width: 3px; border-left-color: rgb(202, 154, 62); white-space: normal; }
+.publishing-section { margin-top: 12px; padding: 10px; border-width: 1px; border-color: rgb(67, 67, 67); }
+.publishing-section-title { -unity-font-style: bold; margin-bottom: 7px; }
+.publishing-section TextField, .publishing-section DropdownField { margin-bottom: 5px; }
+.publishing-actions { flex-direction: row; margin-top: 14px; }
+.publishing-actions Button { min-width: 108px; height: 30px; margin-right: 6px; }
+.publishing-status { margin-top: 10px; color: rgb(110, 190, 160); }
+.publishing-status--error { color: rgb(230, 120, 105); }

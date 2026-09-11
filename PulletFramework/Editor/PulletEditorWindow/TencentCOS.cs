@@ -31,7 +31,7 @@ namespace PulletFramework.Editor
         }
     }
 
-    /// <summary>腾讯云 COS 编辑器上传服务。环境变量优先，旧编辑器配置作为兼容回退。</summary>
+    /// <summary>腾讯云 COS 编辑器上传服务。优先读取独立资源发布配置，旧配置仅作迁移回退。</summary>
     public static class TencentCOS
     {
         private const string MiniGameCorsRuleId = "pullet-minigame-public-assets";
@@ -41,17 +41,21 @@ namespace PulletFramework.Editor
         public static TencentCosConfiguration GetConfiguration()
         {
             PulletEditorSetting setting = PulletEditorSettingData.Setting;
-            string bucket = GetValue("COS_BUCKET", setting.bucket);
-            string region = GetValue("COS_REGION", "ap-guangzhou");
-            string baseUrl = GetValue("COS_BASE_URL",
+            string providerId = GetConfiguredValue("providerId", "tencent-cos");
+            if (!string.Equals(providerId, "tencent-cos", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"当前资源发布供应商不是腾讯云 COS：{providerId}");
+
+            string bucket = GetConfiguredValue("bucket", setting.bucket);
+            string region = GetConfiguredValue("region", "ap-guangzhou");
+            string baseUrl = GetConfiguredValue("publicBaseUrl",
                 string.IsNullOrWhiteSpace(bucket) ? string.Empty : $"https://{bucket}.cos.{region}.myqcloud.com");
             return new TencentCosConfiguration
             {
-                SecretId = GetValue("COS_SECRET_ID", setting.secretId),
-                SecretKey = GetValue("COS_SECRET_KEY", setting.secretKey),
+                SecretId = GetConfiguredValue("accessKeyId", setting.secretId),
+                SecretKey = GetConfiguredValue("accessKeySecret", setting.secretKey),
                 Bucket = bucket,
                 Region = region,
-                Folder = NormalizeKey(GetValue("COS_FOLDER", setting.cosKey)),
+                Folder = NormalizeKey(GetConfiguredValue("rootFolder", setting.cosKey)),
                 BaseUrl = baseUrl.TrimEnd('/')
             };
         }
@@ -146,10 +150,16 @@ namespace PulletFramework.Editor
             s_ConfigurationFingerprint = fingerprint;
         }
 
-        private static string GetValue(string environmentName, string fallback)
+        private static string GetConfiguredValue(string name, string legacyFallback)
         {
-            string value = Environment.GetEnvironmentVariable(environmentName);
-            return string.IsNullOrWhiteSpace(value) ? fallback ?? string.Empty : value.Trim();
+            const string bridgeTypeName =
+                "PulletAssetPublishing.Editor.PulletAssetPublishingSettingsBridge, PulletAssetPublishing.Editor";
+            Type bridgeType = Type.GetType(bridgeTypeName, false);
+            var method = bridgeType?.GetMethod("GetValue",
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (method != null)
+                return (method.Invoke(null, new object[] { name }) as string ?? string.Empty).Trim();
+            return legacyFallback?.Trim() ?? string.Empty;
         }
 
         private static string NormalizeKey(string value)

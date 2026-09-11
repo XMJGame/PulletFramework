@@ -15,4 +15,10 @@ namespace PulletFramework.Editor.Workspace
         void OnDisable();
         void OnGUI();
     }
+
+    /// <summary>使用 UI Toolkit 构建内容的 Workspace 模块可选契约。</summary>
+    public interface IPulletWorkspaceVisualModule
+    {
+        void CreateGUI(UnityEngine.UIElements.VisualElement root);
+    }
 }

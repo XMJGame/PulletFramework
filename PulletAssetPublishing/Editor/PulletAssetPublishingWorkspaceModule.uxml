@@ -1,0 +1,28 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:VisualElement class="publishing-page">
+        <ui:Label text="发布凭据仅保存在编辑器配置中，不会被运行时加载。请避免将真实密钥提交到公共仓库。" class="publishing-warning" />
+        <ui:VisualElement class="publishing-section">
+            <ui:Label text="供应商" class="publishing-section-title" />
+            <ui:DropdownField name="provider" label="对象存储" />
+        </ui:VisualElement>
+        <ui:VisualElement class="publishing-section">
+            <ui:Label text="访问凭据" class="publishing-section-title" />
+            <ui:TextField name="access-key-id" label="AccessKey ID / SecretId" />
+            <ui:TextField name="access-key-secret" label="AccessKey Secret / SecretKey" />
+        </ui:VisualElement>
+        <ui:VisualElement class="publishing-section">
+            <ui:Label text="存储位置" class="publishing-section-title" />
+            <ui:TextField name="bucket" label="Bucket" />
+            <ui:TextField name="region" label="Region" />
+            <ui:TextField name="endpoint" label="自定义 Endpoint" />
+            <ui:TextField name="root-folder" label="远端根目录" />
+            <ui:TextField name="public-base-url" label="公开下载域名" />
+        </ui:VisualElement>
+        <ui:VisualElement class="publishing-actions">
+            <ui:Button name="validate" text="验证配置" />
+            <ui:Button name="save" text="保存" />
+            <ui:Button name="locate" text="定位配置资产" />
+        </ui:VisualElement>
+        <ui:Label name="status" class="publishing-status" />
+    </ui:VisualElement>
+</ui:UXML>

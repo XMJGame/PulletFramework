@@ -4,6 +4,7 @@ using System.Linq;
 using PulletFramework.Editor.Workspace;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace PulletFramework.Editor
 {
@@ -12,8 +13,10 @@ namespace PulletFramework.Editor
     {
         private const string SelectedModuleKey = "PulletFramework.Workspace.SelectedModule";
         private readonly List<IPulletWorkspaceModule> _modules = new List<IPulletWorkspaceModule>();
-        private Vector2 _sidebarScroll;
-        private Vector2 _contentScroll;
+        private VisualElement _moduleList;
+        private VisualElement _moduleContent;
+        private Label _moduleTitle;
+        private Label _moduleDescription;
         private string _selectedModuleId;
 
         [MenuItem("Pullets/Workspace", false, 0)]
@@ -29,20 +32,18 @@ namespace PulletFramework.Editor
             List<IPulletWorkspaceModule> modules = DiscoverModules(true);
             if (modules.Count == 0)
                 throw new InvalidOperationException("没有发现 Pullet Workspace 模块。");
-
             foreach (IPulletWorkspaceModule module in modules)
             {
                 module.OnEnable();
                 module.OnDisable();
             }
-
             Debug.Log("[PulletWorkspace] 模块检查通过：" +
                       string.Join(", ", modules.Select(module => module.Id)));
         }
 
         private void OnEnable()
         {
-            ReloadModules();
+            ReloadModules(false);
         }
 
         private void OnDisable()
@@ -52,14 +53,29 @@ namespace PulletFramework.Editor
             _modules.Clear();
         }
 
-        private void ReloadModules()
+        public void CreateGUI()
+        {
+            rootVisualElement.Clear();
+            VisualTreeAsset layout = PulletEditorAssetUtility.LoadWindowUxml<PulletWorkspaceWindow>();
+            if (layout == null)
+                return;
+            layout.CloneTree(rootVisualElement);
+            AddStyleSheet(rootVisualElement, nameof(PulletWorkspaceWindow));
+
+            _moduleList = rootVisualElement.Q<VisualElement>("module-list");
+            _moduleContent = rootVisualElement.Q<VisualElement>("module-content");
+            _moduleTitle = rootVisualElement.Q<Label>("module-title");
+            _moduleDescription = rootVisualElement.Q<Label>("module-description");
+            rootVisualElement.Q<Button>("reload-modules").clicked += () => ReloadModules(true);
+            RenderModules();
+        }
+
+        private void ReloadModules(bool render)
         {
             foreach (IPulletWorkspaceModule module in _modules)
                 TryInvoke(module, module.OnDisable);
             _modules.Clear();
-
             _modules.AddRange(DiscoverModules(false));
-
             foreach (IPulletWorkspaceModule module in _modules)
                 TryInvoke(module, module.OnEnable);
 
@@ -67,6 +83,58 @@ namespace PulletFramework.Editor
             _selectedModuleId = _modules.Any(module => module.Id == persisted)
                 ? persisted
                 : _modules.FirstOrDefault()?.Id;
+            if (render && _moduleList != null)
+                RenderModules();
+        }
+
+        private void RenderModules()
+        {
+            _moduleList?.Clear();
+            if (_modules.Count == 0)
+            {
+                _moduleTitle.text = "没有可用模块";
+                _moduleDescription.text = "请安装至少一个 Pullet 编辑器模块。";
+                _moduleContent.Clear();
+                return;
+            }
+
+            foreach (IPulletWorkspaceModule module in _modules)
+            {
+                var button = new Button(() => SelectModule(module.Id)) { text = module.DisplayName };
+                button.AddToClassList("workspace-module-button");
+                if (module.Id == _selectedModuleId)
+                    button.AddToClassList("workspace-module-button--selected");
+                _moduleList.Add(button);
+            }
+            ShowSelectedModule();
+        }
+
+        private void SelectModule(string id)
+        {
+            if (_selectedModuleId == id)
+                return;
+            _selectedModuleId = id;
+            EditorPrefs.SetString(SelectedModuleKey, id);
+            RenderModules();
+        }
+
+        private void ShowSelectedModule()
+        {
+            IPulletWorkspaceModule module = _modules.FirstOrDefault(item => item.Id == _selectedModuleId)
+                                              ?? _modules[0];
+            _moduleTitle.text = module.DisplayName;
+            _moduleDescription.text = module.Description ?? string.Empty;
+            _moduleContent.Clear();
+
+            if (module is IPulletWorkspaceVisualModule visualModule)
+            {
+                TryInvoke(module, () => visualModule.CreateGUI(_moduleContent));
+                return;
+            }
+
+            var compatibilityContainer = new IMGUIContainer(() => TryInvoke(module, module.OnGUI));
+            compatibilityContainer.style.flexGrow = 1f;
+            _moduleContent.Add(compatibilityContainer);
         }
 
         private static List<IPulletWorkspaceModule> DiscoverModules(bool throwOnError)
@@ -103,73 +171,6 @@ namespace PulletFramework.Editor
             return modules;
         }
 
-        private void OnGUI()
-        {
-            if (_modules.Count == 0)
-            {
-                EditorGUILayout.HelpBox("没有发现可用的 Pullet 编辑器模块。", MessageType.Warning);
-                if (GUILayout.Button("重新扫描"))
-                    ReloadModules();
-                return;
-            }
-
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                DrawSidebar();
-                DrawContent();
-            }
-        }
-
-        private void DrawSidebar()
-        {
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.Width(184f),
-                       GUILayout.ExpandHeight(true)))
-            {
-                GUILayout.Space(6f);
-                EditorGUILayout.LabelField("Pullet Workspace", EditorStyles.boldLabel);
-                EditorGUILayout.LabelField("模块化开发与发布", EditorStyles.miniLabel);
-                GUILayout.Space(8f);
-
-                _sidebarScroll = EditorGUILayout.BeginScrollView(_sidebarScroll);
-                foreach (IPulletWorkspaceModule module in _modules)
-                {
-                    bool selected = module.Id == _selectedModuleId;
-                    GUIStyle style = selected ? EditorStyles.miniButtonMid : EditorStyles.miniButton;
-                    if (GUILayout.Toggle(selected, module.DisplayName, style, GUILayout.Height(30f)) && !selected)
-                    {
-                        _selectedModuleId = module.Id;
-                        _contentScroll = Vector2.zero;
-                        EditorPrefs.SetString(SelectedModuleKey, module.Id);
-                        GUI.FocusControl(null);
-                    }
-                }
-                EditorGUILayout.EndScrollView();
-
-                if (GUILayout.Button("重新扫描模块", EditorStyles.miniButton))
-                    ReloadModules();
-                GUILayout.Space(4f);
-            }
-        }
-
-        private void DrawContent()
-        {
-            IPulletWorkspaceModule module = _modules.FirstOrDefault(item => item.Id == _selectedModuleId)
-                                              ?? _modules[0];
-            using (new EditorGUILayout.VerticalScope(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)))
-            {
-                GUILayout.Space(10f);
-                EditorGUILayout.LabelField(module.DisplayName, EditorStyles.largeLabel);
-                if (!string.IsNullOrWhiteSpace(module.Description))
-                    EditorGUILayout.LabelField(module.Description, EditorStyles.wordWrappedMiniLabel);
-                GUILayout.Space(6f);
-
-                _contentScroll = EditorGUILayout.BeginScrollView(_contentScroll);
-                TryInvoke(module, module.OnGUI);
-                EditorGUILayout.EndScrollView();
-                GUILayout.Space(6f);
-            }
-        }
-
         private static void TryInvoke(IPulletWorkspaceModule module, Action action)
         {
             try
@@ -180,6 +181,22 @@ namespace PulletFramework.Editor
             {
                 Debug.LogError($"[PulletWorkspace] 模块 {module.Id} 执行失败。\n{exception}");
             }
+        }
+
+        private static void AddStyleSheet(VisualElement root, string assetName)
+        {
+            string path = AssetDatabase.FindAssets($"{assetName} t:StyleSheet")
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .FirstOrDefault(item => string.Equals(
+                    System.IO.Path.GetFileNameWithoutExtension(item),
+                    assetName,
+                    StringComparison.Ordinal));
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(path);
+            if (styleSheet != null)
+                root.styleSheets.Add(styleSheet);
         }
     }
 }
