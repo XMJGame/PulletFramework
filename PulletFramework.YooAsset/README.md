@@ -26,6 +26,10 @@ Assets/Settings/Pullets/YooAsset/Resources/PulletYooAssetSettings.asset
 
 业务 AssetBundle CDN 与微信、抖音导出工具使用的 Unity 首包 CDN 是两套配置。
 
+小游戏平台的 AssetBundle 实现通过独立的 `YooAsset.Extension` 程序集接入。该程序集使用
+YooAsset 官方预留的友元程序集名称，把内部 `IWebPlatformStrategy` 桥接为公开的
+`IPulletWebPlatformStrategy`；抖音、微信等 SDK 适配程序集无需直接依赖 YooAsset internal 类型。
+
 ## 多 Package 运行流程
 
 小游戏通常只需要 `DefaultPackage`。内容较大的项目可以在 YooAsset 资源收集器顶部点击 `+`

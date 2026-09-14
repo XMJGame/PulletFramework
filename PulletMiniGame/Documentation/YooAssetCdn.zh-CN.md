@@ -118,11 +118,13 @@ https://cdn.example.com/game-assets/{platform}/{appVersion}/{package}
 ```text
 PulletYooAssets
   -> YooAsset WebNetworkFileSystem
-    -> TiktokPlatform (IWebPlatformStrategy)
-      -> TTSDK.TTAssetBundle
+    -> PulletWebNetworkFileSystem (YooAsset.Extension)
+      -> TiktokPlatform (IPulletWebPlatformStrategy)
+        -> TTSDK.TTAssetBundle
 ```
 
 - YooAsset：管理版本、清单、依赖、下载队列、资源地址和生命周期。
+- `YooAsset.Extension`：使用 YooAsset 官方友元程序集名称，桥接其内部 Web 策略与公开的平台接口。
 - `TiktokFileSystemCreater`：创建 YooAsset Web 文件系统参数并注入抖音平台策略。
 - `TiktokPlatform`：把 AssetBundle 请求、提取和卸载转交给 TTSDK。
 - `TTAssetBundle`：TTSDK 对抖音 WebGL AssetBundle/ABFS 的封装。ABFS 可用时注册 URL 并从平台文件系统加载；
@@ -133,6 +135,10 @@ PulletYooAssets
 
 平台缓存容量和回收策略可能随基础库变化，最终应在真机测试首次下载、二次冷启动、断网启动、下载中断恢复、
 版本升级、空间不足与清理缓存。
+
+2026-09-14 已在抖音开发者工具 4.5.6 完成远端运行验证：清除全部缓存后，TT ABFS 启用，YooAsset
+初始化成功并加载首页；同版本再次启动同样成功。开发者工具显示的 `ttl: 5s, capacity: 128MB` 是当前模拟器
+实现信息，不应写成正式设备的固定平台上限。
 
 ## 验证工程
 

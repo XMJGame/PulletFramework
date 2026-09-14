@@ -5,8 +5,10 @@
         "PulletMiniGame.Runtime",
         "PulletMiniGame.Platform.Douyin",
         "TTLitJson",
+        "TTWebGL",
         "YooAsset",
-        "PulletFramework.YooAsset"
+        "PulletFramework.YooAsset",
+        "YooAsset.Extension"
     ],
     "defineConstraints": ["PULLET_PLATFORM_DOUYIN"],
     "autoReferenced": true

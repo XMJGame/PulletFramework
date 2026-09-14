@@ -51,6 +51,35 @@ AppID 本身可以正确，登录账号仍可能没有导入、编译或读取�
 
 域名已经填写但工具提示“获取域名白名单失败”时，优先按上一节检查登录账号权限。
 
+### YooAsset 访问 `dummy.dummy.dummy`
+
+**现象**
+
+游戏停在资源准备界面，控制台提示：
+
+```text
+https://dummy.dummy.dummy/StreamingAssets/PackageManifest/DefaultPackage/BuiltinCatalog.bytes
+request:fail url not in domain list
+```
+
+**本次根因**
+
+`PULLET_PLATFORM_DOUYIN` 已由平台切换工具写入，但抖音 YooAsset 样例仍判断旧宏
+`DOUYINMINIGAME`，导致 `TiktokFileSystem` 和 `TTAssetBundle` 适配代码未进入构建。
+YooAsset 随后退回标准 WebGL 的 `WebServerFileSystem`，并访问 TTSDK 用于占位的
+StreamingAssets 地址。把 `dummy.dummy.dummy` 加入域名白名单不能解决问题。
+
+**处理**
+
+- 抖音平台代码使用 `PULLET_PLATFORM_DOUYIN`，并只为旧项目兼容 `DOUYINMINIGAME`。
+- `PulletMiniGame.DouyinSDK` 显式引用 `TTWebGL`，否则 `TTAssetBundle` 不会参与编译。
+- YooAsset 的 Web 平台策略属于内部扩展接口。通过 `YooAsset.Extension` 友元程序集中的
+  `PulletWebNetworkFileSystem` 桥接，不要让独立平台程序集直接实现 YooAsset internal 接口。
+- 修复后日志应出现 `Asset Bundle Filesystem Enabled`，且不再请求 `dummy.dummy.dummy`。
+
+2026-09-14 已在抖音开发者工具 4.5.6 验证：YooAsset 完成初始化、远端资源加载成功并进入首页。
+开发者工具结果不能替代真机的缓存容量、回收和断网启动验收。
+
 ### 默认场景或黑屏
 
 **现象**
