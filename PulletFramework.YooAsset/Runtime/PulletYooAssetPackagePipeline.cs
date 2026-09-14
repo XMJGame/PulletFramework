@@ -261,14 +261,7 @@ namespace PulletFramework.YooAssetAdapter
 
         private static string TryGetActiveVersion(ResourcePackage package)
         {
-            try
-            {
-                return package.GetPackageVersion();
-            }
-            catch (YooPackageInvalidException)
-            {
-                return null;
-            }
+            return package.PackageValid ? package.GetPackageVersion() : null;
         }
 
         private static bool CheckResult(

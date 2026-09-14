@@ -1,5 +1,6 @@
-#if UNITY_WEBGL && DOUYINMINIGAME
+#if UNITY_WEBGL && (PULLET_PLATFORM_DOUYIN || DOUYINMINIGAME)
 using YooAsset;
+using PulletFramework.YooAssetAdapter;
 
 public static class TiktokFileSystemCreater
 {
@@ -24,9 +25,7 @@ public static class TiktokFileSystemCreater
 
     private static FileSystemParameters CreateBaseFileSystemParameters(IRemoteService remoteService)
     {
-        var fileSystemParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remoteService, true);
-        fileSystemParams.AddParameter(EFileSystemParameter.WebPlatformStrategy, new TiktokPlatform());
-        return fileSystemParams;
+        return PulletWebNetworkFileSystem.Create(remoteService, new TiktokPlatform());
     }
 }
 #endif

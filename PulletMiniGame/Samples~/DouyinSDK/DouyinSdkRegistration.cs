@@ -10,7 +10,7 @@ namespace PulletMiniGame.Platform.Douyin
         {
             MiniGameBootstrap.Register(PulletPlatformIds.Douyin,
                 () => new DouyinPlatformAdapter(new DouyinSdkBridge()));
-#if UNITY_WEBGL && DOUYINMINIGAME
+#if UNITY_WEBGL && (PULLET_PLATFORM_DOUYIN || DOUYINMINIGAME)
             // 使用 TTAssetBundle 完成平台侧下载、解包和卸载。
             PulletYooAssets.WebFileSystemFactory =
                 (_, remoteService) => TiktokFileSystemCreater.CreateFileSystemParameters(remoteService);

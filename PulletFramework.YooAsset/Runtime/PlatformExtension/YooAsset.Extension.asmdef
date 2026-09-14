@@ -1,0 +1,8 @@
+{
+    "name": "YooAsset.Extension",
+    "rootNamespace": "PulletFramework.YooAssetAdapter",
+    "references": [
+        "YooAsset"
+    ],
+    "autoReferenced": true
+}
