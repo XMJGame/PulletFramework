@@ -96,6 +96,7 @@ namespace PulletFramework
 				PulletPlayerPrefs.UninstallBackend();
 				PulletEvent.Destroy();
 				PulletWindow.Destroy();
+				UISafeArea.ResetProvider();
 				PulletUIFeedback.Reset();
 				PulletPooling.Destroy();
 				PulletNetwork.Destroy();

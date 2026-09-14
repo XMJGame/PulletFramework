@@ -3,6 +3,10 @@
 Install the official WeChat mini-game SDK first, then import this sample from Package Manager.
 Select WeChat and click `应用平台` in `Pullets/Mini Game/Build` to enable its assembly.
 
+The registration also installs `WeChatSafeAreaProvider`. It converts the platform window's
+logical-pixel, top-left-origin safe area to Unity screen pixels. Devices that do not return
+`safeArea` fall back to `Screen.safeArea`; the top-right menu capsule is not part of this layout.
+
 ```csharp
 PlatformResult result = await MiniGameBootstrap.InitializeAsync(cancellationToken);
 ```

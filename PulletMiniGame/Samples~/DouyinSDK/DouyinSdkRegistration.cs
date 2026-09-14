@@ -1,6 +1,7 @@
 using UnityEngine;
 using PulletFramework.YooAssetAdapter;
 using PulletFramework.Sound;
+using PulletFramework.Window;
 
 namespace PulletMiniGame.Platform.Douyin
 {
@@ -12,6 +13,7 @@ namespace PulletMiniGame.Platform.Douyin
             MiniGameBootstrap.Register(PulletPlatformIds.Douyin,
                 () => new DouyinPlatformAdapter(new DouyinSdkBridge()));
 #if UNITY_WEBGL && (PULLET_PLATFORM_DOUYIN || DOUYINMINIGAME)
+            UISafeArea.SetProvider(new DouyinSafeAreaProvider());
             PulletSound.SetMusicBackend(new DouyinMusicBackend());
             // 使用 TTAssetBundle 完成平台侧下载、解包和卸载。
             PulletYooAssets.WebFileSystemFactory =
