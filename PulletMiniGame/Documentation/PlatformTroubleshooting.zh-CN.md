@@ -80,6 +80,46 @@ StreamingAssets 地址。把 `dummy.dummy.dummy` 加入域名白名单不能解�
 2026-09-14 已在抖音开发者工具 4.5.6 验证：YooAsset 完成初始化、远端资源加载成功并进入首页。
 开发者工具结果不能替代真机的缓存容量、回收和断网启动验收。
 
+### YooAsset 远程包中长音频加载失败
+
+**现象**
+
+```text
+[Sound Adapter] writeFileSync:fail no such file or directory
+Loading FSB failed for audio clip "..."
+```
+
+**原因与处理**
+
+- AAC 数据超过平台短音频阈值后会进入中长音频适配器，并写入
+  `ttfile://user/__sc_internal_cache_files__/audios` 后流式播放；开发者工具可能在该路径初始化时失败。
+- TTSDK 的 `useByteAudioAPI` 是首包 WebGL 音频复制开关，不负责提取 YooAsset 远程 AssetBundle
+  里的音频。不要为了修复远程音频而在通用构建适配器中强制开启它。
+- 很短且体积可控的循环音频可使用 `Decompress On Load + PCM`，避免进入中长音频落盘路径。
+- 正式项目的长 BGM 不应长期占用 Unity/FMOD 内存，应发布独立 `mp3`、`m4a` 或 `aac`
+  文件并使用 `TTAudioManager` 远程流式播放；音频更新时修改 URL 或查询参数，避免命中旧缓存。
+- YooAsset 返回 `AudioClip` 对象不代表音频数据已经完成解码。播放服务应等待
+  `AudioClip.loadState == Loaded`，并设置超时与失败路径。
+
+2026-09-14 的验证 Demo 将 16 秒单声道 BGM 改为 PCM 后，开发者工具中不再出现
+`CompressedSoundClip`、`writeFileSync` 和 `Loading FSB failed`。
+
+开发者工具仍可能输出 `Trying to get length of sound which is not loaded`。若随后没有
+`Loading FSB failed`，且播放、暂停和恢复正常，可按模拟器异步音频状态提示处理；真机仍需实际听音验收。
+
+### `.version` 的 MIME 类型警告
+
+**现象**
+
+```text
+Resource interpreted as Document but transferred with MIME type application/octet-stream
+```
+
+YooAsset 将 `.version` 作为 UTF-8 文本读取。对象存储未设置类型时通常默认返回
+`application/octet-stream`，虽然不阻止 `DownloadHandlerBuffer.text` 解析，但会触发开发者工具警告。
+上传器应为 `.version`、`.hash` 和 `.txt` 设置 `text/plain; charset=utf-8`，为 JSON 文件设置
+`application/json; charset=utf-8`；二进制清单和 AssetBundle 保持 `application/octet-stream`。
+
 ### 默认场景或黑屏
 
 **现象**

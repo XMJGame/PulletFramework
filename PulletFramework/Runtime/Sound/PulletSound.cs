@@ -18,6 +18,7 @@ namespace PulletFramework.Sound
         public bool PersistPreferences = true;
         public string PreferenceKeyPrefix = "Pullet.Sound";
         public float DefaultMusicFadeSeconds = 0.25f;
+        public float AudioLoadTimeoutSeconds = 10f;
         public AudioMixerGroup MusicOutput;
         public AudioMixerGroup SoundEffectOutput;
         public AudioMixerGroup VoiceOutput;
@@ -86,6 +87,7 @@ namespace PulletFramework.Sound
             if (_initialized) return;
             _options = options ?? new PulletSoundOptions();
             _options.SoundEffectSourceCount = Mathf.Clamp(_options.SoundEffectSourceCount, 1, 32);
+            _options.AudioLoadTimeoutSeconds = Mathf.Max(1f, _options.AudioLoadTimeoutSeconds);
             if (string.IsNullOrWhiteSpace(_options.PreferenceKeyPrefix))
                 _options.PreferenceKeyPrefix = "Pullet.Sound";
             _masterMuted = false;
@@ -395,6 +397,20 @@ namespace PulletFramework.Sound
             {
                 yield return handle;
                 if (handle.IsSucceeded) clip = handle.AssetObject as AudioClip;
+            }
+            if (clip != null && clip.loadState != AudioDataLoadState.Loaded)
+            {
+                if (clip.loadState == AudioDataLoadState.Unloaded)
+                    clip.LoadAudioData();
+                float deadline = Time.realtimeSinceStartup + _options.AudioLoadTimeoutSeconds;
+                while (clip.loadState == AudioDataLoadState.Loading
+                    && Time.realtimeSinceStartup < deadline)
+                    yield return null;
+                if (clip.loadState != AudioDataLoadState.Loaded)
+                {
+                    PLogger.Error($"音频数据加载失败：{location}，状态：{clip.loadState}");
+                    clip = null;
+                }
             }
             if (lifetime != _lifetime || !_initialized) { handle?.Release(); yield break; }
             if (clip != null) Clips[location] = new CachedClip { Clip = clip, Handle = handle };
