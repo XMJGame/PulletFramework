@@ -71,7 +71,7 @@ namespace PulletAssetPublishing.Editor
 
         public static async Task<string> PutObjectAsync(
             string key, string sourcePath, Action<long, long> progress = null,
-            string cacheControl = null)
+            string cacheControl = null, string contentType = null)
         {
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException("COS upload source file not found.", sourcePath);
@@ -85,6 +85,8 @@ namespace PulletAssetPublishing.Editor
             var request = new PutObjectRequest(configuration.Bucket, objectKey, sourcePath);
             if (!string.IsNullOrWhiteSpace(cacheControl))
                 request.SetRequestHeader("Cache-Control", cacheControl);
+            if (!string.IsNullOrWhiteSpace(contentType))
+                request.SetRequestHeader("Content-Type", contentType);
             var uploadTask = new COSXMLUploadTask(request);
             uploadTask.SetSrcPath(sourcePath);
             uploadTask.progressCallback = (completed, total) => progress?.Invoke(completed, total);

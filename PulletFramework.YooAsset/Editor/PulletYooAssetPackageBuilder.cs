@@ -31,8 +31,9 @@ namespace PulletFramework.Editor
                     return;
 
                 string output = BuildCurrentVersion(settings);
+                string packageVersion = new DirectoryInfo(output).Name;
                 string report = PulletYooAssetPublishReport.Create(
-                    output, packageName, GetLastBuildVersion(settings));
+                    output, packageName, packageVersion);
                 PLogger.EditorInfo($"[PulletYooAsset] Package build completed: {output}\n" +
                     $"[PulletYooAsset] Publish report: {report}");
                 EditorUtility.RevealInFinder(output);
@@ -48,6 +49,7 @@ namespace PulletFramework.Editor
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
+            string settingsAssetPath = AssetDatabase.GetAssetPath(settings);
             string packageName = PulletYooAssetSettingsEditor.GetSelectedPackageName(settings);
             if (string.IsNullOrWhiteSpace(packageName))
                 throw new BuildFailedException("请先选择要构建的资源包。");
@@ -80,9 +82,15 @@ namespace PulletFramework.Editor
             BuildResult result = pipeline.Run(parameters, true);
             if (!result.Success)
                 throw new BuildFailedException(result.ErrorInfo);
-            settings.RecordBuildVersion(
+            PulletYooAssetSettings currentSettings = string.IsNullOrWhiteSpace(settingsAssetPath)
+                ? null
+                : AssetDatabase.LoadAssetAtPath<PulletYooAssetSettings>(settingsAssetPath);
+            if (currentSettings == null)
+                throw new BuildFailedException(
+                    $"资源构建成功，但无法重新加载 YooAsset 配置：{settingsAssetPath}");
+            currentSettings.RecordBuildVersion(
                 EditorUserBuildSettings.activeBuildTarget.ToString(), packageName, packageVersion);
-            EditorUtility.SetDirty(settings);
+            EditorUtility.SetDirty(currentSettings);
             AssetDatabase.SaveAssets();
             return result.OutputPackageDirectory;
         }

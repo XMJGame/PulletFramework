@@ -132,7 +132,7 @@ namespace PulletFramework.Editor
                         file.relativePath.Replace('/', Path.DirectorySeparatorChar));
                     string objectKey = TencentCOS.CombineKey(remotePackagePath, file.relativePath);
                     await TencentCOS.PutObjectAsync(objectKey, sourcePath, cacheControl:
-                        GetCacheControl(file));
+                        GetCacheControl(file), contentType: GetContentType(file.relativePath));
                 }
             }
             finally
@@ -156,6 +156,24 @@ namespace PulletFramework.Editor
             return string.Equals(file.role, "VersionPointer", StringComparison.Ordinal)
                 ? VersionCacheControl
                 : ImmutableCacheControl;
+        }
+
+        private static string GetContentType(string relativePath)
+        {
+            switch (Path.GetExtension(relativePath).ToLowerInvariant())
+            {
+                case ".version":
+                case ".hash":
+                case ".txt":
+                    return "text/plain; charset=utf-8";
+                case ".json":
+                case ".report":
+                    return "application/json; charset=utf-8";
+                case ".xml":
+                    return "application/xml; charset=utf-8";
+                default:
+                    return "application/octet-stream";
+            }
         }
     }
 }
