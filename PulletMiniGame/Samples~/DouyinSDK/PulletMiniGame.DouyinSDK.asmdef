@@ -4,6 +4,7 @@
         "PulletFramework.Runtime",
         "PulletMiniGame.Runtime",
         "PulletMiniGame.Platform.Douyin",
+        "PulletFramework.Runtime",
         "TTLitJson",
         "TTWebGL",
         "YooAsset",

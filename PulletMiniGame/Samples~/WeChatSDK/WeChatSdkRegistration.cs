@@ -1,5 +1,6 @@
 using UnityEngine;
 using PulletFramework.YooAssetAdapter;
+using PulletFramework.Sound;
 
 namespace PulletMiniGame.Platform.WeChat
 {
@@ -11,6 +12,7 @@ namespace PulletMiniGame.Platform.WeChat
             MiniGameBootstrap.Register(PulletPlatformIds.WeChat,
                 () => new WeChatPlatformAdapter(new WeChatSdkBridge()));
 #if UNITY_WEBGL && (WEIXINMINIGAME || UNITY_WECHATMINIGAME)
+            PulletSound.SetMusicBackend(new WeChatMusicBackend());
             // 微信需要使用 USER_DATA_PATH 和 WXAssetBundle，避免退回浏览器缓存语义。
             PulletYooAssets.WebFileSystemFactory =
                 (_, remoteService) => WechatFileSystemCreater.CreateFileSystemParameters(remoteService);

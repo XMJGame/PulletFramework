@@ -5,6 +5,7 @@
         "PulletFramework.Runtime",
         "PulletMiniGame.Runtime",
         "PulletMiniGame.Platform.WeChat",
+        "PulletFramework.Runtime",
         "Wx",
         "YooAsset",
         "PulletFramework.YooAsset"

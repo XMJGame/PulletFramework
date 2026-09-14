@@ -69,6 +69,17 @@ if (PulletPlatform.TryGet(out IRewardedAdService ads))
 `TT.PlayerPrefs`。音频、画质、语言和游戏业务不需要编写平台判断；无论声音系统在平台
 初始化之前还是之后启动，音频偏好都会重新从当前平台存储读取。
 
+SDK 样例还会在 WebGL 小游戏包中注册长音乐后端：抖音使用 `TTAudioManager`，微信使用
+`WX.CreateInnerAudioContext`。只有 HTTPS 音频地址会被接管，YooAsset 内的音乐与短音效仍
+使用 Unity `AudioSource`。因此业务可以统一调用：
+
+```csharp
+PulletSound.PlayMusic("https://cdn.example.com/audio/home.mp3");
+```
+
+编辑器和普通 App 会自动回退到 Unity 的远端音频加载，不需要编写平台宏。平台后端当前用于
+背景音乐，不替换需要低延迟并发播放的短音效。
+
 ## 异步调用约定
 
 业务侧的一次性平台请求统一返回 `Task`，方法使用 `Async` 后缀，并接收可选的
