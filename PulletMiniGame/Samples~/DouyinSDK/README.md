@@ -5,6 +5,10 @@ Apply the Douyin platform in Pullets/Mini Game/Build and wait for compilation.
 The sample registers before scene load. Await `MiniGameBootstrap.InitializeAsync(cancellationToken)`
 from the first scene.
 
+The registration also installs `DouyinSafeAreaProvider`. It converts TTSDK's logical-pixel,
+top-left-origin safe area to Unity screen pixels. The top-right menu capsule is intentionally
+not included; lay out capsule-sensitive UI separately when a game actually needs it.
+
 Configure share defaults and business ad placements in the build window's runtime settings.
 Load("revive") before Show("revive"). Only ShouldGrantReward grants a reward.
 Login returns a temporary code and anonymousCode for exchange by your server.

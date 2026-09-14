@@ -50,6 +50,29 @@ namespace PulletFramework.Window
 
         public static Rect Current => ClampToScreen(m_Provider.GetSafeArea());
 
+        /// <summary>
+        /// 将小游戏平台返回的左上角原点、逻辑像素安全区转换为 Unity 物理像素安全区。
+        /// </summary>
+        public static Rect FromTopLeftLogical(
+            float left,
+            float top,
+            float right,
+            float bottom,
+            float logicalWidth,
+            float logicalHeight)
+        {
+            if (logicalWidth <= 0f || logicalHeight <= 0f || right <= left || bottom <= top)
+                return new Rect(0f, 0f, Mathf.Max(1f, Screen.width), Mathf.Max(1f, Screen.height));
+
+            float scaleX = Mathf.Max(1f, Screen.width) / logicalWidth;
+            float scaleY = Mathf.Max(1f, Screen.height) / logicalHeight;
+            return Rect.MinMaxRect(
+                left * scaleX,
+                (logicalHeight - bottom) * scaleY,
+                right * scaleX,
+                (logicalHeight - top) * scaleY);
+        }
+
         public static void SetProvider(IUISafeAreaProvider provider)
         {
             m_Provider = provider ?? m_DefaultProvider;
@@ -83,6 +106,16 @@ namespace PulletFramework.Window
         internal static void Update()
         {
             Refresh();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetState()
+        {
+            m_Provider = m_DefaultProvider;
+            m_LastSafeArea = new Rect(-1f, -1f, -1f, -1f);
+            m_LastScreenWidth = -1;
+            m_LastScreenHeight = -1;
+            Changed = null;
         }
 
         private static Rect ClampToScreen(Rect safeArea)
