@@ -87,6 +87,7 @@ namespace PulletMiniGame.Platform.Douyin.Editor
             if (string.IsNullOrWhiteSpace(artifactPath))
                 throw new InvalidOperationException("TTSDK completed without returning an artifact path.");
 
+            MiniGameLoadingPagePostprocessor.Apply(artifactPath, settings.showDefaultUnityLoadingLogo);
             InjectLaunchProgressLogging(artifactPath);
             PulletFramework.PLogger.EditorInfo(
                 $"[PulletMiniGame] Douyin mini game build completed: {artifactPath}");

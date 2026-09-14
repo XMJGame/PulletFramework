@@ -89,6 +89,7 @@ namespace PulletMiniGame.Platform.WeChat.Editor
                 throw new InvalidOperationException($"WeChat export failed: {result}");
 
             string miniGameOutput = ResolveMiniGameOutputPath(context.OutputPath);
+            MiniGameLoadingPagePostprocessor.Apply(miniGameOutput, settings.showDefaultUnityLoadingLogo);
             if (settings.enableNativeLeaderboard)
                 PatchOpenDataTemplate(miniGameOutput, settings.nativeLeaderboardKey);
 

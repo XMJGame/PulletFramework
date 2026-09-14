@@ -126,6 +126,8 @@ namespace PulletMiniGame.Editor
             settings.orientation = (EMiniGameOrientation)EditorGUILayout.EnumPopup("屏幕方向", settings.orientation);
             settings.startupImage = (Texture2D)EditorGUILayout.ObjectField(
                 "启动背景图", settings.startupImage, typeof(Texture2D), false);
+            settings.showDefaultUnityLoadingLogo = EditorGUILayout.Toggle(
+                "显示 Unity 加载图标", settings.showDefaultUnityLoadingLogo);
             settings.firstPackageResourceMode = (EFirstPackageResourceMode)EditorGUILayout.EnumPopup(
                 "首包资源", settings.firstPackageResourceMode);
             if (settings.firstPackageResourceMode == EFirstPackageResourceMode.Cdn)
