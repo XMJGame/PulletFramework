@@ -5,6 +5,7 @@ using PulletFramework.Resource;
 using PulletFramework.Setting;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Networking;
 
 namespace PulletFramework.Sound
 {
@@ -31,6 +32,7 @@ namespace PulletFramework.Sound
         {
             public AudioClip Clip;
             public IResourceAssetHandle Handle;
+            public bool OwnsClip;
         }
 
         private sealed class EffectSlot
@@ -67,12 +69,14 @@ namespace PulletFramework.Sound
         private static AudioSource _fadeFrom;
         private static AudioSource _fadeTo;
         private static PulletSoundOptions _options;
+        private static IPulletMusicBackend _musicBackend;
         private static bool _preferencesDirty;
         private static float _preferencesSaveAt;
 
         public static bool IsInitialized => _initialized;
         public static bool IsMasterMuted => _masterMuted;
-        public static bool IsMusicPlaying => _initialized && ActiveMusic.isPlaying;
+        public static bool IsMusicPlaying => _initialized
+            && ((_musicBackend?.IsPlaying ?? false) || ActiveMusic.isPlaying);
         public static float MasterVolume => _masterVolume;
         public static float MusicVolume => GetVolume(ESoundChannel.Music);
         public static float SoundEffectVolume => GetVolume(ESoundChannel.SoundEffect);
@@ -80,6 +84,27 @@ namespace PulletFramework.Sound
         public static event Action SettingsChanged;
 
         private static AudioSource ActiveMusic => _musicSources[_activeMusic];
+
+        /// <summary>
+        /// 设置长音频播放后端。平台模块应在首场景加载前注册；传入 null 可恢复 Unity 播放。
+        /// </summary>
+        public static void SetMusicBackend(IPulletMusicBackend backend)
+        {
+            if (ReferenceEquals(_musicBackend, backend))
+                return;
+            try
+            {
+                _musicBackend?.Stop();
+                _musicBackend?.Dispose();
+            }
+            catch (Exception exception)
+            {
+                PLogger.Warning($"释放音乐后端失败：{exception.Message}");
+            }
+            _musicBackend = backend;
+            if (_initialized)
+                ApplyMusicBackendVolume();
+        }
 
         /// <summary>显式初始化。未调用时，第一次播放会自动初始化。</summary>
         public static void Initialize(PulletSoundOptions options = null)
@@ -121,6 +146,20 @@ namespace PulletFramework.Sound
         {
             EnsureInitialized();
             if (string.IsNullOrWhiteSpace(location)) { StopMusic(fadeSeconds); return; }
+            if (_musicBackend != null && _musicBackend.CanPlay(location))
+            {
+                ++_musicRequest;
+                StopUnityMusic();
+                try
+                {
+                    _musicBackend.Play(location, loop, OutputVolume(ESoundChannel.Music));
+                }
+                catch (Exception exception)
+                {
+                    PLogger.Error($"平台背景音乐播放失败：{location}\n{exception.Message}");
+                }
+                return;
+            }
             int request = ++_musicRequest;
             LoadClip(location, clip => { if (request == _musicRequest) PlayMusic(clip, loop, fadeSeconds); });
         }
@@ -129,6 +168,7 @@ namespace PulletFramework.Sound
         {
             if (clip == null) return;
             EnsureInitialized();
+            StopPlatformMusic();
             AudioSource current = ActiveMusic;
             if (current.clip == clip && current.isPlaying) return;
             AudioSource next = _musicSources[1 - _activeMusic];
@@ -145,18 +185,21 @@ namespace PulletFramework.Sound
         {
             if (!_initialized) return;
             ++_musicRequest;
+            StopPlatformMusic();
             BeginFade(ActiveMusic, null, ResolveFade(fadeSeconds));
         }
 
         public static void PauseMusic()
         {
             if (!_initialized) return;
+            _musicBackend?.Pause();
             foreach (AudioSource source in _musicSources) source.Pause();
         }
 
         public static void ResumeMusic()
         {
             if (!_initialized) return;
+            _musicBackend?.Resume();
             foreach (AudioSource source in _musicSources) source.UnPause();
         }
 
@@ -218,24 +261,30 @@ namespace PulletFramework.Sound
         public static void PauseAll()
         {
             if (!_initialized) return;
+            _musicBackend?.Pause();
             ForEachSource(source => source.Pause());
         }
 
         public static void ResumeAll()
         {
             if (!_initialized) return;
+            _musicBackend?.Resume();
             ForEachSource(source => source.UnPause());
         }
 
         public static void Pause(ESoundChannel channel)
         {
             if (!_initialized) return;
+            if (channel == ESoundChannel.Music)
+                _musicBackend?.Pause();
             ForEachChannelSource(channel, source => source.Pause());
         }
 
         public static void Resume(ESoundChannel channel)
         {
             if (!_initialized) return;
+            if (channel == ESoundChannel.Music)
+                _musicBackend?.Resume();
             ForEachChannelSource(channel, source => source.UnPause());
         }
 
@@ -301,7 +350,12 @@ namespace PulletFramework.Sound
             if (_initialized) StopSources();
             ++_lifetime;
             CompletePendingLoads(null);
-            foreach (CachedClip cached in Clips.Values) cached.Handle?.Release();
+            foreach (CachedClip cached in Clips.Values)
+            {
+                cached.Handle?.Release();
+                if (cached.OwnsClip && cached.Clip != null)
+                    UnityEngine.Object.Destroy(cached.Clip);
+            }
             Clips.Clear();
         }
 
@@ -350,6 +404,7 @@ namespace PulletFramework.Sound
             if (_root != null) UnityEngine.Object.Destroy(_root);
             _root = null;
             _options = null;
+            SetMusicBackend(null);
             _initialized = false;
             _fading = false;
             SettingsChanged = null;
@@ -391,12 +446,32 @@ namespace PulletFramework.Sound
         {
             IResourceAssetHandle handle = null;
             AudioClip clip = null;
-            try { handle = PulletResources.LoadAssetAsync<AudioClip>(location); }
-            catch (Exception exception) { PLogger.Error($"加载音频失败：{location}\n{exception.Message}"); }
-            if (handle != null)
+            bool ownsClip = false;
+            if (TryGetRemoteAudioType(location, out AudioType audioType))
             {
-                yield return handle;
-                if (handle.IsSucceeded) clip = handle.AssetObject as AudioClip;
+                using (UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(location, audioType))
+                {
+                    yield return request.SendWebRequest();
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        clip = DownloadHandlerAudioClip.GetContent(request);
+                        ownsClip = clip != null;
+                    }
+                    else
+                    {
+                        PLogger.Error($"下载音频失败：{location}\n{request.error}");
+                    }
+                }
+            }
+            else
+            {
+                try { handle = PulletResources.LoadAssetAsync<AudioClip>(location); }
+                catch (Exception exception) { PLogger.Error($"加载音频失败：{location}\n{exception.Message}"); }
+                if (handle != null)
+                {
+                    yield return handle;
+                    if (handle.IsSucceeded) clip = handle.AssetObject as AudioClip;
+                }
             }
             if (clip != null && clip.loadState != AudioDataLoadState.Loaded)
             {
@@ -412,8 +487,18 @@ namespace PulletFramework.Sound
                     clip = null;
                 }
             }
-            if (lifetime != _lifetime || !_initialized) { handle?.Release(); yield break; }
-            if (clip != null) Clips[location] = new CachedClip { Clip = clip, Handle = handle };
+            if (lifetime != _lifetime || !_initialized)
+            {
+                handle?.Release();
+                if (ownsClip && clip != null) UnityEngine.Object.Destroy(clip);
+                yield break;
+            }
+            if (clip != null) Clips[location] = new CachedClip
+            {
+                Clip = clip,
+                Handle = handle,
+                OwnsClip = ownsClip
+            };
             else { PLogger.Error($"加载音频失败：{location}，{handle?.Error}"); handle?.Release(); }
             if (!PendingLoads.TryGetValue(location, out List<Action<AudioClip>> callbacks)) yield break;
             PendingLoads.Remove(location);
@@ -503,6 +588,7 @@ namespace PulletFramework.Sound
         {
             if (!_initialized) return;
             foreach (AudioSource source in _musicSources) source.volume = OutputVolume(ESoundChannel.Music);
+            ApplyMusicBackendVolume();
             ApplyVoiceVolume();
             foreach (EffectSlot slot in EffectSlots) ApplyEffectVolume(slot);
         }
@@ -537,7 +623,49 @@ namespace PulletFramework.Sound
 
         private static void StopSources()
         {
+            StopPlatformMusic();
             ForEachSource(source => { source.Stop(); source.clip = null; });
+        }
+
+        private static void StopUnityMusic()
+        {
+            _fading = false;
+            _fadeFrom = null;
+            _fadeTo = null;
+            foreach (AudioSource source in _musicSources)
+            {
+                source.Stop();
+                source.clip = null;
+            }
+        }
+
+        private static void StopPlatformMusic()
+        {
+            try { _musicBackend?.Stop(); }
+            catch (Exception exception) { PLogger.Warning($"停止平台背景音乐失败：{exception.Message}"); }
+        }
+
+        private static void ApplyMusicBackendVolume()
+        {
+            try { _musicBackend?.SetVolume(OutputVolume(ESoundChannel.Music)); }
+            catch (Exception exception) { PLogger.Warning($"设置平台背景音乐音量失败：{exception.Message}"); }
+        }
+
+        private static bool TryGetRemoteAudioType(string location, out AudioType audioType)
+        {
+            audioType = AudioType.UNKNOWN;
+            if (!Uri.TryCreate(location, UriKind.Absolute, out Uri uri)
+                || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+                return false;
+            switch (System.IO.Path.GetExtension(uri.AbsolutePath).ToLowerInvariant())
+            {
+                case ".mp3": audioType = AudioType.MPEG; return true;
+                case ".wav": audioType = AudioType.WAV; return true;
+                case ".ogg": audioType = AudioType.OGGVORBIS; return true;
+                case ".aif":
+                case ".aiff": audioType = AudioType.AIFF; return true;
+                default: return false;
+            }
         }
 
         [Obsolete("Use PlayMusic instead.")]

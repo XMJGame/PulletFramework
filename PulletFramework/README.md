@@ -397,6 +397,23 @@ protobuf 或配置表代码生成工具。
 # PulletFramework.Pooling
 一个功能强大的游戏对象池系统。
 
+# PulletFramework.Sound
+
+`PulletSound` 默认使用 Unity `AudioSource` 播放音乐、语音和短音效。小游戏模块可以通过
+`PulletSound.SetMusicBackend(IPulletMusicBackend)` 只替换长音乐后端，业务侧的暂停、恢复、
+静音和音量 API 保持不变。
+
+传入 YooAsset 地址或 `AudioClip` 时继续走 Unity；传入带 `.mp3`、`.wav` 等扩展名的 HTTPS
+地址时，已注册的平台后端优先接管。没有平台后端的编辑器、PC 和 App 会使用
+`UnityWebRequest` 下载后播放，并在 `PulletSound.UnloadAll()` 时释放音频。
+
+```csharp
+PulletSound.PlayMusic("https://cdn.example.com/audio/home.mp3");
+PulletSound.PlaySound("ButtonClick");
+```
+
+推荐把循环 BGM 和较长旁白作为独立 CDN 音频，把高频、低延迟的短音效放入资源包。
+
 对象池、窗口、表格和音频统一依赖 `PulletFramework.Resource` 抽象，不直接依赖 YooAsset。
 项目启动时安装一个资源适配器即可；切换资源系统时业务模块不需要改动。
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using PulletFramework.YooAssetAdapter;
+using PulletFramework.Sound;
 
 namespace PulletMiniGame.Platform.Douyin
 {
@@ -11,6 +12,7 @@ namespace PulletMiniGame.Platform.Douyin
             MiniGameBootstrap.Register(PulletPlatformIds.Douyin,
                 () => new DouyinPlatformAdapter(new DouyinSdkBridge()));
 #if UNITY_WEBGL && (PULLET_PLATFORM_DOUYIN || DOUYINMINIGAME)
+            PulletSound.SetMusicBackend(new DouyinMusicBackend());
             // 使用 TTAssetBundle 完成平台侧下载、解包和卸载。
             PulletYooAssets.WebFileSystemFactory =
                 (_, remoteService) => TiktokFileSystemCreater.CreateFileSystemParameters(remoteService);
