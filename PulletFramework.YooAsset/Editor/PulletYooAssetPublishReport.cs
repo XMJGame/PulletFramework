@@ -104,6 +104,54 @@ namespace PulletFramework.Editor
             return report;
         }
 
+        public static void Validate(
+            PublishReport report, string expectedDirectory,
+            string expectedPackage, string expectedVersion)
+        {
+            if (report == null || report.files == null
+                || !string.Equals(report.packageName, expectedPackage, StringComparison.Ordinal)
+                || !string.Equals(report.packageVersion, expectedVersion, StringComparison.Ordinal)
+                || !string.Equals(Path.GetFullPath(report.sourceDirectory),
+                    Path.GetFullPath(expectedDirectory), StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("发布报告与当前构建包、版本或目录不一致，请重新生成报告。");
+
+            string root = Path.GetFullPath(expectedDirectory).TrimEnd(
+                Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            int pointerCount = 0;
+            int manifestCount = 0;
+            for (int index = 0; index < report.files.Count; index++)
+            {
+                PublishFile file = report.files[index];
+                if (file == null || string.IsNullOrWhiteSpace(file.relativePath)
+                    || Path.IsPathRooted(file.relativePath)
+                    || !seen.Add(file.relativePath))
+                    throw new InvalidDataException("发布报告包含无效或重复的文件路径。");
+                string fullPath = Path.GetFullPath(Path.Combine(
+                    expectedDirectory, file.relativePath.Replace('/', Path.DirectorySeparatorChar)));
+                if (!fullPath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException($"发布报告文件越过构建目录：{file.relativePath}");
+                if (!File.Exists(fullPath))
+                    throw new FileNotFoundException("发布报告中的构建文件不存在。", fullPath);
+                var info = new FileInfo(fullPath);
+                if (info.Length != file.bytes
+                    || !string.Equals(ComputeSha256(fullPath), file.sha256,
+                        StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException(
+                        $"发布报告文件内容已变化，请重新构建并生成报告：{file.relativePath}");
+                if (file.uploadPhase == 3 && file.role == "VersionPointer"
+                    && fullPath.EndsWith(".version", StringComparison.OrdinalIgnoreCase))
+                    pointerCount++;
+                else if (file.uploadPhase == 2 && file.role == "Manifest")
+                    manifestCount++;
+                else if (file.uploadPhase != 1 || file.role != "Payload")
+                    throw new InvalidDataException($"发布报告文件阶段无效：{file.relativePath}");
+            }
+            if (pointerCount != 1 || manifestCount < 2)
+                throw new InvalidDataException("发布报告缺少唯一版本指针或必要的清单文件。");
+        }
+
         private static bool IsBuildOnlyFile(string fileName)
         {
             return fileName.Equals("buildlogtep.json", StringComparison.OrdinalIgnoreCase)

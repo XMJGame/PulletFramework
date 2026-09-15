@@ -1,0 +1,19 @@
+{
+    "name": "PulletFramework.Tests.PlayMode",
+    "rootNamespace": "PulletFramework.Tests",
+    "references": [
+        "PulletFramework.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

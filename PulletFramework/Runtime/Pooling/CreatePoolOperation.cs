@@ -34,6 +34,7 @@ namespace PulletFramework.Pooling
         protected override void OnStart()
         {
             _steps = ESteps.Waiting;
+            OnUpdate();
         }
         protected override void OnUpdate()
         {

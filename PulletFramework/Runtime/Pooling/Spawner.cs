@@ -10,14 +10,18 @@ namespace PulletFramework.Pooling
     {
         private readonly List<GameObjectPool> _GameObjectPools = new List<GameObjectPool>(100);
         private readonly List<GameObjectPool> _RemoveList = new List<GameObjectPool>(100);
+        private readonly Dictionary<string, GameObjectPool> _PoolsByLocation =
+            new Dictionary<string, GameObjectPool>(StringComparer.Ordinal);
         private readonly GameObject _SpawnerRoot;
         private readonly IResourcePackage _resourcePackage;
+        private readonly string _packageName;
+        private bool _destroyed;
 
         public string packageName
         {
             get
             {
-                return _resourcePackage.Name;
+                return _packageName;
             }
         }
 
@@ -31,6 +35,7 @@ namespace PulletFramework.Pooling
             _SpawnerRoot.transform.SetParent(poolingRoot.transform);
             _SpawnerRoot.SetActive(false);
             _resourcePackage = resourcePackage;
+            _packageName = resourcePackage.Name;
         }
 
         /// <summary>
@@ -38,6 +43,8 @@ namespace PulletFramework.Pooling
         /// </summary>
         internal void Update()
         {
+            if (_destroyed)
+                return;
             _RemoveList.Clear();
             foreach (var pool in _GameObjectPools)
             {
@@ -49,6 +56,7 @@ namespace PulletFramework.Pooling
             foreach (var pool in _RemoveList)
             {
                 _GameObjectPools.Remove(pool);
+                _PoolsByLocation.Remove(pool.Location);
                 pool.DestroyPool();
             }
         }
@@ -58,18 +66,29 @@ namespace PulletFramework.Pooling
         /// </summary>
         internal void Destroy()
         {
-            DestroyAll(true);
+            if (_destroyed)
+                return;
+            _destroyed = true;
+            DestroyPools(true);
 			if (_SpawnerRoot != null)
 				UnityEngine.Object.Destroy(_SpawnerRoot);
         }
 
 		public int PoolCount => _GameObjectPools.Count;
+		public bool IsDestroyed => _destroyed;
 
         /// <summary>
         /// 销毁所有对象池及其资源
         /// </summary>
         /// <param name="includeAll">销毁所有对象池，包括常驻对象池</param>
         public void DestroyAll(bool includeAll)
+        {
+            if (_destroyed)
+                return;
+            DestroyPools(includeAll);
+        }
+
+        private void DestroyPools(bool includeAll)
         {
             if (includeAll)
             {
@@ -78,20 +97,23 @@ namespace PulletFramework.Pooling
                     pool.DestroyPool();
                 }
                 _GameObjectPools.Clear();
+                _PoolsByLocation.Clear();
             }
             else
             {
-                List<GameObjectPool> removeList = new List<GameObjectPool>();
+				_RemoveList.Clear();
                 foreach (var pool in _GameObjectPools)
                 {
                     if (pool.DontDestroy == false)
-                        removeList.Add(pool);
+                        _RemoveList.Add(pool);
                 }
-                foreach (var pool in removeList)
+                foreach (var pool in _RemoveList)
                 {
                     _GameObjectPools.Remove(pool);
+                    _PoolsByLocation.Remove(pool.Location);
                     pool.DestroyPool();
                 }
+				_RemoveList.Clear();
             }
         }
 
@@ -129,6 +151,7 @@ namespace PulletFramework.Pooling
         /// </summary>
         private CreatePoolOperation CreateGameObjectPoolInternal(string location, bool dontDestroy = false, int initCapacity = 0, int maxCapacity = int.MaxValue, float destroyTime = -1f)
         {
+			EnsureAvailable();
 			if (string.IsNullOrWhiteSpace(location))
 				throw new ArgumentException("Pool location is required.", nameof(location));
 			if (initCapacity < 0)
@@ -142,6 +165,7 @@ namespace PulletFramework.Pooling
 			if (pool != null && pool.HasLoadFailed)
 			{
 				_GameObjectPools.Remove(pool);
+				_PoolsByLocation.Remove(location);
 				pool.DestroyPool();
 				pool = null;
 			}
@@ -157,6 +181,7 @@ namespace PulletFramework.Pooling
                 pool = new GameObjectPool(_SpawnerRoot, location, dontDestroy, initCapacity, maxCapacity, destroyTime);
                 pool.CreatePool(_resourcePackage);
                 _GameObjectPools.Add(pool);
+                _PoolsByLocation.Add(location, pool);
 
                 var operation = new CreatePoolOperation(pool.AssetHandle);
                 PulletOperationSystem.Start(operation);
@@ -250,12 +275,14 @@ namespace PulletFramework.Pooling
         /// </summary>
         private SpawnHandle SpawnInternal(string location, Transform parent, Vector3 position, Quaternion rotation, bool forceClone, params System.Object[] userDatas)
         {
+			EnsureAvailable();
 			if (string.IsNullOrWhiteSpace(location))
 				throw new ArgumentException("Pool location is required.", nameof(location));
             var pool = TryGetGameObjectPool(location);
 			if (pool != null && pool.HasLoadFailed)
 			{
 				_GameObjectPools.Remove(pool);
+				_PoolsByLocation.Remove(location);
 				pool.DestroyPool();
 				pool = null;
 			}
@@ -268,27 +295,35 @@ namespace PulletFramework.Pooling
             pool = new GameObjectPool(_SpawnerRoot, location, false, 0, int.MaxValue, -1f);
             pool.CreatePool(_resourcePackage);
             _GameObjectPools.Add(pool);
+            _PoolsByLocation.Add(location, pool);
             return pool.Spawn(parent, position, rotation, forceClone, userDatas);
         }
 
         public void DestroyGameObjectPool(string location)
         {
+			if (_destroyed)
+				return;
             var pool = TryGetGameObjectPool(location);
             if (pool != null)
             {
                 _GameObjectPools.Remove(pool);
+                _PoolsByLocation.Remove(location);
                 pool.DestroyPool();
             }
         }
 
         private GameObjectPool TryGetGameObjectPool(string location)
         {
-            foreach (var pool in _GameObjectPools)
-            {
-                if (pool.Location == location)
-                    return pool;
-            }
-            return null;
+            return location != null && _PoolsByLocation.TryGetValue(location, out GameObjectPool pool)
+                ? pool
+                : null;
         }
+
+		private void EnsureAvailable()
+		{
+			if (_destroyed)
+				throw new ObjectDisposedException(
+					nameof(Spawner), $"Spawner for package '{_packageName}' is destroyed.");
+		}
     }
 }

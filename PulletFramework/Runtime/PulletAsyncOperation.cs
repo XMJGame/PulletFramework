@@ -29,7 +29,7 @@ namespace PulletFramework
                 if (value == null)
                     return;
                 if (_completionInvoked)
-                    value(this);
+                    InvokeCompletionCallback(value);
                 else
                     _completed += value;
             }
@@ -59,7 +59,14 @@ namespace PulletFramework
         {
             if (IsDone)
                 return;
-            OnAbort();
+            try
+            {
+                OnAbort();
+            }
+            catch (Exception exception)
+            {
+                SetFailed(exception.ToString());
+            }
             if (!IsDone)
                 SetFailed("Operation aborted.");
             InvokeCompleted();
@@ -79,6 +86,13 @@ namespace PulletFramework
                 return;
             Error = string.IsNullOrEmpty(error) ? "Unknown operation error." : error;
             Status = EPulletOperationStatus.Failed;
+        }
+
+        /// <summary>供调度器更新之外的显式取消路径写入失败终态并立即通知。</summary>
+        protected void CompleteFailed(string error)
+        {
+            SetFailed(error);
+            InvokeCompleted();
         }
 
         protected void ClearCompletedCallbacks()
@@ -132,21 +146,41 @@ namespace PulletFramework
             _completionInvoked = true;
             Action<PulletAsyncOperation> callback = _completed;
             _completed = null;
-            callback?.Invoke(this);
+            if (callback == null)
+                return;
+
+            Delegate[] callbacks = callback.GetInvocationList();
+            for (int i = 0; i < callbacks.Length; i++)
+                InvokeCompletionCallback((Action<PulletAsyncOperation>)callbacks[i]);
+        }
+
+        private void InvokeCompletionCallback(Action<PulletAsyncOperation> callback)
+        {
+            try
+            {
+                callback(this);
+            }
+            catch (Exception exception)
+            {
+                PLogger.Exception(exception,
+                    $"Async operation completion callback failed: {GetType().Name}");
+            }
         }
     }
 
     internal static class PulletOperationSystem
     {
         private static readonly List<PulletAsyncOperation> Operations = new List<PulletAsyncOperation>();
-        private static bool _isClearing;
+        private static int _clearDepth;
+        private static bool _isUpdating;
+        private static int _version;
 
         public static T Start<T>(T operation) where T : PulletAsyncOperation
         {
             if (operation == null)
                 throw new ArgumentNullException(nameof(operation));
             operation.StartInternal();
-            if (_isClearing && !operation.IsDone)
+            if (_clearDepth > 0 && !operation.IsDone)
             {
                 operation.Abort();
                 return operation;
@@ -158,18 +192,33 @@ namespace PulletFramework
 
         public static void Update()
         {
-            for (int i = Operations.Count - 1; i >= 0; i--)
+            if (_isUpdating)
+                return;
+
+            _isUpdating = true;
+            int version = _version;
+            try
             {
-                PulletAsyncOperation operation = Operations[i];
-                operation.UpdateInternal();
-                if (operation.IsDone)
-                    Operations.RemoveAt(i);
+                for (int i = Operations.Count - 1; i >= 0; i--)
+                {
+                    PulletAsyncOperation operation = Operations[i];
+                    operation.UpdateInternal();
+                    if (version != _version)
+                        return;
+                    if (operation.IsDone)
+                        Operations.RemoveAt(i);
+                }
+            }
+            finally
+            {
+                _isUpdating = false;
             }
         }
 
         public static void Clear()
         {
-            _isClearing = true;
+            _clearDepth++;
+            _version++;
             try
             {
                 PulletAsyncOperation[] pending = Operations.ToArray();
@@ -179,7 +228,7 @@ namespace PulletFramework
             }
             finally
             {
-                _isClearing = false;
+                _clearDepth--;
             }
         }
     }

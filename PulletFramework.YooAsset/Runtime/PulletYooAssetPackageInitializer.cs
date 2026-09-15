@@ -15,8 +15,7 @@ namespace PulletFramework.YooAssetAdapter
             if (!YooAssets.IsInitialized)
                 YooAssets.Initialize();
             YooAssets.SetAsyncOperationMaxTimeSlice(settings.operationTimeSliceMilliseconds);
-            if (!PulletResources.IsConfigured)
-                YooAssetResourceAdapter.Install(settings.packageName);
+            YooAssetResourceAdapter.Install(settings.packageName);
             return YooAssets.TryGetPackage(packageName, out ResourcePackage package)
                 ? package
                 : YooAssets.CreatePackage(packageName);
@@ -44,6 +43,18 @@ namespace PulletFramework.YooAssetAdapter
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        internal static InitializePackageOperation CreateBuiltinOnlyWebOperation(
+            ResourcePackage package)
+        {
+            if (package == null)
+                throw new ArgumentNullException(nameof(package));
+            return package.InitializePackageAsync(new WebPlayModeOptions
+            {
+                WebServerFileSystemParameters =
+                    FileSystemParameters.CreateDefaultWebServerFileSystemParameters(true)
+            });
         }
 
         private static InitializePackageOperation CreateEditorSimulateOperation(
@@ -94,6 +105,14 @@ namespace PulletFramework.YooAssetAdapter
         {
             IRemoteService remoteService = CreateRemoteService(settings, packageName);
             var options = new WebPlayModeOptions();
+            if (settings.includeDefaultPackageInStreamingAssets
+                && string.Equals(packageName, settings.packageName, StringComparison.Ordinal))
+            {
+                // WebServerFileSystem represents files shipped in StreamingAssets and is
+                // registered first so YooAsset prefers built-in bundles over remote files.
+                options.WebServerFileSystemParameters =
+                    FileSystemParameters.CreateDefaultWebServerFileSystemParameters(true);
+            }
             if (WebFileSystemFactory != null)
             {
                 // 小游戏平台文件系统同时负责下载与持久缓存。

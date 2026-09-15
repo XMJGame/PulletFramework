@@ -13,6 +13,8 @@ namespace PulletFramework.YooAssetAdapter
         UpdatingManifest,
         Ready,
         Downloading,
+        WarmingShaderVariants,
+        FallingBackToBuiltin,
         ClearingCache,
         Unloading,
         Failed
@@ -44,6 +46,8 @@ namespace PulletFramework.YooAssetAdapter
         public int CurrentDownloadCount { get; internal set; }
         public long CurrentDownloadBytes { get; internal set; }
         public string Error { get; internal set; }
+        public bool UsedBuiltinFallback { get; internal set; }
+        public string FallbackReason { get; internal set; }
 
         internal PulletYooAssetPackageState(string packageName)
         {
@@ -58,6 +62,7 @@ namespace PulletFramework.YooAssetAdapter
     {
         private ResourceDownloaderOperation _downloader;
         private event Action<PulletYooAssetPackageOperation> _completed;
+        private bool _completionInvoked;
 
         public string PackageName { get; }
         public EPulletYooAssetOperationType OperationType { get; }
@@ -73,6 +78,8 @@ namespace PulletFramework.YooAssetAdapter
         public long CurrentDownloadBytes { get; internal set; }
         public string CurrentDownloadFile { get; private set; }
         public string LastDownloadError { get; private set; }
+        public bool UsedBuiltinFallback { get; private set; }
+        public string FallbackReason { get; private set; }
         public override bool keepWaiting => !IsDone;
 
         public event Action<PulletYooAssetPackageOperation> ProgressChanged;
@@ -84,8 +91,8 @@ namespace PulletFramework.YooAssetAdapter
             {
                 if (value == null)
                     return;
-                if (IsDone)
-                    value(this);
+                if (_completionInvoked)
+                    InvokeCallbacks(value, callback => callback(this), "late completion");
                 else
                     _completed += value;
             }
@@ -93,12 +100,14 @@ namespace PulletFramework.YooAssetAdapter
         }
 
         internal bool CancellationRequested { get; private set; }
+        internal int Generation { get; }
 
         internal PulletYooAssetPackageOperation(
-            string packageName, EPulletYooAssetOperationType operationType)
+            string packageName, EPulletYooAssetOperationType operationType, int generation = 0)
         {
             PackageName = packageName;
             OperationType = operationType;
+            Generation = generation;
         }
 
         public void PauseDownload()
@@ -127,22 +136,37 @@ namespace PulletFramework.YooAssetAdapter
         internal void ReportProgress(float progress)
         {
             Progress = Mathf.Clamp01(progress);
-            ProgressChanged?.Invoke(this);
+            InvokeCallbacks(ProgressChanged, callback => callback(this), "progress");
         }
 
         internal void ReportDownloadFileStarted(string fileName, long fileSize)
         {
             CurrentDownloadFile = fileName;
-            DownloadFileStarted?.Invoke(this, fileName, fileSize);
+            InvokeCallbacks(DownloadFileStarted,
+                callback => callback(this, fileName, fileSize), "download started");
         }
 
         internal void ReportDownloadError(string fileName, string error)
         {
             LastDownloadError = error;
-            DownloadError?.Invoke(this, fileName, error);
+            InvokeCallbacks(DownloadError,
+                callback => callback(this, fileName, error), "download error");
         }
 
-        internal void Complete(string packageVersion)
+        internal void MarkBuiltinFallback(string reason)
+        {
+            UsedBuiltinFallback = true;
+            FallbackReason = reason;
+            _downloader = null;
+            TotalDownloadCount = 0;
+            TotalDownloadBytes = 0;
+            CurrentDownloadCount = 0;
+            CurrentDownloadBytes = 0;
+            CurrentDownloadFile = null;
+            LastDownloadError = null;
+        }
+
+        internal void SetSucceeded(string packageVersion)
         {
             if (IsDone)
                 return;
@@ -151,13 +175,9 @@ namespace PulletFramework.YooAssetAdapter
             Succeeded = true;
             IsDone = true;
             _downloader = null;
-            ProgressChanged?.Invoke(this);
-            Action<PulletYooAssetPackageOperation> callback = _completed;
-            _completed = null;
-            callback?.Invoke(this);
         }
 
-        internal void Fail(string error, bool cancelled = false)
+        internal void SetFailed(string error, bool cancelled = false)
         {
             if (IsDone)
                 return;
@@ -165,9 +185,58 @@ namespace PulletFramework.YooAssetAdapter
             IsCancelled = cancelled;
             IsDone = true;
             _downloader = null;
+        }
+
+        internal void FailImmediately(string error, bool cancelled = false)
+        {
+            SetFailed(error, cancelled);
+            NotifyCompleted();
+        }
+
+        internal void CancelImmediately(string error)
+        {
+            if (IsDone)
+                return;
+            CancellationRequested = true;
+            _downloader?.CancelDownload();
+            SetFailed(error, true);
+            NotifyCompleted();
+        }
+
+        internal void NotifyCompleted(bool reportFinalProgress = false)
+        {
+            if (_completionInvoked || !IsDone)
+                return;
+            _completionInvoked = true;
+            if (reportFinalProgress)
+                InvokeCallbacks(ProgressChanged, callback => callback(this), "final progress");
             Action<PulletYooAssetPackageOperation> callback = _completed;
             _completed = null;
-            callback?.Invoke(this);
+            InvokeCallbacks(callback, item => item(this), "completion");
+            ProgressChanged = null;
+            DownloadFileStarted = null;
+            DownloadError = null;
+        }
+
+        private void InvokeCallbacks<TDelegate>(
+            TDelegate callbacks, Action<TDelegate> invoke, string callbackType)
+            where TDelegate : Delegate
+        {
+            if (callbacks == null)
+                return;
+            Delegate[] invocationList = callbacks.GetInvocationList();
+            for (int i = 0; i < invocationList.Length; i++)
+            {
+                try
+                {
+                    invoke((TDelegate)invocationList[i]);
+                }
+                catch (Exception exception)
+                {
+                    PLogger.Exception(exception,
+                        $"[PulletYooAsset] {PackageName} {callbackType} callback failed.");
+                }
+            }
         }
     }
 }

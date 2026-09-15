@@ -89,6 +89,7 @@ namespace PulletMiniGame.Platform.WeChat.Editor
                 throw new InvalidOperationException($"WeChat export failed: {result}");
 
             string miniGameOutput = ResolveMiniGameOutputPath(context.OutputPath);
+            MiniGameFirstPackageCdnPublisher.ReconcileExport(Id, settings);
             MiniGameLoadingPagePostprocessor.Apply(miniGameOutput, settings.showDefaultUnityLoadingLogo);
             if (settings.enableNativeLeaderboard)
                 PatchOpenDataTemplate(miniGameOutput, settings.nativeLeaderboardKey);
@@ -119,10 +120,12 @@ namespace PulletMiniGame.Platform.WeChat.Editor
             SetRequired(project, "DST", outputPath);
             SetRequired(project, "relativeDST", relativeOutput);
             TrySet(project, "CDN", settings.firstPackageResourceMode == EFirstPackageResourceMode.Cdn
-                ? settings.cdnUrl
+                ? EnsureTrailingSlash(settings.cdnUrl)
                 : string.Empty);
             TrySet(project, "assetLoadType",
                 settings.firstPackageResourceMode == EFirstPackageResourceMode.Cdn ? 0 : 1);
+            TrySet(project, "dataFileSubPrefix", string.Empty);
+            TrySet(project, "StreamCDN", string.Empty);
             TrySet(project, "compressDataPackage", true);
             TrySet(project, "MemorySize", settings.initialMemoryMb);
             TrySet(project, "Orientation", settings.orientation == EMiniGameOrientation.Portrait ? 0 : 1);
@@ -137,6 +140,7 @@ namespace PulletMiniGame.Platform.WeChat.Editor
             TrySet(compile, "ScriptOnly", false);
             TrySet(compile, "Il2CppOptimizeSize", !context.DevelopmentBuild);
             TrySet(compile, "Webgl2", true);
+            TrySet(compile, "DeleteStreamingAssets", !MiniGameYooAssetBuiltinIntegration.IsEnabled);
             // 保留 Unity 构建缓存。清理小游戏输出目录不应触发完整 IL2CPP 重编译。
             TrySet(compile, "CleanBuild", false);
             TrySet(compile, "enableIOSPerformancePlus", settings.iosHighPerformancePlus);
@@ -262,6 +266,11 @@ namespace PulletMiniGame.Platform.WeChat.Editor
             if (targetType.IsEnum)
                 return Enum.ToObject(targetType, value);
             return Convert.ChangeType(value, targetType);
+        }
+
+        private static string EnsureTrailingSlash(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.TrimEnd('/') + "/";
         }
     }
 }

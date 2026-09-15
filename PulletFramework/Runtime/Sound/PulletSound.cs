@@ -49,6 +49,7 @@ namespace PulletFramework.Sound
         private static readonly List<EffectSlot> EffectSlots = new List<EffectSlot>();
         private static readonly float[] ChannelVolumes = { 1f, 1f, 1f };
         private static readonly bool[] ChannelMutes = new bool[3];
+        private static readonly bool[] ChannelPauses = new bool[3];
 
         private static bool _initialized;
         private static bool _destroying;
@@ -72,6 +73,8 @@ namespace PulletFramework.Sound
         private static IPulletMusicBackend _musicBackend;
         private static bool _preferencesDirty;
         private static float _preferencesSaveAt;
+        private static bool _allPaused;
+        private static bool _applicationPaused;
 
         public static bool IsInitialized => _initialized;
         public static bool IsMasterMuted => _masterMuted;
@@ -81,6 +84,8 @@ namespace PulletFramework.Sound
         public static float MusicVolume => GetVolume(ESoundChannel.Music);
         public static float SoundEffectVolume => GetVolume(ESoundChannel.SoundEffect);
         public static float VoiceVolume => GetVolume(ESoundChannel.Voice);
+        public static AudioClip CurrentMusicClip => _initialized ? ActiveMusic.clip : null;
+        public static AudioClip CurrentVoiceClip => _initialized ? _voiceSource.clip : null;
         public static event Action SettingsChanged;
 
         private static AudioSource ActiveMusic => _musicSources[_activeMusic];
@@ -103,7 +108,11 @@ namespace PulletFramework.Sound
             }
             _musicBackend = backend;
             if (_initialized)
+            {
                 ApplyMusicBackendVolume();
+                if (IsPaused(ESoundChannel.Music))
+                    TryPauseMusicBackend();
+            }
         }
 
         /// <summary>显式初始化。未调用时，第一次播放会自动初始化。</summary>
@@ -121,7 +130,9 @@ namespace PulletFramework.Sound
             {
                 ChannelVolumes[i] = 1f;
                 ChannelMutes[i] = false;
+                ChannelPauses[i] = false;
             }
+            _allPaused = false;
 
             _root = PulletFrameworks.AddSubsystemGameObject($"[{nameof(PulletSound)}]");
             _musicSources = new[]
@@ -153,6 +164,8 @@ namespace PulletFramework.Sound
                 try
                 {
                     _musicBackend.Play(location, loop, OutputVolume(ESoundChannel.Music));
+                    if (IsPaused(ESoundChannel.Music))
+                        TryPauseMusicBackend();
                 }
                 catch (Exception exception)
                 {
@@ -161,16 +174,29 @@ namespace PulletFramework.Sound
                 return;
             }
             int request = ++_musicRequest;
-            LoadClip(location, clip => { if (request == _musicRequest) PlayMusic(clip, loop, fadeSeconds); });
+            LoadClip(location, clip =>
+            {
+                if (request == _musicRequest)
+                    PlayMusicInternal(clip, loop, fadeSeconds);
+            });
         }
 
         public static void PlayMusic(AudioClip clip, bool loop = true, float fadeSeconds = -1f)
         {
             if (clip == null) return;
             EnsureInitialized();
+            ++_musicRequest;
+            PlayMusicInternal(clip, loop, fadeSeconds);
+        }
+
+        private static void PlayMusicInternal(AudioClip clip, bool loop, float fadeSeconds)
+        {
+            if (clip == null) return;
             StopPlatformMusic();
             AudioSource current = ActiveMusic;
-            if (current.clip == clip && current.isPlaying) return;
+            if (current.clip == clip
+                && (current.isPlaying || IsPaused(ESoundChannel.Music)))
+                return;
             AudioSource next = _musicSources[1 - _activeMusic];
             next.Stop();
             next.clip = clip;
@@ -179,6 +205,7 @@ namespace PulletFramework.Sound
             next.Play();
             _activeMusic = 1 - _activeMusic;
             BeginFade(current, next, ResolveFade(fadeSeconds));
+            ApplySourcePauseState(next, ESoundChannel.Music);
         }
 
         public static void StopMusic(float fadeSeconds = -1f)
@@ -186,21 +213,25 @@ namespace PulletFramework.Sound
             if (!_initialized) return;
             ++_musicRequest;
             StopPlatformMusic();
-            BeginFade(ActiveMusic, null, ResolveFade(fadeSeconds));
+            AudioSource current = ActiveMusic;
+            foreach (AudioSource source in _musicSources)
+            {
+                if (source == current)
+                    continue;
+                source.Stop();
+                source.clip = null;
+            }
+            BeginFade(current, null, ResolveFade(fadeSeconds));
         }
 
         public static void PauseMusic()
         {
-            if (!_initialized) return;
-            _musicBackend?.Pause();
-            foreach (AudioSource source in _musicSources) source.Pause();
+            Pause(ESoundChannel.Music);
         }
 
         public static void ResumeMusic()
         {
-            if (!_initialized) return;
-            _musicBackend?.Resume();
-            foreach (AudioSource source in _musicSources) source.UnPause();
+            Resume(ESoundChannel.Music);
         }
 
         /// <summary>播放可与其他音效重叠的短音效。</summary>
@@ -228,6 +259,7 @@ namespace PulletFramework.Sound
             slot.StartedAt = Time.unscaledTime;
             ApplyEffectVolume(slot);
             slot.Source.Play();
+            ApplySourcePauseState(slot.Source, ESoundChannel.SoundEffect);
         }
 
         /// <summary>播放语音或旁白，新语音会替换正在播放的语音。</summary>
@@ -235,19 +267,31 @@ namespace PulletFramework.Sound
         {
             EnsureInitialized();
             int request = ++_voiceRequest;
-            LoadClip(location, clip => { if (request == _voiceRequest) PlayVoice(clip, loop, volume); });
+            LoadClip(location, clip =>
+            {
+                if (request == _voiceRequest)
+                    PlayVoiceInternal(clip, loop, volume);
+            });
         }
 
         public static void PlayVoice(AudioClip clip, bool loop = false, float volume = 1f)
         {
             if (clip == null) return;
             EnsureInitialized();
+            ++_voiceRequest;
+            PlayVoiceInternal(clip, loop, volume);
+        }
+
+        private static void PlayVoiceInternal(AudioClip clip, bool loop, float volume)
+        {
+            if (clip == null) return;
             _voiceSource.Stop();
             _voiceSource.clip = clip;
             _voiceSource.loop = loop;
             _voiceLocalVolume = Mathf.Clamp01(volume);
             ApplyVoiceVolume();
             _voiceSource.Play();
+            ApplySourcePauseState(_voiceSource, ESoundChannel.Voice);
         }
 
         public static void StopVoice()
@@ -261,31 +305,34 @@ namespace PulletFramework.Sound
         public static void PauseAll()
         {
             if (!_initialized) return;
-            _musicBackend?.Pause();
-            ForEachSource(source => source.Pause());
+            _allPaused = true;
+            ApplyPauseStates();
         }
 
         public static void ResumeAll()
         {
             if (!_initialized) return;
-            _musicBackend?.Resume();
-            ForEachSource(source => source.UnPause());
+            _allPaused = false;
+            ApplyPauseStates();
         }
 
         public static void Pause(ESoundChannel channel)
         {
             if (!_initialized) return;
-            if (channel == ESoundChannel.Music)
-                _musicBackend?.Pause();
-            ForEachChannelSource(channel, source => source.Pause());
+            ChannelPauses[(int)channel] = true;
+            ApplyChannelPauseState(channel);
         }
 
         public static void Resume(ESoundChannel channel)
         {
             if (!_initialized) return;
-            if (channel == ESoundChannel.Music)
-                _musicBackend?.Resume();
-            ForEachChannelSource(channel, source => source.UnPause());
+            ChannelPauses[(int)channel] = false;
+            ApplyChannelPauseState(channel);
+        }
+
+        public static bool IsPaused(ESoundChannel channel)
+        {
+            return _allPaused || _applicationPaused || ChannelPauses[(int)channel];
         }
 
         public static void Stop(ESoundChannel channel, float musicFadeSeconds = 0f)
@@ -407,6 +454,10 @@ namespace PulletFramework.Sound
             SetMusicBackend(null);
             _initialized = false;
             _fading = false;
+            _allPaused = false;
+            _applicationPaused = false;
+            for (int i = 0; i < ChannelPauses.Length; i++)
+                ChannelPauses[i] = false;
             SettingsChanged = null;
             _destroying = false;
         }
@@ -426,6 +477,15 @@ namespace PulletFramework.Sound
             _fading = false;
             _fadeFrom = null;
             _fadeTo = null;
+        }
+
+        internal static void SetApplicationPaused(bool paused)
+        {
+            if (_applicationPaused == paused)
+                return;
+            _applicationPaused = paused;
+            if (_initialized)
+                ApplyPauseStates();
         }
 
         private static void LoadClip(string location, Action<AudioClip> completed)
@@ -561,7 +621,7 @@ namespace PulletFramework.Sound
 
         private static void BeginFade(AudioSource from, AudioSource to, float duration)
         {
-            _fadeFrom = from != null && from.isPlaying ? from : null;
+            _fadeFrom = from != null && from.clip != null ? from : null;
             _fadeTo = to;
             _fadeElapsed = 0f;
             _fadeDuration = Mathf.Max(0f, duration);
@@ -621,10 +681,41 @@ namespace PulletFramework.Sound
             }
         }
 
+        private static void ApplyPauseStates()
+        {
+            ApplyChannelPauseState(ESoundChannel.Music);
+            ApplyChannelPauseState(ESoundChannel.SoundEffect);
+            ApplyChannelPauseState(ESoundChannel.Voice);
+        }
+
+        private static void ApplyChannelPauseState(ESoundChannel channel)
+        {
+            bool paused = IsPaused(channel);
+            if (channel == ESoundChannel.Music)
+            {
+                if (paused)
+                    TryPauseMusicBackend();
+                else
+                    TryResumeMusicBackend();
+            }
+            ForEachChannelSource(channel, source => ApplySourcePauseState(source, channel));
+        }
+
+        private static void ApplySourcePauseState(AudioSource source, ESoundChannel channel)
+        {
+            if (IsPaused(channel))
+                source.Pause();
+            else
+                source.UnPause();
+        }
+
         private static void StopSources()
         {
             StopPlatformMusic();
             ForEachSource(source => { source.Stop(); source.clip = null; });
+            _fading = false;
+            _fadeFrom = null;
+            _fadeTo = null;
         }
 
         private static void StopUnityMusic()
@@ -643,6 +734,18 @@ namespace PulletFramework.Sound
         {
             try { _musicBackend?.Stop(); }
             catch (Exception exception) { PLogger.Warning($"停止平台背景音乐失败：{exception.Message}"); }
+        }
+
+        private static void TryPauseMusicBackend()
+        {
+            try { _musicBackend?.Pause(); }
+            catch (Exception exception) { PLogger.Warning($"暂停平台背景音乐失败：{exception.Message}"); }
+        }
+
+        private static void TryResumeMusicBackend()
+        {
+            try { _musicBackend?.Resume(); }
+            catch (Exception exception) { PLogger.Warning($"恢复平台背景音乐失败：{exception.Message}"); }
         }
 
         private static void ApplyMusicBackendVolume()

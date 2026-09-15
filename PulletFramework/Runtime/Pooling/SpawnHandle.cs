@@ -56,6 +56,7 @@ namespace PulletFramework.Pooling
 		protected override void OnStart()
 		{
 			_steps = ESteps.Waiting;
+			OnUpdate();
 		}
 		protected override void OnUpdate()
 		{
@@ -104,10 +105,11 @@ namespace PulletFramework.Pooling
 		{
 			if (_operation != null)
 			{
-				ClearCompletedCallbacks();
-				CancelHandle();
-				_pool.Restore(_operation);
+				IResourceInstanceHandle operation = _operation;
 				_operation = null;
+				_steps = ESteps.Done;
+				try { _pool.Restore(operation); }
+				finally { CompleteFailed("User cancelled."); }
 			}
 		}
 
@@ -118,10 +120,11 @@ namespace PulletFramework.Pooling
 		{
 			if (_operation != null)
 			{
-				ClearCompletedCallbacks();
-				CancelHandle();
-				_pool.Discard(_operation);
+				IResourceInstanceHandle operation = _operation;
 				_operation = null;
+				_steps = ESteps.Done;
+				try { _pool.Discard(operation); }
+				finally { CompleteFailed("User cancelled."); }
 			}
 		}
 
@@ -133,15 +136,6 @@ namespace PulletFramework.Pooling
 					return;
 				_operation.WaitForCompletion();
 				OnUpdate();
-			}
-		}
-
-		private void CancelHandle()
-		{
-			if (IsDone == false)
-			{
-				_steps = ESteps.Done;
-				SetFailed("User cancelled.");
 			}
 		}
 

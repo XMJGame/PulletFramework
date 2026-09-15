@@ -33,11 +33,23 @@ namespace PulletFramework.Setting
             _backend = backend ?? throw new ArgumentNullException(nameof(backend));
         }
 
+        public static bool IsBackend(IPulletPlayerPrefsBackend backend) =>
+            backend != null && ReferenceEquals(_backend, backend);
+
         public static void UninstallBackend(bool save = true)
         {
             if (save && IsUsingCustomBackend)
                 _backend.Save();
             _backend = UnityBackend;
+        }
+
+        /// <summary>仅当后端仍由调用方持有时卸载，避免覆盖其他模块后来安装的后端。</summary>
+        public static bool UninstallBackend(IPulletPlayerPrefsBackend backend, bool save = true)
+        {
+            if (!IsBackend(backend))
+                return false;
+            UninstallBackend(save);
+            return true;
         }
 
         public static bool HasKey(string key) => _backend.HasKey(key);

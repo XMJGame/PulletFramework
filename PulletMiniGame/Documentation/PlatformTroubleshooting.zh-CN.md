@@ -51,6 +51,29 @@ AppID 本身可以正确，登录账号仍可能没有导入、编译或读取�
 
 域名已经填写但工具提示“获取域名白名单失败”时，优先按上一节检查登录账号权限。
 
+### Data CDN 已选择但仍提示 Package
+
+**现象**
+
+工作台和 `StarkBuilderSetting.asset` 已分别显示 `firstPackageResourceMode=CDN`、`dataLoadType=0`，构建日志也提示
+“cdn模式下data文件被复制到了 webgl”，但导出包 `game.js` 仍包含：
+
+```javascript
+loadDataPackageFromSubpackage: true
+```
+
+**本次根因**
+
+TTSDK 构建器已经按 CDN 模式把哈希 data 文件输出到同级 `webgl`，并从 `data-package` 移除了数据文件，
+但其模板生成逻辑仍把 `$LOAD_DATA_FROM_SUBPACKAGE` 写成 `true`。这是同一份产物内部的配置不一致，不是界面
+选择没有保存。
+
+**处理**
+
+`PulletMiniGame` 构建后处理会先确认 `webgl/<DATA_FILE_MD5>.webgl.data.*` 存在，再将标记修正为 `false`；
+首包上传入口也执行同一校验，因此已生成的 CDN 产物无需重新构建。若哈希文件不存在则拒绝修补和上传，避免把
+真正的 Package 产物错误改成 CDN 模式。
+
 ### YooAsset 访问 `dummy.dummy.dummy`
 
 **现象**

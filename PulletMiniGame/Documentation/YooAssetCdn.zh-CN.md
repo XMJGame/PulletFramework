@@ -14,6 +14,79 @@ https://cdn.example.com/minigame/bootstrap/wechat/...
 https://cdn.example.com/game-assets/WebGL/v1.0/DefaultPackage/...
 ```
 
+## Unity Data 首包 CDN
+
+`Pullets/Workspace -> 小游戏发布` 中的“Unity Data 首包”控制 Unity WebGL 的
+`webgl.data` 如何下发：
+
+- `平台分包（Package）`：转换 SDK 把压缩后的 data 放进 `data-package`，由小游戏平台下载和预解压；
+- `远端 Data CDN`：data 从代码包剥离，启动 Loader 在 Unity 运行前从对象存储下载。
+
+Data CDN 不会替代 YooAsset。Unity 启动后，`GameLaunch` 仍会独立执行 YooAsset 的版本检查、清单更新和
+AssetBundle 下载。当前自动目录为：
+
+```text
+{对象存储远端根目录}/bootstrap/{platform}/{Player版本}/{data哈希文件}
+```
+
+例如抖音 `1.0.0` 会生成：
+
+```text
+https://cdn.example.com/project/bootstrap/douyin/1.0.0/<md5>.webgl.data.unityweb.bin.br
+```
+
+选择 CDN 后应先重新构建小游戏，再点击“上传首包 Data CDN 文件”。上传器会读取导出包的 `game.js`，
+确认 `loadDataPackageFromSubpackage=false`，再按 `DATA_FILE_MD5` 定位同级 `webgl` 目录中的压缩文件；
+配置、哈希或远端路径不一致时会拒绝上传。上传使用长期不可变缓存，并复用“资源发布”页选择的对象存储供应商。
+
+抖音和微信转换 SDK 都支持 Package/CDN 两种首包方式。平台限制和启动策略可能变化，不自动根据本地目录体积
+切换模式：优先裁剪首场景、Resources 和内置资源，平台上传仍超限时才使用 CDN。
+
+## YooAsset 内置资源
+
+`Pullets/Workspace -> 小游戏发布` 中的“默认包随小游戏发布”与“Unity Data 首包”是两个独立选项：
+
+- Unity Data 首包决定 `webgl.data` 使用平台分包还是 Data CDN；
+- 默认包随小游戏发布决定 YooAsset 的 `DefaultPackage` 是否完整复制到 `StreamingAssets`。
+
+开启 YooAsset 内置资源后，构建默认 Package 会同时生成两份用途不同的产物：完整版本目录继续用于 CDN 发布，
+另一份复制到 `Assets/StreamingAssets/<YooFolderName>/DefaultPackage` 并随 Player/小游戏发布。运行时注册两个文件系统，
+先匹配内置文件，只有内置目录没有的文件或远端清单新增的资源才从 CDN 获取。非默认 Package 保持远端按需加载，
+避免后续场景包无意中增大首包。
+
+默认包的启动准备阶段支持离线降级：远端版本、清单或启动下载失败时，流水线会销毁尚未交给业务使用的远端
+Package，改用只读内置文件系统加载随包版本。操作仍以成功结束，并通过 `UsedBuiltinFallback` 与
+`FallbackReason` 告知业务当前使用旧内置版本；日志也会保留远端失败原因。手动检查、更新和运行中的下载不会
+触发该降级，避免销毁已经被 UI、音频或对象池引用的资源。没有内置资源时，CDN 失败仍按正常错误处理并允许重试。
+
+版本采用纯数字分段比较，支持 `1.0.0`、`v1.2` 和 `2026-09-14-174738`，其中
+`1.10.0 > 1.2.0`。CDN 版本旧于内置版本或格式无法比较时，启动选择内置版本并输出警告，
+防止客户端被旧版本指针降级。同一资源兼容通道必须保持同一种版本体系；从日期版本切换为语义版本时应创建
+新的 `resourceChannel`。
+
+关闭开关并重新构建默认 Package 时，会清理旧的内置目录，避免过期 AB 继续混入 Player。小游戏导出前还会检查
+`BuiltinCatalog.bytes`；开关已启用但资源尚未构建时，发布按钮会给出明确错误。
+
+验证内置资源：
+
+1. 开启“默认包随小游戏发布”，递增 YooAsset Package 版本并执行“构建当前版本”；
+2. 确认小游戏发布页显示内置目录与体积，再重新导出抖音或微信包；
+3. 清除开发者工具缓存后首次启动，确认 `StreamingAssets` 分包成功且游戏进入首页；
+4. 在 Network 中允许版本文件和清单访问 CDN，但内置 Bundle 的哈希 URL 不应产生 CDN 下载；
+5. 临时把版本地址改成不可访问地址，确认日志显示“已降级使用随包内置版本”且仍可进入首页；
+6. 发布只增加一个远端资源的新版本，确认旧内置文件仍直接使用、新文件从 CDN 下载。
+
+抖音官方将 `StreamingAssets` 定义为首包资源的一部分，并要求自定义 AB 构建目录时将需要随包的 Bundle 移入该
+目录。内置资源会增加小游戏包体，因此只适合登录、首页和基础公共资源，不应把大型关卡或低频内容全部内置。
+
+官方参考：
+
+- [抖音 Data CDN 功能](https://developer.open-douyin.com/docs/resource/zh-CN/mini-game/develop/guide/game-engine/rd-to-SCgame/unity-game-access/packaging-release/webgl-data-cdn-tutorial)
+- [抖音小游戏资源部署与缓存](https://developer.open-douyin.com/docs/resource/zh-CN/mini-game/develop/guide/game-engine/rd-to-SCgame/unity-game-access/packaging-release/changelog-and-resource/sc_webgl_resource)
+- [抖音 Unity WebGL 构建说明](https://developer.open-douyin.com/docs/resource/zh-CN/mini-game/develop/guide/game-engine/rd-to-SCgame/unity-game-access/packaging-release/sc_build)
+- [微信 Unity 转换与首包配置](https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/Transform.md)
+- [微信 Unity Loader 资源下载](https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/UsingLoader.md)
+
 ## 唯一入口
 
 项目只保留一个 `GameLaunch`。入口负责排列启动阶段，不直接承担下载细节：

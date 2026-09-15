@@ -49,6 +49,8 @@ namespace PulletFramework.Window
         private CanvasGroup mCanvasGroup;
         private IUIWindowTransition mTransition;
         private bool mGlobalInputAllowed = true;
+        private long mOpenAttemptId;
+        private string mOpenAttemptError;
 
 
         /// <summary>
@@ -128,6 +130,7 @@ namespace PulletFramework.Window
         public bool IsTransitioning { private set; get; }
         public bool IsClosing { private set; get; }
         internal bool IsOpenCompleted { private set; get; }
+        internal long OpenAttemptId => mOpenAttemptId;
 
         /// <summary>
         /// 窗口深度值
@@ -481,6 +484,44 @@ namespace PulletFramework.Window
 
         #region 内部 调用
 
+        internal long InternalBeginOpenAttempt()
+        {
+            mOpenAttemptId++;
+            if (mOpenAttemptId <= 0)
+                mOpenAttemptId = 1;
+            mOpenAttemptError = null;
+            LoadError = null;
+            IsOpenCompleted = false;
+            IsClosing = false;
+            return mOpenAttemptId;
+        }
+
+        internal bool IsOpenAttemptCurrent(long attemptId)
+        {
+            return attemptId > 0 && attemptId == mOpenAttemptId;
+        }
+
+        internal bool IsOpenAttemptCompleted(long attemptId)
+        {
+            return IsOpenAttemptCurrent(attemptId) && IsOpenCompleted;
+        }
+
+        internal string GetOpenAttemptError(long attemptId)
+        {
+            return IsOpenAttemptCurrent(attemptId) ? mOpenAttemptError : null;
+        }
+
+        internal bool InternalCancelOpenAttempt(long attemptId, string error = null)
+        {
+            if (!IsOpenAttemptCurrent(attemptId) || IsOpenCompleted)
+                return false;
+            mOpenAttemptError = string.IsNullOrEmpty(error)
+                ? $"Window open cancelled: {WindowName}"
+                : error;
+            LoadError = mOpenAttemptError;
+            return true;
+        }
+
         internal void Init(
             string name,
             EWindowLayer windowLayer,
@@ -504,10 +545,7 @@ namespace PulletFramework.Window
             mUserDatas = userDatas;
             mOpenCallBack = openCallBack;
             mLoadFailedCallback = loadFailedCallback;
-            LoadError = null;
             mIsLoading = true;
-            IsOpenCompleted = false;
-            IsClosing = false;
             if (isResources)
             {
                 string targetPackageName = string.IsNullOrEmpty(packageName) ? null : packageName;
@@ -583,6 +621,7 @@ namespace PulletFramework.Window
             if (!mIsLoading)
                 return;
             LoadError = $"Window load cancelled: {WindowName}";
+            mOpenAttemptError = LoadError;
             mIsLoading = false;
             mPrepareCallback = null;
             mLoadFailedCallback = null;
@@ -608,12 +647,14 @@ namespace PulletFramework.Window
         internal void InternalMarkOpenFailed(string error)
         {
             LoadError = string.IsNullOrEmpty(error) ? $"Window open failed: {WindowName}" : error;
+            mOpenAttemptError = LoadError;
         }
 
         private void InternalLoadFailed(string error)
         {
             mIsLoading = false;
             LoadError = string.IsNullOrEmpty(error) ? $"Window load failed: {WindowName}" : error;
+            mOpenAttemptError = LoadError;
             PLogger.Error($"[Window Load Failed] {WindowName}: {LoadError}");
             mPrepareCallback = null;
             Action<UIWindow, string> failedCallback = mLoadFailedCallback;
@@ -638,10 +679,12 @@ namespace PulletFramework.Window
             PLogger.DebugLog("[Open Window] " + WindowName);
             OnOpen();
             bool completionHandled = false;
+            long attemptId = mOpenAttemptId;
 
             void CompleteOpen()
             {
-                if (completionHandled || !IsPrepare)
+                if (completionHandled || !IsPrepare || !IsOpenAttemptCurrent(attemptId)
+                    || !string.IsNullOrEmpty(mOpenAttemptError) || IsClosing)
                     return;
                 completionHandled = true;
                 IsTransitioning = false;
@@ -743,6 +786,9 @@ namespace PulletFramework.Window
             PLogger.DebugLog("[Destroy Window] " + WindowName);
             bool wasCreated = mIsCreate;
             mIsCreate = false;
+
+            InternalCancelOpenAttempt(
+                mOpenAttemptId, $"Window destroyed before open completed: {WindowName}");
 
             // 注销回调函数
             mPrepareCallback = null;

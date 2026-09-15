@@ -6,7 +6,7 @@
     "unity": "2021.3",
     "dependencies": {
         "com.xmjgame.pullet-framework": "0.1.0",
-        "com.xmjgame.pullet-asset-publishing": "0.1.0",
+        "com.xmjgame.pullet-framework.asset-publishing": "0.1.0",
         "com.tuyoogame.yooasset": "3.0.5"
     },
     "author": {

@@ -15,25 +15,39 @@ namespace PulletFramework.Form
 
         public static Dictionary<int, T> ReadFormData<T>(TextAsset textAsset)
         {
+            return ReadFormData<T>(textAsset, false);
+        }
+
+        public static Dictionary<int, T> ReadFormData<T>(TextAsset textAsset, bool strict)
+        {
             mFormData = ParseRows(textAsset);
-            return DeserializeStringToObjects<T>();
+            if (strict && mFormData.Count == 0)
+                throw new FormatException($"表格 {typeof(T).Name} 没有可读取的表头或数据。");
+            return DeserializeRows<T>(mFormData, strict);
         }
 
         public static Dictionary<int, T> DeserializeStringToObjects<T>()
         {
+            return DeserializeRows<T>(mFormData, false);
+        }
+
+        private static Dictionary<int, T> DeserializeRows<T>(
+            List<List<string>> rows, bool strict)
+        {
             var result = new Dictionary<int, T>();
-            if (mFormData == null || mFormData.Count == 0)
+            if (rows == null || rows.Count == 0)
                 return result;
 
-            List<string> headers = mFormData[0];
+            List<string> headers = rows[0];
             var fields = new Dictionary<string, FieldInfo>(StringComparer.Ordinal);
+            var errors = strict ? new List<string>() : null;
             FieldInfo[] publicFields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public);
             for (int i = 0; i < publicFields.Length; i++)
                 fields[publicFields[i].Name] = publicFields[i];
 
-            for (int rowIndex = 1; rowIndex < mFormData.Count; rowIndex++)
+            for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
             {
-                List<string> row = mFormData[rowIndex];
+                List<string> row = rows[rowIndex];
                 if (row.Count == 0 || string.IsNullOrWhiteSpace(row[0]) || row[0][0] == '#')
                     continue;
 
@@ -54,17 +68,27 @@ namespace PulletFramework.Form
 
                     if (result.ContainsKey(key))
                     {
-                        PLogger.Warning($"表格 {typeof(T).Name} 第 {rowIndex + 1} 行包含重复 ID：{key}，已忽略。");
+                        string error = $"表格 {typeof(T).Name} 第 {rowIndex + 1} 行包含重复 ID：{key}。";
+                        if (strict)
+                            errors.Add(error);
+                        else
+                            PLogger.Warning(error + " 已忽略。");
                         continue;
                     }
                     result.Add(key, model);
                 }
                 catch (Exception exception)
                 {
-                    PLogger.Error(
-                        $"表格 {typeof(T).Name} 第 {rowIndex + 1} 行解析失败，ID={key}：{exception.Message}");
+                    string error =
+                        $"表格 {typeof(T).Name} 第 {rowIndex + 1} 行解析失败，ID={key}：{exception.Message}";
+                    if (strict)
+                        errors.Add(error);
+                    else
+                        PLogger.Error(error);
                 }
             }
+            if (strict && errors.Count > 0)
+                throw new FormatException(string.Join("\n", errors));
             return result;
         }
 

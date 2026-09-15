@@ -74,6 +74,12 @@ namespace PulletMiniGame.Editor
                 throw new InvalidOperationException(
                     $"Platform build adapter '{platformId}' is unavailable: {reason}");
 
+            if (context?.Settings is MiniGamePlatformSettings settings)
+            {
+                MiniGameFirstPackageCdnPublisher.PrepareBuildSettings(
+                    platformId, MiniGameBuildSettingsData.Common.version, settings);
+            }
+
             adapter.Export(context ?? throw new ArgumentNullException(nameof(context)));
         }
     }

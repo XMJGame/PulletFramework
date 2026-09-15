@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using UnityEngine;
 using YooAsset;
 
 namespace PulletFramework.YooAssetAdapter
@@ -48,6 +49,12 @@ namespace PulletFramework.YooAssetAdapter
         {
             state.Error = null;
             state.Progress = 0f;
+            state.TotalDownloadCount = 0;
+            state.TotalDownloadBytes = 0;
+            state.CurrentDownloadCount = 0;
+            state.CurrentDownloadBytes = 0;
+            state.UsedBuiltinFallback = false;
+            state.FallbackReason = null;
 
             if (request.OperationType == EPulletYooAssetOperationType.Unload)
             {
@@ -128,37 +135,140 @@ namespace PulletFramework.YooAssetAdapter
             }
 
             string targetVersion = request.TargetVersion;
+            bool explicitTargetVersion = !string.IsNullOrWhiteSpace(targetVersion);
+            bool reuseCurrentManifest = false;
+            bool numericVersionPolicy = settings.GetRuntimePlayMode()
+                != EPulletYooAssetPlayMode.EditorSimulate;
             SetState(state, operation, EPulletYooAssetPackageStatus.CheckingVersion, 0.12f);
             if (string.IsNullOrWhiteSpace(targetVersion))
             {
                 RequestPackageVersionOperation versionOperation = package.RequestPackageVersionAsync(
                     new RequestPackageVersionOptions(true, settings.timeoutSeconds));
                 yield return versionOperation;
-                if (!CheckResult(state, operation, finished,
-                        versionOperation.Status, versionOperation.Error))
-                    yield break;
-                targetVersion = versionOperation.PackageVersion;
+                if (versionOperation.Status != EOperationStatus.Succeeded)
+                {
+                    if (CanReuseCurrentManifest(request, state))
+                    {
+                        targetVersion = state.CurrentVersion;
+                        reuseCurrentManifest = true;
+                        state.RemoteVersion = null;
+                        state.HasUpdate = false;
+                        PLogger.Warning(
+                            $"[PulletYooAsset] {request.PackageName}: 远端版本检查失败，"
+                            + $"继续使用当前版本 {state.CurrentVersion}。原因："
+                            + versionOperation.Error);
+                    }
+                    else if (CanFallbackToBuiltin(request, settings, state, operation))
+                    {
+                        yield return PrepareBuiltinFallback(
+                            package, request, settings, state, operation, finished,
+                            versionOperation.Error);
+                        yield break;
+                    }
+                    else
+                    {
+                        CheckResult(state, operation, finished,
+                            versionOperation.Status, versionOperation.Error);
+                        yield break;
+                    }
+                }
+                else
+                {
+                    targetVersion = versionOperation.PackageVersion;
+                }
             }
 
-            state.RemoteVersion = targetVersion;
+            if (!reuseCurrentManifest)
+                state.RemoteVersion = targetVersion;
+            if (numericVersionPolicy && explicitTargetVersion
+                && !PulletYooAssetVersion.IsValid(targetVersion))
+            {
+                Fail(state, operation, finished,
+                    $"指定资源版本 {targetVersion} 不是支持的数字分段格式。");
+                yield break;
+            }
+            if (numericVersionPolicy && !explicitTargetVersion && !reuseCurrentManifest)
+            {
+                string builtinVersion = CanFallbackToBuiltin(request, settings, state, operation)
+                    ? settings.builtinDefaultPackageVersion
+                    : null;
+                EPulletYooAssetAutomaticVersionDecision decision =
+                    PulletYooAssetVersion.SelectAutomatic(
+                        state.CurrentVersion, builtinVersion, targetVersion,
+                        out string versionReason);
+                if (decision == EPulletYooAssetAutomaticVersionDecision.Incomparable)
+                {
+                    Fail(state, operation, finished,
+                        versionReason + "请统一该资源通道的版本格式，或显式指定目标版本。");
+                    yield break;
+                }
+                if (decision == EPulletYooAssetAutomaticVersionDecision.PreferBuiltin)
+                {
+                    yield return PrepareBuiltinFallback(
+                        package, request, settings, state, operation, finished, versionReason);
+                    yield break;
+                }
+                if (decision == EPulletYooAssetAutomaticVersionDecision.KeepCurrent)
+                {
+                    state.HasUpdate = false;
+                    if (request.OperationType == EPulletYooAssetOperationType.Check
+                        || request.OperationType == EPulletYooAssetOperationType.Update)
+                    {
+                        CompleteReadyState(state, operation, finished,
+                            request.OperationType == EPulletYooAssetOperationType.Check
+                                ? targetVersion : null);
+                        yield break;
+                    }
+                    targetVersion = state.CurrentVersion;
+                    reuseCurrentManifest = true;
+                }
+            }
             state.HasUpdate = !string.Equals(
                 state.CurrentVersion, targetVersion, StringComparison.Ordinal);
             operation.PackageVersion = targetVersion;
 
             if (request.OperationType == EPulletYooAssetOperationType.Check)
             {
-                CompleteReadyState(state, operation, finished);
+                CompleteReadyState(state, operation, finished, targetVersion);
                 yield break;
             }
 
-            SetState(state, operation, EPulletYooAssetPackageStatus.UpdatingManifest, 0.2f);
-            LoadPackageManifestOperation manifestOperation = package.LoadPackageManifestAsync(
-                new LoadPackageManifestOptions(targetVersion, settings.timeoutSeconds));
-            yield return manifestOperation;
-            if (!CheckResult(state, operation, finished,
-                    manifestOperation.Status, manifestOperation.Error))
-                yield break;
-            state.CurrentVersion = targetVersion;
+            if (!reuseCurrentManifest)
+            {
+                SetState(state, operation, EPulletYooAssetPackageStatus.UpdatingManifest, 0.2f);
+                LoadPackageManifestOperation manifestOperation = package.LoadPackageManifestAsync(
+                    new LoadPackageManifestOptions(targetVersion, settings.timeoutSeconds));
+                yield return manifestOperation;
+                if (manifestOperation.Status != EOperationStatus.Succeeded)
+                {
+                    if (!explicitTargetVersion && CanReuseCurrentManifest(request, state))
+                    {
+                        PLogger.Warning(
+                            $"[PulletYooAsset] {request.PackageName}: 远端清单 {targetVersion} "
+                            + $"加载失败，继续使用当前版本 {state.CurrentVersion}。原因："
+                            + manifestOperation.Error);
+                        targetVersion = state.CurrentVersion;
+                        operation.PackageVersion = targetVersion;
+                    }
+                    else if (CanFallbackToBuiltin(request, settings, state, operation))
+                    {
+                        yield return PrepareBuiltinFallback(
+                            package, request, settings, state, operation, finished,
+                            manifestOperation.Error);
+                        yield break;
+                    }
+                    else
+                    {
+                        CheckResult(state, operation, finished,
+                            manifestOperation.Status, manifestOperation.Error);
+                        yield break;
+                    }
+                }
+                else
+                {
+                    state.CurrentVersion = targetVersion;
+                }
+            }
             state.HasUpdate = false;
 
             if (operation.CancellationRequested)
@@ -183,19 +293,251 @@ namespace PulletFramework.YooAssetAdapter
                     SetState(state, operation, EPulletYooAssetPackageStatus.Downloading, 0.25f);
                     downloader.StartDownload();
                     yield return downloader;
-                    if (!CheckResult(state, operation, finished, downloader.Status, downloader.Error))
+                    if (downloader.Status != EOperationStatus.Succeeded)
+                    {
+                        if (CanFallbackToBuiltin(request, settings, state, operation))
+                        {
+                            yield return PrepareBuiltinFallback(
+                                package, request, settings, state, operation, finished,
+                                downloader.Error);
+                            yield break;
+                        }
+                        CheckResult(state, operation, finished,
+                            downloader.Status, downloader.Error);
                         yield break;
+                    }
                 }
+            }
+
+            if (request.OperationType == EPulletYooAssetOperationType.Prepare)
+            {
+                yield return WarmupShaderVariants(
+                    package, request, settings, state, operation, finished);
+                if (operation.IsDone)
+                    yield break;
             }
 
             if (request.ClearUnusedCache)
             {
-                yield return ClearUnusedCache(package, state, operation, finished, 0.92f);
+                yield return ClearUnusedCache(package, state, operation, finished, 0.97f);
                 if (operation.IsDone)
                     yield break;
             }
 
             CompleteReadyState(state, operation, finished);
+        }
+
+        internal static bool CanFallbackToBuiltin(
+            PulletYooAssetPipelineRequest request,
+            PulletYooAssetSettings settings,
+            PulletYooAssetPackageState state,
+            PulletYooAssetPackageOperation operation)
+        {
+            if (operation.CancellationRequested
+                || request.OperationType != EPulletYooAssetOperationType.Prepare
+                || !settings.includeDefaultPackageInStreamingAssets
+                || !string.Equals(request.PackageName, settings.packageName, StringComparison.Ordinal)
+                || settings.GetRuntimePlayMode() != EPulletYooAssetPlayMode.Web)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(state.CurrentVersion))
+                return true;
+            return !string.IsNullOrWhiteSpace(settings.builtinDefaultPackageVersion)
+                && PulletYooAssetVersion.TryCompare(
+                    settings.builtinDefaultPackageVersion, state.CurrentVersion,
+                    out int comparison) && comparison >= 0;
+        }
+
+        internal static bool CanReuseCurrentManifest(
+            PulletYooAssetPipelineRequest request, PulletYooAssetPackageState state)
+        {
+            return request.OperationType == EPulletYooAssetOperationType.Prepare
+                && !string.IsNullOrWhiteSpace(state.CurrentVersion);
+        }
+
+        private static IEnumerator PrepareBuiltinFallback(
+            ResourcePackage package,
+            PulletYooAssetPipelineRequest request,
+            PulletYooAssetSettings settings,
+            PulletYooAssetPackageState state,
+            PulletYooAssetPackageOperation operation,
+            Action<bool> finished,
+            string remoteError)
+        {
+            string reason = string.IsNullOrWhiteSpace(remoteError)
+                ? "远端资源服务不可用。"
+                : remoteError;
+            state.UsedBuiltinFallback = true;
+            state.FallbackReason = reason;
+            state.Error = null;
+            state.RemoteVersion = null;
+            state.HasUpdate = false;
+            state.TotalDownloadCount = 0;
+            state.TotalDownloadBytes = 0;
+            state.CurrentDownloadCount = 0;
+            state.CurrentDownloadBytes = 0;
+            operation.MarkBuiltinFallback(reason);
+            SetState(state, operation, EPulletYooAssetPackageStatus.FallingBackToBuiltin,
+                UnityEngine.Mathf.Max(state.Progress, 0.3f));
+            PLogger.Warning(
+                $"[PulletYooAsset] {request.PackageName}: 远端资源不可用或不适用，" +
+                $"尝试使用随包内置版本。原因：{reason}");
+
+            DestroyPackageOperation destroyOperation = package.DestroyPackageAsync();
+            yield return destroyOperation;
+            if (!CheckFallbackResult(
+                    state, operation, finished, destroyOperation.Status,
+                    destroyOperation.Error, reason, "销毁远端资源包"))
+                yield break;
+            YooAssets.RemovePackage(request.PackageName);
+
+            ResourcePackage builtinPackage;
+            InitializePackageOperation initializeOperation;
+            try
+            {
+                builtinPackage = PulletYooAssetPackageInitializer.EnsurePackage(
+                    settings, request.PackageName);
+                initializeOperation =
+                    PulletYooAssetPackageInitializer.CreateBuiltinOnlyWebOperation(builtinPackage);
+            }
+            catch (Exception exception)
+            {
+                FailBuiltinFallback(
+                    state, operation, finished, reason, "创建内置资源包", exception.Message);
+                yield break;
+            }
+
+            yield return initializeOperation;
+            if (!CheckFallbackResult(
+                    state, operation, finished, initializeOperation.Status,
+                    initializeOperation.Error, reason, "初始化内置文件系统"))
+                yield break;
+
+            RequestPackageVersionOperation versionOperation =
+                builtinPackage.RequestPackageVersionAsync(
+                    new RequestPackageVersionOptions(false, settings.timeoutSeconds));
+            yield return versionOperation;
+            if (!CheckFallbackResult(
+                    state, operation, finished, versionOperation.Status,
+                    versionOperation.Error, reason, "读取内置资源版本"))
+                yield break;
+
+            string builtinVersion = versionOperation.PackageVersion;
+            LoadPackageManifestOperation manifestOperation =
+                builtinPackage.LoadPackageManifestAsync(
+                    new LoadPackageManifestOptions(builtinVersion, settings.timeoutSeconds));
+            yield return manifestOperation;
+            if (!CheckFallbackResult(
+                    state, operation, finished, manifestOperation.Status,
+                    manifestOperation.Error, reason, "加载内置资源清单"))
+                yield break;
+
+            state.CurrentVersion = builtinVersion;
+            operation.PackageVersion = builtinVersion;
+            yield return WarmupShaderVariants(
+                builtinPackage, request, settings, state, operation, finished);
+            if (operation.IsDone)
+                yield break;
+            PLogger.Warning(
+                $"[PulletYooAsset] {request.PackageName}: 已降级使用随包内置版本 {builtinVersion}。" +
+                "本次会话不再检查远端更新。");
+            CompleteReadyState(state, operation, finished);
+        }
+
+        private static IEnumerator WarmupShaderVariants(
+            ResourcePackage package,
+            PulletYooAssetPipelineRequest request,
+            PulletYooAssetSettings settings,
+            PulletYooAssetPackageState state,
+            PulletYooAssetPackageOperation operation,
+            Action<bool> finished)
+        {
+            if (!settings.warmupShaderVariantsOnPrepare)
+                yield break;
+
+            string location = PulletYooAssetShaderVariants.GetLocation(settings, request.PackageName);
+            if (!package.IsLocationValid(location))
+            {
+                PLogger.Warning(
+                    $"[PulletYooAsset] {request.PackageName}: 未找到着色器变体集合 {location}，" +
+                    "跳过预热。请重新构建该 Package。");
+                yield break;
+            }
+
+            SetState(state, operation, EPulletYooAssetPackageStatus.WarmingShaderVariants, 0.92f);
+            AssetHandle handle = package.LoadAssetAsync<ShaderVariantCollection>(location);
+            yield return handle;
+            if (handle.Status != EOperationStatus.Succeeded)
+            {
+                PLogger.Warning(
+                    $"[PulletYooAsset] {request.PackageName}: 着色器变体集合加载失败，跳过预热。" +
+                    handle.Error);
+                handle.Release();
+                yield break;
+            }
+
+            var collection = handle.AssetObject as ShaderVariantCollection;
+            if (collection == null)
+            {
+                PLogger.Warning(
+                    $"[PulletYooAsset] {request.PackageName}: {location} 不是有效的着色器变体集合。");
+                handle.Release();
+                yield break;
+            }
+
+            int variantCount = collection.variantCount;
+            while (!collection.WarmUpProgressively(settings.shaderVariantWarmupBatchSize))
+            {
+                if (operation.CancellationRequested)
+                {
+                    handle.Release();
+                    Cancel(state, operation, finished);
+                    yield break;
+                }
+                float ratio = variantCount == 0
+                    ? 1f
+                    : (float)collection.warmedUpVariantCount / variantCount;
+                SetState(state, operation, EPulletYooAssetPackageStatus.WarmingShaderVariants,
+                    0.92f + Mathf.Clamp01(ratio) * 0.04f);
+                yield return null;
+            }
+            PLogger.Info(
+                $"[PulletYooAsset] {request.PackageName}: 已预热 {variantCount} 个着色器变体。");
+            handle.Release();
+        }
+
+        private static bool CheckFallbackResult(
+            PulletYooAssetPackageState state,
+            PulletYooAssetPackageOperation operation,
+            Action<bool> finished,
+            EOperationStatus status,
+            string fallbackError,
+            string remoteError,
+            string stage)
+        {
+            if (operation.CancellationRequested)
+            {
+                Cancel(state, operation, finished);
+                return false;
+            }
+            if (status == EOperationStatus.Succeeded)
+                return true;
+            FailBuiltinFallback(
+                state, operation, finished, remoteError, stage, fallbackError);
+            return false;
+        }
+
+        private static void FailBuiltinFallback(
+            PulletYooAssetPackageState state,
+            PulletYooAssetPackageOperation operation,
+            Action<bool> finished,
+            string remoteError,
+            string stage,
+            string fallbackError)
+        {
+            Fail(state, operation, finished,
+                $"远端资源启动失败：{remoteError}\n"
+                + $"内置资源降级也失败（{stage}）：{fallbackError}");
         }
 
         private static IEnumerator DestroyPackage(
@@ -215,8 +557,8 @@ namespace PulletFramework.YooAssetAdapter
                     yield break;
                 YooAssets.RemovePackage(request.PackageName);
             }
-            operation.Complete(null);
-            finished(true);
+            operation.SetSucceeded(null);
+            FinishAndNotify(operation, finished, true, true);
         }
 
         private static IEnumerator ClearUnusedCache(
@@ -285,15 +627,16 @@ namespace PulletFramework.YooAssetAdapter
         private static void CompleteReadyState(
             PulletYooAssetPackageState state,
             PulletYooAssetPackageOperation operation,
-            Action<bool> finished)
+            Action<bool> finished,
+            string checkedVersion = null)
         {
-            SetState(state, operation,
-                string.IsNullOrWhiteSpace(state.CurrentVersion)
-                    ? EPulletYooAssetPackageStatus.Initialized
-                    : EPulletYooAssetPackageStatus.Ready,
-                1f);
-            operation.Complete(state.CurrentVersion);
-            finished(false);
+            state.Status = string.IsNullOrWhiteSpace(state.CurrentVersion)
+                ? EPulletYooAssetPackageStatus.Initialized
+                : EPulletYooAssetPackageStatus.Ready;
+            state.Progress = 1f;
+            state.Error = null;
+            operation.SetSucceeded(checkedVersion ?? state.CurrentVersion);
+            FinishAndNotify(operation, finished, false, true);
         }
 
         private static void Cancel(
@@ -303,8 +646,8 @@ namespace PulletFramework.YooAssetAdapter
         {
             state.Error = "操作已取消。";
             state.Status = EPulletYooAssetPackageStatus.Failed;
-            operation.Fail(state.Error, true);
-            finished(false);
+            operation.SetFailed(state.Error, true);
+            FinishAndNotify(operation, finished, false, false);
         }
 
         private static void Fail(
@@ -317,9 +660,30 @@ namespace PulletFramework.YooAssetAdapter
                 ? "Unknown YooAsset operation error."
                 : error;
             state.Status = EPulletYooAssetPackageStatus.Failed;
-            operation.Fail(state.Error);
+            operation.SetFailed(state.Error);
             PLogger.Error($"[PulletYooAsset] {operation.PackageName}: {state.Error}");
-            finished(false);
+            FinishAndNotify(operation, finished, false, false);
+        }
+
+        internal static void FinishAndNotify(
+            PulletYooAssetPackageOperation operation,
+            Action<bool> finished,
+            bool removeState,
+            bool reportFinalProgress)
+        {
+            try
+            {
+                finished(removeState);
+            }
+            catch (Exception exception)
+            {
+                PLogger.Exception(exception,
+                    $"[PulletYooAsset] {operation.PackageName} finalization failed.");
+            }
+            finally
+            {
+                operation.NotifyCompleted(reportFinalProgress);
+            }
         }
 
         private static void SetState(

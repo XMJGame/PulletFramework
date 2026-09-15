@@ -33,10 +33,23 @@ namespace PulletFramework.Form
         public List<int> idList { get { return m_IdList; } }
         public bool IsLoaded => m_DataDict != null;
         public string LoadError { get; private set; }
+        private bool _isLoading;
+
+        public bool Reload()
+        {
+            if (_isLoading)
+                return false;
+            PulletFrameworks.StartCoroutine(PreLoadTextAsset());
+            return true;
+        }
 
         public IEnumerator PreLoadTextAsset()
         {
-            int generation = PulletForm.BeginRead(ResetInstance);
+            if (_isLoading)
+                yield break;
+            _isLoading = true;
+            int generation = PulletForm.BeginRead(
+                typeof(T), formPath, ResetInstance, () => Reload());
             LoadError = null;
             IResourceAssetHandle assetHandle = null;
             try
@@ -81,7 +94,9 @@ namespace PulletFramework.Form
             finally
             {
                 assetHandle?.Release();
-                PulletForm.CompleteRead(generation);
+                _isLoading = false;
+                PulletForm.CompleteRead(
+                    generation, typeof(T), formPath, LoadError);
             }
         }
 
@@ -102,7 +117,7 @@ namespace PulletFramework.Form
         /// </summary>
         protected virtual Dictionary<int, TData> Parse(TextAsset textAsset)
         {
-            return ReadFormTool.ReadFormData<TData>(textAsset);
+            return ReadFormTool.ReadFormData<TData>(textAsset, true);
         }
 
         public TData GetDateById(int id)
