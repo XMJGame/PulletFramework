@@ -7,9 +7,12 @@
 
 ```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework
+https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.AssetPublishing
 https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
 ```
+
+`PulletFramework.AssetPublishing` 是编辑器发布依赖，不进入 Player 运行时；即使项目暂时不上传 CDN，也应按上述顺序安装。不要同时把同一模块放在 `Assets` 和 Package Manager 中，否则会产生重复程序集。
 
 安装后，`Pullets/Workspace` 会自动出现“YooAsset 资源”页面。移除本模块后，基础框架仍可使用，
 但项目必须安装其他 `IResourceAdapter`，或不调用依赖外部资源的窗口、对象池和音频功能。
@@ -45,7 +48,7 @@ if (!PulletYooAssets.IsConfigured)
 var operation = PulletYooAssets.PrepareDefaultPackageAsync();
 yield return operation;
 if (!operation.Succeeded)
-    Debug.LogError(operation.Error);
+    PLogger.Error(operation.Error);
 ```
 
 进入关卡前按需更新并下载另一个包：
@@ -53,7 +56,7 @@ if (!operation.Succeeded)
 ```csharp
 var operation = PulletYooAssets.PreparePackageAsync("LevelPackage", true);
 operation.ProgressChanged += current =>
-    Debug.Log($"{current.CurrentDownloadBytes}/{current.TotalDownloadBytes}");
+    PLogger.Info($"{current.CurrentDownloadBytes}/{current.TotalDownloadBytes}");
 yield return operation;
 
 if (operation.Succeeded)
@@ -70,6 +73,22 @@ if (operation.Succeeded)
 标签，`UnloadPackageAsync` 销毁并移除包。下载操作提供进度、文件数、字节数以及
 `DownloadFileStarted`、`DownloadError`、`PauseDownload()`、`ResumeDownload()` 和 `Cancel()`。
 同一个 Package 同一时间只允许一个操作，不同 Package 可以并行处理。
+
+默认包开启“随 Player 发布”后，WebGL/小游戏启动会优先使用 `StreamingAssets` 中已有的
+Bundle，同时仍从 CDN 获取版本和清单。若启动阶段的远端版本、清单或必要下载失败，
+`PrepareDefaultPackageAsync()` 会自动重建为只读内置包并继续启动；成功结果中的
+`UsedBuiltinFallback` 为 `true`，`FallbackReason` 保留远端错误。本次会话固定使用内置版本，
+下次冷启动会重新尝试 CDN。只有启动期 `Prepare` 允许自动降级，手动检查、更新、下载以及
+非默认 Package 均保持原错误，不会销毁可能已被业务引用的包。
+
+版本统一使用纯数字分段：`1.0.0`、`v1.2` 和自动日期 `2026-09-14-174738` 均可，比较时
+逐段按数值处理（`1.10.0 > 1.2.0`）。CDN 版本旧于内置版本或无法解析时，启动保持使用
+内置版本以避免倒退。同一 `resourceChannel` 不应在语义版本与日期版本之间切换；确需切换时
+新建兼容通道。YooAsset 负责返回版本字符串和加载对应清单，版本排序由本模块统一处理。
+
+关闭“随 Player 发布”时不复制默认包到 `StreamingAssets`，运行时为纯 CDN 模式；CDN
+不可用会返回失败，业务可显示重试或网络提示。开启后也仍应完整发布同版本 CDN 目录，内置包
+是首屏资源和离线兜底，不替代后续热更新。
 
 `UnloadUnusedAssetsAsync` 用于卸载引用计数为零的资源，`ClearUnusedCacheAsync` 用于删除当前
 清单不再使用的缓存 Bundle，`TryUnloadUnusedAsset` 可针对单个地址尝试卸载。业务加载获得的
@@ -99,9 +118,22 @@ GameObject 由业务或对象池负责销毁、回收。
 1. “资源收集器”维护资源归属和地址；
 2. “资源构建器”维护 YooAsset 官方高级构建参数；
 3. “构建当前版本”读取当前平台、Pullet 包名与资源版本，并沿用资源构建器保存的压缩、首包拷贝、加密等参数；
-4. “上传当前版本到腾讯云 COS”按照资源、清单、版本指针的顺序发布。
+4. “上传当前版本”使用“资源发布”页面当前激活的供应商，按照资源、清单、版本指针的顺序发布。
 
-COS 上传时，哈希 Bundle 与带版本号的清单使用一年 immutable 缓存；可变的 `.version` 指针使用
+“着色器变体”区域按当前 Package 收集到的材质及其启用关键字生成
+`Assets/Generated/Pullet/ShaderVariants/PulletShaderVariants_<Package>.shadervariants`，
+并自动使用 YooAsset 的 `PackShaderVariants` 规则加入该 Package 的 Shader Bundle。“构建前自动收集”
+默认开启，因此日常仍只需点击“构建当前版本”；也可手动收集并查看 Shader、变体及跳过数量。
+
+输出目录和集合名称模板可在配置界面修改，名称模板支持 `{package}` 占位符。编辑器收集与
+运行时预热共用同一名称解析规则，多 Package 项目应保留占位符以避免集合互相覆盖。
+
+运行时 `PreparePackageAsync` 在清单和必要资源下载完成后，通过
+`ShaderVariantCollection.WarmUpProgressively` 分帧预热，默认每帧 32 个，避免集中预热形成长帧。
+收集器只记录项目材质实际启用的关键字；代码运行时动态打开的关键字需要提供相应状态的材质，或由项目维护
+补充变体集合。实现仅使用 Unity 公开 API，不依赖官方样例中的非公开 `ShaderUtil` 反射接口和临时场景。
+
+通过资源发布模块上传时，哈希 Bundle 与带版本号的清单使用一年 immutable 缓存；可变的 `.version` 指针使用
 `no-cache, max-age=0, must-revalidate`。因此资源文件可以长期复用，同时客户端仍会检查最新 Package 版本。
 
 `resourceChannel` 是客户端兼容通道（例如 `v1`），普通资源更新时保持不变。
@@ -118,6 +150,20 @@ COS 上传时，哈希 Bundle 与带版本号的清单使用一年 immutable 缓
 ```text
 game-assets/{platform}/{appVersion}/{resourceChannel}/{package}
 ```
+
+`{platform}` 使用构建发布与运行时一致的目录名称：WebGL、Android、IPhone、Windows、macOS、Linux。
+此前 iOS 构建上传到 `iOS`、Windows 构建上传到 `StandaloneWindows64`，而运行时可能请求
+`IPhone` 或 `PC`。旧云端对象不会自动搬迁；升级客户端前应使用当前发布工具把对应构建版本重新上传到新目录。
+
+自动版本检查仅使用可比较且不低于当前活动/内置版本的远端版本。语义数字分段和日期数字分段
+不要在同一资源兼容通道混用；有意回滚时由应用显式调用 `UpdatePackageAsync(packageName, targetVersion)`。
+内置资源降级不会把已加载的较新清单切回更旧的随包版本。
+EditorSimulate 的 YooAsset 版本是 `Simulate`，不参与真实远端数字比较。同版或远端旧版
+复用当前活动清单时，Prepare/Download 仍会继续检查和下载缺失资源；不会因为版本相同就跳过资源准备。
+
+发布时读取当前“资源发布”供应商配置并冻结一次会话；所有文件使用同一配置上传，
+在上传可变版本指针前完成资源与清单上传。报告内容发生变化、目标上传地址不一致或上传失败时
+不会继续前移版本指针。版本指针已在线上的更新不会被此流程自动撤销。
 
 `appVersion` 直接取 Player/App 版本，不在 YooAsset 配置中重复保存。例如：
 `game-assets/WebGL/1.0.0/v1/DefaultPackage`。
@@ -156,6 +202,10 @@ PulletFramework 内部 UI、表格、音频和对象池
 YooAsset `ResourcePackage`。单资源、子资源、Bundle 内全部资源、RawFile、场景、组合下载器和
 高级缓存操作均直接使用 YooAsset 官方 API，不再二次封装。
 
+自动 `Prepare` 在远端版本请求或新清单加载失败时，如果当前进程已有激活清单，会继续使用当前版本。
+这是运行期断网/重试兜底，不等于所有平台都支持冷启动离线激活沙盒清单；后者取决于 YooAsset 文件系统和平台缓存实现。
+显式 `Check` / `Update` / `Download` 仍会如实报告远端失败，避免管理操作把离线缓存误当成更新成功。
+
 `PulletResources` 只为 PulletFramework 自身的 UI、表格、音频和对象池提供最小单资源加载接口。
 业务不需要学习它，也不应把它当作 YooAsset 的替代 API。未来项目若改用 Unity AssetBundle 或
 其他资源系统，只需为框架内部提供同等的最小适配器；业务继续使用所选资源系统自己的 API。
@@ -190,3 +240,7 @@ YooAsset 3.0 运行时参考：
 - [资源加载](https://www.yooasset.com/docs/guide-runtime/ResourceLoad)
 - [资源卸载](https://www.yooasset.com/docs/guide-runtime/ResourceUnload)
 - [内置文件解压](https://www.yooasset.com/docs/solution/BuiltinFileUnpack)
+
+## 验证状态
+
+已在 Unity `2022.3.62f3` 的全新本地 UPM 工程中完成核心 + AssetPublishing + YooAsset 组合解析和编译；验证工程已完成默认 Package、远端 COS、内置 Bundle、版本比较、多 Package API 和失败重试测试。微信、抖音真机的首次下载、二次冷启动缓存及断网行为仍以项目真机验收为准。

@@ -11,13 +11,21 @@ namespace PulletFramework.YooAssetAdapter
         public delegate FileSystemParameters WebFileSystemFactoryDelegate(
             string packageName, IRemoteService remoteService);
 
-        private sealed class CoroutineRunner : MonoBehaviour { }
+        private sealed class CoroutineRunner : MonoBehaviour
+        {
+            private void OnDestroy()
+            {
+                PulletYooAssets.OnRunnerDestroyed(this);
+            }
+        }
 
         private static readonly Dictionary<string, PulletYooAssetPackageState> States =
             new Dictionary<string, PulletYooAssetPackageState>(StringComparer.Ordinal);
         private static readonly Dictionary<string, PulletYooAssetPackageOperation> ActiveOperations =
             new Dictionary<string, PulletYooAssetPackageOperation>(StringComparer.Ordinal);
         private static CoroutineRunner _runner;
+        private static int _generation;
+        private static bool _isResetting;
 
         /// <summary>默认启动包名称。配置不可用时返回 DefaultPackage。</summary>
         public static string DefaultPackageName => PulletYooAssetSettingsData.DefaultPackageName;
@@ -145,51 +153,94 @@ namespace PulletFramework.YooAssetAdapter
 
         public static void Reset(bool destroyYooAssets = false)
         {
-            foreach (PulletYooAssetPackageOperation operation in ActiveOperations.Values)
-                operation.Cancel();
-            ActiveOperations.Clear();
-            States.Clear();
+            if (_isResetting)
+                return;
 
-            if (_runner != null)
+            _isResetting = true;
+            try
             {
-                UnityEngine.Object.Destroy(_runner.gameObject);
+                _generation++;
+                var pending = new List<PulletYooAssetPackageOperation>(ActiveOperations.Values);
+                ActiveOperations.Clear();
+                States.Clear();
+
+                CoroutineRunner runner = _runner;
                 _runner = null;
+                for (int i = 0; i < pending.Count; i++)
+                    pending[i].CancelImmediately("资源系统已重置，操作已取消。");
+
+                if (runner != null)
+                    UnityEngine.Object.Destroy(runner.gameObject);
+                if (destroyYooAssets && YooAssets.IsInitialized)
+                    YooAssets.Destroy();
             }
-            if (destroyYooAssets && YooAssets.IsInitialized)
-                YooAssets.Destroy();
+            finally
+            {
+                _isResetting = false;
+            }
         }
 
         private static PulletYooAssetPackageOperation Start(PulletYooAssetPipelineRequest request)
         {
             string packageName = NormalizePackageName(request.PackageName);
             request = request.WithPackageName(packageName);
-            var operation = new PulletYooAssetPackageOperation(packageName, request.OperationType);
+            var operation = new PulletYooAssetPackageOperation(
+                packageName, request.OperationType, _generation);
+            if (_isResetting)
+            {
+                operation.FailImmediately("资源系统正在重置，请稍后重试。", true);
+                return operation;
+            }
             if (ActiveOperations.ContainsKey(packageName))
             {
-                operation.Fail($"资源包 {packageName} 已有操作正在执行，请等待完成后重试。");
+                operation.FailImmediately(
+                    $"资源包 {packageName} 已有操作正在执行，请等待完成后重试。");
                 return operation;
             }
 
             PulletYooAssetSettings settings = PulletYooAssetSettingsData.Setting;
             if (settings == null)
             {
-                operation.Fail("未找到 PulletYooAssetSettings 配置。");
+                operation.FailImmediately("未找到 PulletYooAssetSettings 配置。");
                 return operation;
             }
 
             PulletYooAssetPackageState state = GetPackageState(packageName);
             ActiveOperations.Add(packageName, operation);
-            EnsureRunner().StartCoroutine(PulletYooAssetPackagePipeline.Run(
-                request, settings, state, operation,
-                removeState => Finish(operation, removeState)));
+            try
+            {
+                EnsureRunner().StartCoroutine(PulletYooAssetPackagePipeline.Run(
+                    request, settings, state, operation,
+                    removeState => Finish(operation, removeState)));
+            }
+            catch (Exception exception)
+            {
+                Finish(operation, false);
+                operation.FailImmediately(exception.Message);
+                PLogger.Exception(exception,
+                    $"[PulletYooAsset] {packageName} pipeline could not start.");
+            }
             return operation;
         }
 
         private static void Finish(PulletYooAssetPackageOperation operation, bool removeState)
         {
+            if (!ActiveOperations.TryGetValue(
+                    operation.PackageName, out PulletYooAssetPackageOperation active)
+                || !ReferenceEquals(active, operation))
+                return;
+
             ActiveOperations.Remove(operation.PackageName);
-            if (removeState)
+            if (removeState && operation.Generation == _generation)
                 States.Remove(operation.PackageName);
+        }
+
+        private static void OnRunnerDestroyed(CoroutineRunner runner)
+        {
+            if (_isResetting || !ReferenceEquals(_runner, runner))
+                return;
+            _runner = null;
+            Reset(false);
         }
 
         private static void EnsureReady(string packageName)

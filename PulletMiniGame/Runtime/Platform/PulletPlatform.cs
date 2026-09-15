@@ -13,6 +13,11 @@ namespace PulletMiniGame.Platform
         public static string Id => _adapter?.Id ?? "none";
         public static EPlatformCapability Capabilities => _adapter?.Capabilities ?? EPlatformCapability.None;
 
+        internal static IPlatformAdapter Adapter => _adapter;
+
+        internal static bool IsCurrent(IPlatformAdapter adapter) =>
+            adapter != null && ReferenceEquals(_adapter, adapter);
+
         public static void Install(IPlatformAdapter adapter)
         {
             if (adapter == null)

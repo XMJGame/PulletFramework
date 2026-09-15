@@ -15,6 +15,14 @@ namespace PulletMiniGame.Platform.Douyin.Editor
         public void DrawAdditionalSettings(MiniGamePlatformSettings settings)
         {
             var douyin = (DouyinPlatformSettings)settings;
+            douyin.showEngineLoadingBar = EditorGUILayout.Toggle(
+                "显示引擎启动进度条", douyin.showEngineLoadingBar);
+            douyin.loadingBarBackgroundColor = EditorGUILayout.ColorField(
+                "进度条底色", douyin.loadingBarBackgroundColor);
+            if (douyin.startupImage != null)
+                EditorGUILayout.HelpBox(
+                    "启动图请把标题和健康提示放在中间安全区域，并留出真实进度条的位置；常见竖屏等比铺满，宽屏完整显示。",
+                    MessageType.Info);
             douyin.developerToolPath = EditorGUILayout.TextField(
                 "开发者工具路径", douyin.developerToolPath);
             douyin.iosHighPerformancePlus = EditorGUILayout.Toggle(
@@ -27,6 +35,14 @@ namespace PulletMiniGame.Platform.Douyin.Editor
 
         public bool Validate(MiniGamePlatformSettings settings, out string error)
         {
+            var douyin = (DouyinPlatformSettings)settings;
+            if (douyin.firstPackageResourceMode == EFirstPackageResourceMode.Cdn
+                && douyin.useLegacyBuildFormat)
+            {
+                error = "抖音 Data CDN 只支持新包体格式，请关闭“使用旧包体格式”。";
+                return false;
+            }
+
             error = null;
             return true;
         }

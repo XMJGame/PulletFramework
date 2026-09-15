@@ -27,6 +27,17 @@ namespace PulletFramework.YooAssetAdapter
                 throw new InvalidOperationException(
                     "Initialize YooAsset before installing its PulletFramework adapter.");
 
+            if (PulletResources.IsConfigured)
+            {
+                if (PulletResources.Adapter is YooAssetResourceAdapter installed
+                    && string.Equals(installed.DefaultPackageName, defaultPackageName,
+                        StringComparison.Ordinal))
+                    return installed;
+                throw new InvalidOperationException(
+                    $"Resource adapter '{PulletResources.Adapter.Name}' is already installed. " +
+                    "Call PulletResources.Uninstall() before installing the YooAsset adapter.");
+            }
+
             var adapter = new YooAssetResourceAdapter(defaultPackageName);
             PulletResources.Install(adapter);
             return adapter;
@@ -124,7 +135,7 @@ namespace PulletFramework.YooAssetAdapter
                 if (value == null)
                     return;
                 if (IsDone)
-                    value(this);
+                    InvokeCompleted(value, "late completion");
                 else
                     _completed += value;
             }
@@ -175,7 +186,27 @@ namespace PulletFramework.YooAssetAdapter
         {
             Action<IResourceAssetHandle> callback = _completed;
             _completed = null;
-            callback?.Invoke(this);
+            InvokeCompleted(callback, "completion");
+        }
+
+        private void InvokeCompleted(
+            Action<IResourceAssetHandle> callbacks, string callbackType)
+        {
+            if (callbacks == null)
+                return;
+            Delegate[] invocationList = callbacks.GetInvocationList();
+            for (int i = 0; i < invocationList.Length; i++)
+            {
+                try
+                {
+                    ((Action<IResourceAssetHandle>)invocationList[i])(this);
+                }
+                catch (Exception exception)
+                {
+                    PLogger.Exception(exception,
+                        $"[PulletYooAsset] Resource handle {callbackType} callback failed.");
+                }
+            }
         }
 
         private void EnsureValid()

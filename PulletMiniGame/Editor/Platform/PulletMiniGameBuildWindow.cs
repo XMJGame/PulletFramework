@@ -63,7 +63,7 @@ namespace PulletMiniGame.Editor
             DrawCommonSettings(common);
 
             EditorGUILayout.Space(12f);
-            DrawPlatformSettings(definition, platform);
+            DrawPlatformSettings(common, definition, platform);
 
             EditorGUILayout.Space(12f);
             EditorGUILayout.LabelField("运行参数", EditorStyles.boldLabel);
@@ -116,6 +116,7 @@ namespace PulletMiniGame.Editor
         }
 
         private static void DrawPlatformSettings(
+            MiniGameBuildSettings common,
             IMiniGamePlatformDefinition definition,
             MiniGamePlatformSettings settings)
         {
@@ -128,10 +129,52 @@ namespace PulletMiniGame.Editor
                 "启动背景图", settings.startupImage, typeof(Texture2D), false);
             settings.showDefaultUnityLoadingLogo = EditorGUILayout.Toggle(
                 "显示 Unity 加载图标", settings.showDefaultUnityLoadingLogo);
-            settings.firstPackageResourceMode = (EFirstPackageResourceMode)EditorGUILayout.EnumPopup(
-                "首包资源", settings.firstPackageResourceMode);
+            int firstPackageMode = EditorGUILayout.Popup(
+                "Unity Data 首包",
+                settings.firstPackageResourceMode == EFirstPackageResourceMode.Package ? 0 : 1,
+                new[] { "平台分包（Package，推荐）", "远端 Data CDN" });
+            settings.firstPackageResourceMode = firstPackageMode == 0
+                ? EFirstPackageResourceMode.Package
+                : EFirstPackageResourceMode.Cdn;
             if (settings.firstPackageResourceMode == EFirstPackageResourceMode.Cdn)
-                settings.cdnUrl = EditorGUILayout.TextField("CDN 地址", settings.cdnUrl);
+            {
+                settings.firstPackageCdnFolder = EditorGUILayout.TextField(
+                    "CDN 子目录", string.IsNullOrWhiteSpace(settings.firstPackageCdnFolder)
+                        ? "bootstrap"
+                        : settings.firstPackageCdnFolder);
+                settings.manuallyConfigureFirstPackageCdn = EditorGUILayout.Toggle(
+                    "手动填写 CDN 地址", settings.manuallyConfigureFirstPackageCdn);
+                if (!settings.manuallyConfigureFirstPackageCdn)
+                {
+                    bool composed = MiniGameFirstPackageCdnPublisher.TryComposeCdnUrl(
+                        definition.Id, common.version, settings, out string url, out string error);
+                    settings.cdnUrl = composed ? url : string.Empty;
+                    using (new EditorGUI.DisabledScope(true))
+                        EditorGUILayout.TextField("最终 CDN 地址", settings.cdnUrl);
+                    if (!composed)
+                        EditorGUILayout.HelpBox(
+                            $"无法自动生成地址：{error}\n请先在“资源发布”中完善对象存储配置。",
+                            MessageType.Error);
+                }
+                else
+                {
+                    settings.cdnUrl = EditorGUILayout.TextField("最终 CDN 地址", settings.cdnUrl);
+                    EditorGUILayout.HelpBox(
+                        "手动地址不会使用“资源发布”中的供应商自动上传，请自行部署首包文件。",
+                        MessageType.Info);
+                }
+                EditorGUILayout.HelpBox(
+                    "这里配置的是 Unity webgl.data 的首包下载地址，不是 YooAsset AssetBundle 的资源地址。"
+                    + "选择 CDN 后，平台包不再携带 data-package，必须先重新构建，再上传转换 SDK 生成的数据文件。",
+                    MessageType.Warning);
+            }
+            else
+            {
+                EditorGUILayout.HelpBox(
+                    "Package 会把 Unity webgl.data 放入平台分包，由小游戏平台下载和解压；当前项目建议使用此模式。",
+                    MessageType.Info);
+            }
+            MiniGameYooAssetBuiltinIntegration.Draw();
             settings.initialMemoryMb = Mathf.Max(64, EditorGUILayout.IntField("初始内存 (MB)", settings.initialMemoryMb));
             definition.DrawAdditionalSettings(settings);
         }
@@ -162,6 +205,19 @@ namespace PulletMiniGame.Editor
 
             if (definition is IMiniGamePlatformDiagnostics diagnostics)
                 diagnostics.DrawDiagnostics();
+
+            if (MiniGameFirstPackageCdnPublisher.TryGetExistingPackageSize(
+                    definition.Id, platform, out long packageSize, out _))
+            {
+                bool nearDouyinLimit = definition.Id == PulletPlatformIds.Douyin
+                    && packageSize >= 27L * 1024L * 1024L;
+                EditorGUILayout.HelpBox(
+                    $"现有小游戏目录体积：{MiniGameFirstPackageCdnPublisher.FormatBytes(packageSize)}。"
+                    + (nearDouyinLimit
+                        ? " 已接近抖音新包体 30 MB 上限，请优先裁剪；仍超限时再切换 Data CDN。"
+                        : " 最终是否超限以平台上传校验结果为准。"),
+                    nearDouyinLimit ? MessageType.Warning : MessageType.Info);
+            }
         }
 
         private static void DrawRuntimeStatus(MiniGameRuntimeSettings settings)
@@ -228,6 +284,35 @@ namespace PulletMiniGame.Editor
             }
             EditorGUILayout.EndHorizontal();
 
+            if (platform.firstPackageResourceMode == EFirstPackageResourceMode.Cdn)
+            {
+                using (new EditorGUI.DisabledScope(
+                           MiniGameFirstPackageCdnPublisher.IsUploading
+                           || platform.manuallyConfigureFirstPackageCdn))
+                {
+                    if (GUILayout.Button("上传首包 Data CDN 文件", GUILayout.Height(30f)))
+                    {
+                        MiniGameBuildSettingsData.Save(platform);
+                        MiniGameFirstPackageCdnPublisher.PublishFromWindow(
+                            definition.Id, common.version, platform);
+                    }
+                }
+            }
+
+            if (common.selectedPlatformId == PulletPlatformIds.Douyin
+                && GUILayout.Button("刷新现有导出包加载页（无需重新构建）", GUILayout.Height(26f)))
+            {
+                try
+                {
+                    MiniGameBuildSettingsData.Save(platform);
+                    MiniGameLoadingPagePostprocessor.RefreshExistingDouyinExport();
+                }
+                catch (Exception exception)
+                {
+                    ReportBuildFailure(definition.DisplayName, platform.outputPath, exception);
+                }
+            }
+
             if (!valid)
                 EditorGUILayout.HelpBox(validationError, MessageType.Error);
             if (EditorApplication.isCompiling || EditorApplication.isUpdating)
@@ -269,6 +354,8 @@ namespace PulletMiniGame.Editor
             else if (platform.firstPackageResourceMode == EFirstPackageResourceMode.Cdn
                      && string.IsNullOrWhiteSpace(platform.cdnUrl))
                 error = "首包资源选择 CDN 时必须填写 CDN 地址。";
+            else if (!MiniGameYooAssetBuiltinIntegration.Validate(out error))
+                return false;
             else if (!definition.Validate(platform, out error))
                 return false;
             else if (!ValidateRuntimeSettings(runtimeSettings, out error))

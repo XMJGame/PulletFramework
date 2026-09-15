@@ -1,5 +1,6 @@
-# PulletFramework.Window
-一个轻量级的基于堆栈的界面系统。
+# PulletFramework
+
+PulletFramework 是不依赖 YooAsset、小游戏 SDK 或云供应商的 Unity 基础包，提供窗口、资源抽象、对象池、音频、配置表、事件、状态机、网络和运行时设置。项目可以只安装核心包，也可以按需叠加其他 Pullet 模块。
 
 ## 模块安装
 
@@ -8,15 +9,15 @@
 | 模块 | 必需 | 用途 |
 | --- | --- | --- |
 | `PulletFramework` | 是 | UI、网络、对象池、事件及资源抽象 |
+| `PulletFramework.AssetPublishing` | 否 | 对象存储供应商、凭据、CORS 与资源发布 |
 | `PulletFramework.YooAsset` | 否 | YooAsset 3.x 初始化、资源构建与 CDN 加载 |
-| `PulletAssetPublishing` | 否 | 对象存储供应商、凭据、CORS 与资源发布 |
 | `PulletMiniGame` | 否 | 微信、抖音等小游戏平台能力和发布配置 |
 | `PulletFramework.HybridCLR` | 否 | HybridCLR 构建与程序集复制工具，已验证 8.14.1 |
 
 ```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework
+https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.AssetPublishing
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
-https://github.com/XMJGame/PulletFramework.git?path=/PulletAssetPublishing
 https://github.com/XMJGame/PulletFramework.git?path=/PulletMiniGame
 ```
 
@@ -30,6 +31,23 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.HybridCLR
 普通 App 或单机项目只安装基础框架即可。使用 YooAsset 时先安装 YooAsset 3.0.5，再安装适配包；
 发布微信或抖音小游戏时再安装 `PulletMiniGame`。模块页面会自动汇入同一个 `Pullets/Workspace`，
 不会各自增加一组顶级菜单。
+
+## 启动与关闭
+
+由项目唯一入口初始化和关闭框架：
+
+```csharp
+PulletFrameworks.Initialize();
+
+// 应用流程退出，并且所有框架使用者已经停止后调用。
+PulletFrameworks.Destroy();
+```
+
+重复初始化会明确报错，重复销毁安全。接入 YooAsset 时，应先完成默认 Package 的 Prepare；它会安装供 UI、Form、Sound 和 Pooling 使用的资源适配器，然后再初始化框架。业务资源仍直接使用所选资源系统的原生 API。
+
+`PulletPlayerPrefs` 默认直接使用 Unity `PlayerPrefs`。宿主模块安装自定义后端后，可以通过
+`IsBackend` 和带后端参数的 `UninstallBackend` 按所有权卸载，避免一个模块退出时覆盖另一个
+模块后来安装的存储实现。
 
 ## 编辑器工作台
 
@@ -214,6 +232,7 @@ PulletWindow.PushAsync<ItemDetailWindow, ItemDetailArgs>(new ItemDetailArgs(1001
 ```
 
 取消由当前调用发起的打开操作会停止加载并清理窗口；等待一个已经打开或由其他调用正在加载的窗口时，取消只结束本次等待，不会误关共享窗口。
+每次打开都有独立的内部身份；窗口在加载或进场期间被关闭、替换或销毁时，等待该次打开的所有操作都会结束为失败，不会串到后续重新打开。
 
 ## 窗口结果
 
@@ -331,7 +350,7 @@ PulletNetwork.DestroyWebSocketClient(socket);
 
 默认 `DotNetWebSocketTransport` 适用于 Mono 和 IL2CPP 原生平台。WebGL、微信及抖音小游戏应实现 `IWebSocketTransport`，通过 `SetWebSocketTransportFactory` 注入平台 SDK；连接状态、发送队列、心跳、指数退避、重连抖动、消息大小限制和主线程事件分发仍由框架统一处理。
 
-# PulletFramework.Setting
+## Setting
 
 业务与框架模块统一使用 `PulletPlayerPrefs` 保存轻量设置。其 API 与 Unity `PlayerPrefs`
 保持接近，默认后端就是 Unity；可选宿主模块可以通过 `InstallBackend` 切换存储实现。
@@ -344,7 +363,7 @@ PulletPlayerPrefs.SetString("language", "zh-CN");
 PulletPlayerPrefs.Save();
 ```
 
-# PulletFramework.Logging
+## Logging
 
 框架及可选 Pullet 模块统一通过 `PLogger` 输出日志。可在 `Pullets/Workspace -> 框架设置`
 选择运行时日志等级：`Off`、`Error`、`Warning`、`Info` 或 `Debug`。等级采用包含关系，例如
@@ -357,13 +376,13 @@ PulletPlayerPrefs.Save();
 PLogger.Level = EPulletLogLevel.Warning;
 ```
 
-# PulletFramework.Machine
+## Machine
 一个轻量级的状态机。
 
-# PulletFramework.Event
+## Event
 一个轻量级的事件系统。
 
-# PulletFramework.Form
+## Form
 
 `FormSingleton` 负责 TextAsset 加载、加载状态、资源句柄释放和销毁批次隔离。默认的
 `ReadFormTool` 继续解析旧版 TSV/TXT；JSON、二进制或代码生成表属于业务格式，由具体表重写
@@ -394,10 +413,29 @@ public sealed class ItemForm : FormSingleton<ItemForm, ItemRow>
 框架不固定 JSON 根节点、主键字段或 JSON 库，业务可以选择 `JsonUtility`、Newtonsoft JSON、
 protobuf 或配置表代码生成工具。
 
-# PulletFramework.Pooling
+`PulletForm.IsReadComplete` 只表示当前批次全部结束，`IsReadSuccessful` 才表示全部成功。
+失败项可从 `Failures` 获取表类型、资源路径和错误原因；修复资源或网络后调用
+`RetryFailedForms()` 只会重新加载失败表。`FormSingleton.Reload()` 可用于业务主动刷新单表。
+默认 TSV 由 `FormSingleton` 以严格模式解析，坏行或重复 ID 会让整张表失败，避免业务继续使用
+不完整数据；直接调用旧的单参数 `ReadFormData` 仍保留跳过坏行的兼容行为。
+
+## Pooling
 一个功能强大的游戏对象池系统。
 
-# PulletFramework.Sound
+`Spawner` 以资源 Package 为边界持有预制体资源句柄；卸载 Package 前必须先调用
+`PulletPooling.DestroySpawner(packageName)`。销毁后的 Spawner 是终态，旧引用不能再次建池或
+Spawn。加载中的 `SpawnHandle` 被 `Restore`、`Discard`、销毁池或框架退出中断时，会进入失败
+终态并且仍然触发一次完成回调；重复归还不会重复入池。
+
+`maxCapacity` 表示缓存实例上限，不是活跃实例总上限。框架归还时只负责停用对象并恢复父节点、
+本地位置和旋转；血量、计时器、事件订阅、粒子等业务状态应由组件自己的租用/归还逻辑复位。
+对象被业务外部 `Destroy` 后，池会在更新中剔除对应实例句柄，不会把空对象重新放回缓存。
+
+Package 和 location 查找使用字典索引，列表只负责稳定更新遍历。底层资源或实例句柄已经完成时，
+建池与 Spawn 会在当前调用内完成；之后订阅 `Completed` 仍会立即收到一次回调。调用方不能假设
+异步 API 一定延迟到下一帧，应先注册回调或直接检查 `IsDone/Status`。
+
+## Sound
 
 `PulletSound` 默认使用 Unity `AudioSource` 播放音乐、语音和短音效。小游戏模块可以通过
 `PulletSound.SetMusicBackend(IPulletMusicBackend)` 只替换长音乐后端，业务侧的暂停、恢复、
@@ -411,6 +449,9 @@ protobuf 或配置表代码生成工具。
 PulletSound.PlayMusic("https://cdn.example.com/audio/home.mp3");
 PulletSound.PlaySound("ButtonClick");
 ```
+
+地址播放与直接 `AudioClip` 播放共用同一请求顺序：新音乐或语音不会被较早发起、较晚完成的异步加载覆盖。
+`PauseAll` / `ResumeAll`、`Pause(channel)` / `Resume(channel)` 与应用进入后台是独立的暂停原因；只有该通道的所有原因都解除后才会恢复播放。暂停期间完成加载的音频会保持暂停。
 
 推荐把循环 BGM 和较长旁白作为独立 CDN 音频，把高频、低延迟的短音效放入资源包。
 
@@ -476,7 +517,7 @@ using PulletFramework.Pooling;
 IEnumerator Start()
 {
     // 初始化游戏对象池系统
-    PulletPooling.Initalize();
+    PulletPooling.Initialize();
 
     // 创建孵化器
     var spawner = PulletPooling.CreateSpawner("DefaultPackage");
@@ -497,3 +538,7 @@ IEnumerator Start()
     handle.Discard();
 }
 ```
+
+## 验证状态
+
+最低声明 Unity 版本为 `2021.3`。当前已在 Unity `2022.3.62f3` 的全新 CoreOnly UPM 工程中完成编译，并实际构建、启动 Windows x64 Player，验证框架初始化、运行一帧与销毁。自动化回归当前为 EditMode `45/45`、PlayMode `18/18`；移动端与小游戏性能上限不由这些桌面结果保证。

@@ -7,20 +7,21 @@
 
 - `Runtime`：平台能力接口、服务入口和独立生命周期驱动。
 - `Editor`：小游戏项目脚手架、平台注册表、宏、配置和统一发布窗口。
-- `Runtime/Platform/WeChat`：微信 SDK 桥接程序集。
-- `Runtime/Platform/Douyin`：抖音 SDK 桥接程序集。
+- `Runtime/Platform/WeChat`：不引用官方 SDK 的微信平台适配边界。
+- `Runtime/Platform/Douyin`：不引用官方 SDK 的抖音平台适配边界。
 - `Editor/Platform/WeChat`：微信参数面板、校验和后续 SDK 导出实现。
 - `Editor/Platform/Douyin`：抖音参数面板、校验和后续 SDK 导出实现。
 
-微信和抖音适配程序集只声明桥接边界，不直接绑定某个版本的官方 SDK。微信已经提供
+微信和抖音适配程序集只声明桥接边界，不直接绑定某个版本的官方 SDK。本包已经提供
 `WeChat SDK Bridge` 和 `Douyin SDK Bridge` 可选样例，分别绑定各自官方 SDK。
 
 ## UPM 安装
 
-先安装基础框架，再安装小游戏模块：
+先安装基础框架与 Editor-only 资源发布依赖，再安装小游戏模块：
 
 ```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework
+https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.AssetPublishing
 https://github.com/XMJGame/PulletFramework.git?path=/PulletMiniGame
 ```
 
@@ -30,6 +31,8 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletMiniGame
 https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
 ```
+
+`AssetPublishing` 只在 Unity Editor 中参与首包 CDN 上传和地址拼接，不会增加 Player 运行时代码。使用 YooAsset 时，建议采用根 README 中的完整顺序：核心、AssetPublishing、YooAsset、MiniGame。
 
 安装微信官方 SDK 后，在 Package Manager 的 Samples 中导入 `WeChat SDK Bridge`。
 模块没有把平台 SDK 写进自身依赖，因此普通游戏和只接单个平台的项目不会被额外 SDK 污染。
@@ -108,6 +111,10 @@ catch (OperationCanceledException)
 微信、抖音 SDK 适配层内部仍使用原生回调，再转换为 Task。共享的初始化和广告加载请求中，
 取消某个调用者只结束该调用者的等待，不会中断其他调用者仍在等待的平台请求。
 
+所有初始化入口最终都由 `PulletMiniGames` 管理同一适配器会话。初始化失败后可以重试；切换
+适配器或调用 `Shutdown` 会使旧会话失效，即使旧 SDK 回调随后成功，也不能覆盖当前平台的
+`PulletPlayerPrefs` 后端。关闭时模块只卸载自己安装的后端，不会移除业务后来替换的后端。
+
 `MiniGameBootstrap` 在编辑器默认选择模拟服务；正式包选择当前宏启用的 SDK 样例注册工厂。
 样例通过 `BeforeSceneLoad` 注册，业务应从首场景 `Awake` 或之后调用初始化。
 没有注册或同时注册多个正式平台会明确报错。关闭 Domain Reload 后仍会清理和重新注册。
@@ -135,8 +142,8 @@ PlatformResult result = await PulletMiniGames.InitializeAsync(
 平台账号、插件权限、合法域名、构建输出和常见错误请参阅
 [《小游戏平台接入与故障排查》](Documentation/PlatformTroubleshooting.zh-CN.md)。
 
-- `Pullets/Mini Game/Initialize Project Structure`：创建标准游戏、平台和配置目录。
-- `Pullets/Mini Game/Build`：打开微信/抖音统一配置与发布窗口。
+- `Pullets/Workspace -> 小游戏发布 -> 初始化标准目录`：创建标准游戏、平台和配置目录。
+- 同一页面维护微信/抖音配置、应用平台设置并执行 SDK 导出，不再保留旧的独立构建菜单。
 - Package Manager 的 `Platform Diagnostics` Sample：导入可复用真机验收面板，测试登录、分享、
   激励视频、生命周期和抖音侧边栏。建议只放在独立开发场景，不进入正式发布场景。
 
@@ -153,6 +160,12 @@ PULLET_ENV_DEVELOPMENT / PULLET_ENV_TEST / PULLET_ENV_RELEASE
 
 平台 SDK 或转换插件通过 `IPlatformBuildAdapter` 注册导出能力。未安装 SDK 时仍可配置、
 编写和模拟业务，但发布按钮保持禁用。
+
+“首包资源”控制 Unity WebGL Data 文件，不是 YooAsset Bundle：
+
+- `Package`：Data 随微信/抖音平台分包发布，通常用于体积未超过平台限制的项目。
+- `CDN`：转换后的 Data 文件先上传对象存储，导出包只保留下载地址；必须先配置“资源发布”，重新导出后再上传首包文件。
+- “随 Player 发布”则属于 YooAsset 配置，决定是否把默认 Package 的 Bundle 放入 `StreamingAssets`。它与上述 Data 首包模式可以独立组合。
 
 微信验证工程使用官方 UPM 包，并固定到已验证提交：
 

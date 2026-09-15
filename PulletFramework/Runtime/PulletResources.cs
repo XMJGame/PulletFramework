@@ -102,7 +102,15 @@ namespace PulletFramework.Resource
 
         public static void Install(IResourceAdapter adapter)
         {
-            _adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
+            if (adapter == null)
+                throw new ArgumentNullException(nameof(adapter));
+            if (ReferenceEquals(_adapter, adapter))
+                return;
+            if (_adapter != null)
+                throw new InvalidOperationException(
+                    $"Resource adapter '{_adapter.Name}' is already installed. " +
+                    "Call PulletResources.Uninstall() before replacing it.");
+            _adapter = adapter;
         }
 
         public static void Uninstall()

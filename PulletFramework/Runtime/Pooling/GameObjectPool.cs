@@ -84,16 +84,26 @@ namespace PulletFramework.Pooling
 			if (_destroyed)
 				throw new System.InvalidOperationException($"Pool is destroyed: {Location}");
 
-			// 加载游戏对象
-			AssetHandle = resourcePackage.LoadAssetAsync<GameObject>(Location);
-			_lastRestoreRealTime = Time.realtimeSinceStartup;
-
-			// 创建初始对象
-			for (int i = 0; i < _initCapacity; i++)
+			try
 			{
-				var options = new ResourceInstantiateOptions(false, _poolRoot);
-				var operation = AssetHandle.InstantiateAsync(options);
-				_cacheOperations.Enqueue(operation);
+				AssetHandle = resourcePackage.LoadAssetAsync<GameObject>(Location)
+					?? throw new System.InvalidOperationException(
+						$"Resource package returned a null asset handle: {Location}");
+				_lastRestoreRealTime = Time.realtimeSinceStartup;
+
+				for (int i = 0; i < _initCapacity; i++)
+				{
+					var options = new ResourceInstantiateOptions(false, _poolRoot);
+					var operation = AssetHandle.InstantiateAsync(options)
+						?? throw new System.InvalidOperationException(
+							$"Resource package returned a null instance handle: {Location}");
+					_cacheOperations.Enqueue(operation);
+				}
+			}
+			catch
+			{
+				DestroyPool();
+				throw;
 			}
 		}
 
@@ -113,6 +123,7 @@ namespace PulletFramework.Pooling
 			foreach (var operation in _activeOperations)
 				DestroyInstantiateOperation(operation);
 			_activeOperations.Clear();
+			_orphanedOperations.Clear();
 
 			AssetHandle?.Release();
 			AssetHandle = null;
@@ -228,6 +239,9 @@ namespace PulletFramework.Pooling
 				operation = _cacheOperations.Dequeue();
 			else
 				operation = AssetHandle.InstantiateAsync(new ResourceInstantiateOptions(false));
+			if (operation == null)
+				throw new System.InvalidOperationException(
+					$"Resource package returned a null instance handle: {Location}");
 
 			_activeOperations.Add(operation);
 			SpawnCount = _activeOperations.Count;
@@ -241,12 +255,16 @@ namespace PulletFramework.Pooling
 			if (operation == null)
 				return;
 			// 取消异步操作
-			operation.Cancel();
-
-			// 销毁游戏对象
-			if (operation.Result != null)
+			try
 			{
-				GameObject.Destroy(operation.Result);
+				operation.Cancel();
+				if (operation.Result != null)
+					GameObject.Destroy(operation.Result);
+			}
+			catch (System.Exception exception)
+			{
+				PLogger.Exception(exception,
+					$"[PulletPooling] Failed to destroy instance for '{Location}'.");
 			}
 		}
 

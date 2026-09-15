@@ -2,14 +2,14 @@
 
 Pullet Framework 是一套面向 Unity 游戏、App 和微信/抖音小游戏的模块化基础架构。基础框架只提供通用运行时能力，资源管理、小游戏平台和 HybridCLR 均为可选模块，可按项目需要组合安装。
 
-当前版本处于 `0.x` 开发阶段，统一使用 `main` 分支。已在 Unity `2022.3.62f3` 验证工程中完成程序集编译和微信、抖音基础运行验证。
+当前版本处于 `0.x` 开发阶段，统一使用 `main` 分支。已在 Unity `2022.3.62f3` 中完成三种全新 UPM 组合编译、Windows x64 Player 构建与运行，以及微信、抖音开发者工具基础运行验证；小游戏真机缓存和性能仍待验收。
 
 ## 模块
 
 | 目录 | Package | 用途 | 是否必需 |
 | --- | --- | --- | --- |
 | `PulletFramework` | `com.xmjgame.pullet-framework` | Window、事件、状态机、网络、音频、对象池、设置和资源抽象 | 是 |
-| `PulletAssetPublishing` | `com.xmjgame.pullet-asset-publishing` | 编辑器资源发布与对象存储供应商抽象 | 否 |
+| `PulletFramework.AssetPublishing` | `com.xmjgame.pullet-framework.asset-publishing` | 编辑器资源发布与对象存储供应商抽象 | 否 |
 | `PulletFramework.YooAsset` | `com.xmjgame.pullet-framework.yooasset` | YooAsset 初始化、多 Package 更新、构建与 CDN 发布 | 否 |
 | `PulletMiniGame` | `com.xmjgame.pullet-minigame` | 微信、抖音平台能力、SDK 桥接和统一发布窗口 | 否 |
 | `PulletFramework.HybridCLR` | `com.xmjgame.pullet-framework.hybridclr` | HybridCLR 编辑器工作流 | 否 |
@@ -17,7 +17,7 @@ Pullet Framework 是一套面向 Unity 游戏、App 和微信/抖音小游戏的
 推荐组合：
 
 - 普通 Unity 游戏：`PulletFramework`
-- 使用 YooAsset：`PulletFramework` + `PulletAssetPublishing` + `PulletFramework.YooAsset`
+- 使用 YooAsset：`PulletFramework` + `PulletFramework.AssetPublishing` + `PulletFramework.YooAsset`
 - 微信/抖音小游戏：在上一组合基础上增加 `PulletMiniGame`
 - 需要代码热更新的 App：按需增加 `PulletFramework.HybridCLR`
 
@@ -27,7 +27,7 @@ Pullet Framework 是一套面向 Unity 游戏、App 和微信/抖音小游戏的
 
 ```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework
-https://github.com/XMJGame/PulletFramework.git?path=/PulletAssetPublishing
+https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.AssetPublishing
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
 https://github.com/XMJGame/PulletFramework.git?path=/PulletMiniGame
 ```
@@ -66,7 +66,7 @@ https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
 - [基础框架](PulletFramework/README.md)
 - [YooAsset 模块](PulletFramework.YooAsset/README.md)
 - [小游戏平台模块](PulletMiniGame/README.md)
-- [资源发布模块](PulletAssetPublishing/README.md)
+- [资源发布模块](PulletFramework.AssetPublishing/README.md)
 - [HybridCLR 模块](PulletFramework.HybridCLR/README.md)
 - [微信与抖音故障记录](PulletMiniGame/Documentation/PlatformTroubleshooting.zh-CN.md)
 - [YooAsset CDN 流程](PulletMiniGame/Documentation/YooAssetCdn.zh-CN.md)
@@ -83,4 +83,4 @@ https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
 
 ## 当前重点
 
-下一阶段是完成 YooAsset + COS 的端到端验证：发布测试 Package，分别在抖音和微信确认首次下载、失败重试、二次启动缓存命中及真机性能数据。具体进度以[开发状态文档](Documentation/DevelopmentStatus.zh-CN.md)为准。
+下一阶段是平台真机与性能验收：分别在抖音和微信确认首次下载、失败重试、二次启动缓存命中、前后台恢复和资源占用，并使用 Player Profiler 采集 CPU/GC 数据。具体进度以[开发状态文档](Documentation/DevelopmentStatus.zh-CN.md)为准。

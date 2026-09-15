@@ -21,6 +21,7 @@ namespace PulletFramework.Window
         private readonly UIWindow _window;
         private readonly string _initialError;
         private readonly bool _ownsOpenAttempt;
+        private readonly long _openAttemptId;
         private ESteps _steps = ESteps.None;
 
         /// <summary>
@@ -31,11 +32,13 @@ namespace PulletFramework.Window
         internal OpenWindowOperation(
             UIWindow window,
             string initialError = null,
-            bool ownsOpenAttempt = false)
+            bool ownsOpenAttempt = false,
+            long openAttemptId = 0)
         {
             _window = window;
             _initialError = initialError;
             _ownsOpenAttempt = ownsOpenAttempt;
+            _openAttemptId = openAttemptId;
         }
         protected override void OnStart()
         {
@@ -62,14 +65,22 @@ namespace PulletFramework.Window
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(_window.LoadError))
+                if (!_window.IsOpenAttemptCurrent(_openAttemptId))
                 {
                     _steps = ESteps.Done;
-                    SetFailed(_window.LoadError);
+                    SetFailed($"Window open attempt was superseded: {_window.WindowName}");
                     return;
                 }
 
-                if (!_window.IsOpenCompleted)
+                string attemptError = _window.GetOpenAttemptError(_openAttemptId);
+                if (!string.IsNullOrEmpty(attemptError))
+                {
+                    _steps = ESteps.Done;
+                    SetFailed(attemptError);
+                    return;
+                }
+
+                if (!_window.IsOpenAttemptCompleted(_openAttemptId))
                     return;
 
                 _steps = ESteps.Done;
@@ -92,7 +103,7 @@ namespace PulletFramework.Window
         {
             _steps = ESteps.Done;
             if (_window != null && _ownsOpenAttempt)
-                PulletWindow.CancelOpen(_window);
+                PulletWindow.CancelOpen(_window, _openAttemptId);
         }
     }
 }

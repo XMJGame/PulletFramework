@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using PulletFramework.YooAssetAdapter;
@@ -60,12 +61,79 @@ namespace PulletFramework.Editor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+            var settings = (PulletYooAssetSettings)target;
 
             EditorGUILayout.LabelField("资源包", EditorStyles.boldLabel);
             DrawPackageSelectors();
             Draw("editorPlayMode", "编辑器模式");
             Draw("playerPlayMode", "原生平台模式");
             Draw("webPlayMode", "小游戏 / WebGL 模式");
+
+            EditorGUILayout.Space(10f);
+            EditorGUILayout.LabelField("内置资源", EditorStyles.boldLabel);
+            Draw("includeDefaultPackageInStreamingAssets", "默认包随 Player 发布");
+            EditorGUILayout.HelpBox(
+                "开启后，构建默认 Package 时会把完整资源包复制到 StreamingAssets，同时保留 CDN 发布产物。"
+                + "运行时优先读取内置资源，后续资源版本仍可从 CDN 更新。",
+                MessageType.Info);
+
+            EditorGUILayout.Space(10f);
+            EditorGUILayout.LabelField("着色器变体", EditorStyles.boldLabel);
+            Draw("shaderVariantOutputDirectory", "输出目录");
+            Draw("shaderVariantNameTemplate", "变体名称模板");
+            Draw("collectShaderVariantsBeforeBuild", "构建前自动收集");
+            Draw("warmupShaderVariantsOnPrepare", "资源准备后渐进预热");
+            if (settings.warmupShaderVariantsOnPrepare)
+                Draw("shaderVariantWarmupBatchSize", "每帧预热数量");
+
+            string selectedPackageName = GetSelectedPackageName(settings);
+            string variantPath = null;
+            string variantConfigurationError = null;
+            try
+            {
+                variantPath = PulletYooAssetShaderVariantCollector.GetAssetPath(
+                    settings, selectedPackageName);
+            }
+            catch (Exception exception)
+            {
+                variantConfigurationError = exception.Message;
+            }
+            ShaderVariantCollection variants = string.IsNullOrEmpty(variantPath)
+                ? null
+                : AssetDatabase.LoadAssetAtPath<ShaderVariantCollection>(variantPath);
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.IntField("已收集 Shader", variants == null ? 0 : variants.shaderCount);
+                EditorGUILayout.IntField("已收集变体", variants == null ? 0 : variants.variantCount);
+            }
+            if (string.IsNullOrEmpty(variantConfigurationError))
+            {
+                EditorGUILayout.HelpBox(
+                    $"资源路径：{variantPath}\n" +
+                    $"运行时地址：{settings.ResolveShaderVariantName(selectedPackageName)}",
+                    MessageType.None);
+            }
+            else
+            {
+                EditorGUILayout.HelpBox(variantConfigurationError, MessageType.Error);
+            }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("收集当前包变体", GUILayout.Height(28f)))
+                    CollectShaderVariants(settings);
+                using (new EditorGUI.DisabledScope(variants == null))
+                {
+                    if (GUILayout.Button("定位变体集合", GUILayout.Height(28f)))
+                    {
+                        Selection.activeObject = variants;
+                        EditorGUIUtility.PingObject(variants);
+                    }
+                }
+            }
+            EditorGUILayout.HelpBox(
+                "按当前 Package 的材质与启用关键字生成集合，并自动加入 YooAsset Shader Bundle。"
+                + "动态切换但未出现在任何材质上的关键字，需要准备覆盖该状态的材质。",
+                MessageType.Info);
 
             EditorGUILayout.Space(10f);
             EditorGUILayout.LabelField("业务资源 CDN", EditorStyles.boldLabel);
@@ -76,7 +144,6 @@ namespace PulletFramework.Editor
             Draw("fallbackHostServer", "备用 CDN");
             Draw("resourceChannel", "资源兼容通道");
             Draw("packageVersionMode", "版本生成方式");
-            var settings = (PulletYooAssetSettings)target;
             if (settings.packageVersionMode == EPulletYooAssetPackageVersionMode.Manual)
                 Draw("packageVersion", "资源包版本");
             using (new EditorGUI.DisabledScope(true))
@@ -125,9 +192,9 @@ namespace PulletFramework.Editor
                 PulletYooAssetPackageBuilder.BuildFromWorkspace();
             if (GUILayout.Button("生成 CDN 发布清单", GUILayout.Height(30f)))
                 GeneratePublishReport();
-            if (GUILayout.Button("上传当前版本到腾讯云 COS", GUILayout.Height(30f)))
+            if (GUILayout.Button("上传当前版本", GUILayout.Height(30f)))
                 PulletYooAssetCosPublisher.PublishFromMenu();
-            if (GUILayout.Button("配置腾讯云 COS 下载跨域", GUILayout.Height(30f)))
+            if (GUILayout.Button("配置下载跨域", GUILayout.Height(30f)))
                 PulletYooAssetCosPublisher.ConfigureDownloadCors();
         }
 
@@ -171,6 +238,25 @@ namespace PulletFramework.Editor
             int nextIndex = EditorGUILayout.Popup("当前构建 / 发布包", currentIndex, packageNames);
             selectedProperty.stringValue = packageNames[nextIndex];
 
+        }
+
+        private static void CollectShaderVariants(PulletYooAssetSettings settings)
+        {
+            try
+            {
+                PulletShaderVariantCollectionResult result =
+                    PulletYooAssetShaderVariantCollector.Collect(GetSelectedPackageName(settings));
+                EditorUtility.DisplayDialog(
+                    "着色器变体收集完成",
+                    $"材质：{result.MaterialCount}\nShader：{result.ShaderCount}\n" +
+                    $"变体：{result.VariantCount}\n跳过：{result.SkippedVariantCount}",
+                    "确定");
+            }
+            catch (Exception exception)
+            {
+                PLogger.EditorException(exception, "[PulletYooAsset] 着色器变体收集失败。");
+                EditorUtility.DisplayDialog("着色器变体收集失败", exception.Message, "确定");
+            }
         }
 
         public static string GetSelectedPackageName(PulletYooAssetSettings settings)

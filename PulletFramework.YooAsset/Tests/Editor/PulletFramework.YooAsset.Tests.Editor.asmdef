@@ -1,0 +1,24 @@
+{
+    "name": "PulletFramework.YooAsset.Tests.Editor",
+    "rootNamespace": "PulletFramework.YooAssetAdapter.Tests",
+    "references": [
+        "PulletFramework.Runtime",
+        "PulletFramework.YooAsset",
+        "PulletFramework.YooAsset.Editor",
+        "PulletFramework.AssetPublishing.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

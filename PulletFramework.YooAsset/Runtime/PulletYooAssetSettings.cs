@@ -39,6 +39,47 @@ namespace PulletFramework.YooAssetAdapter
         public EPulletYooAssetPlayMode playerPlayMode = EPulletYooAssetPlayMode.Host;
         public EPulletYooAssetPlayMode webPlayMode = EPulletYooAssetPlayMode.Web;
 
+        [Header("Built-in resources")]
+        [Tooltip("将默认 Package 的全部构建文件复制到 StreamingAssets。WebGL/小游戏运行时优先使用内置文件，缺失或版本更新的文件仍从 CDN 获取。")]
+        public bool includeDefaultPackageInStreamingAssets;
+        [HideInInspector] public string builtinDefaultPackageVersion = "";
+
+        [Header("Shader variants")]
+        [Tooltip("着色器变体集合的生成目录，必须位于 Assets 下。")]
+        public string shaderVariantOutputDirectory = "Assets/Generated/Pullet/ShaderVariants";
+        [Tooltip("着色器变体集合名称。支持 {package} 占位符，多 Package 项目建议保留该占位符。")]
+        public string shaderVariantNameTemplate = "PulletShaderVariants_{package}";
+        [Tooltip("构建 Package 前，根据该 Package 收集到的材质刷新着色器变体集合。")]
+        public bool collectShaderVariantsBeforeBuild = true;
+        [Tooltip("Prepare Package 完成下载后，渐进预热该 Package 的着色器变体。")]
+        public bool warmupShaderVariantsOnPrepare = true;
+        [Range(1, 256)] public int shaderVariantWarmupBatchSize = 32;
+
+        public string ResolveShaderVariantName(string targetPackageName)
+        {
+            string resolvedPackageName = string.IsNullOrWhiteSpace(targetPackageName)
+                ? packageName
+                : targetPackageName;
+            string template = string.IsNullOrWhiteSpace(shaderVariantNameTemplate)
+                ? "PulletShaderVariants_{package}"
+                : shaderVariantNameTemplate.Trim();
+            if (template.EndsWith(".shadervariants", StringComparison.OrdinalIgnoreCase))
+                template = template.Substring(0, template.Length - ".shadervariants".Length);
+
+            string resolved = template.Replace("{package}", resolvedPackageName).Trim();
+            char[] characters = resolved.ToCharArray();
+            const string invalidCharacters = "<>:\"/\\|?*";
+            for (int index = 0; index < characters.Length; index++)
+            {
+                if (characters[index] < 32 || invalidCharacters.IndexOf(characters[index]) >= 0)
+                    characters[index] = '_';
+            }
+            resolved = new string(characters).Trim().TrimEnd('.');
+            return string.IsNullOrWhiteSpace(resolved)
+                ? $"PulletShaderVariants_{resolvedPackageName}"
+                : resolved;
+        }
+
         [Header("Business asset CDN")]
         [Tooltip("可使用 {platform}、{appVersion}、{resourceChannel}、{package} 占位符。目录应直接包含 YooAsset 版本指针、清单和资源文件。")]
         public string defaultHostServer = "";
@@ -135,7 +176,7 @@ namespace PulletFramework.YooAssetAdapter
                 : targetPackageName;
 
             return template.TrimEnd('/')
-                .Replace("{platform}", GetPlatformName())
+                .Replace("{platform}", PulletYooAssetPlatform.Current)
                 .Replace("{resourceChannel}", resourceChannel.Trim('/'))
                 .Replace("{appVersion}", GetApplicationVersion())
                 .Replace("{package}", resolvedPackageName.Trim('/'));
@@ -154,25 +195,5 @@ namespace PulletFramework.YooAssetAdapter
 #endif
         }
 
-        private static string GetPlatformName()
-        {
-#if UNITY_EDITOR
-            switch (UnityEditor.EditorUserBuildSettings.activeBuildTarget)
-            {
-                case UnityEditor.BuildTarget.Android: return "Android";
-                case UnityEditor.BuildTarget.iOS: return "IPhone";
-                case UnityEditor.BuildTarget.WebGL: return "WebGL";
-                default: return "PC";
-            }
-#else
-            switch (Application.platform)
-            {
-                case RuntimePlatform.Android: return "Android";
-                case RuntimePlatform.IPhonePlayer: return "IPhone";
-                case RuntimePlatform.WebGLPlayer: return "WebGL";
-                default: return "PC";
-            }
-#endif
-        }
     }
 }

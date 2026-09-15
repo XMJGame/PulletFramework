@@ -420,14 +420,16 @@ namespace PulletFramework.Window
                     return CreateFailedOperation($"Window is closing: {m_CurrentRoot.WindowName}");
                 ActiveTabId = tabId;
                 ActiveTabChanged?.Invoke(tabId, m_CurrentRoot);
-                var currentOperation = new OpenWindowOperation(m_CurrentRoot);
+                var currentOperation = new OpenWindowOperation(
+                    m_CurrentRoot, openAttemptId: m_CurrentRoot.OpenAttemptId);
                 PulletOperationSystem.Start(currentOperation);
                 return currentOperation;
             }
 
             if (m_PendingRoot != null && m_PendingRoot.GetType() == type && m_PendingRoot.IsLoading)
             {
-                var pendingOperation = new OpenWindowOperation(m_PendingRoot);
+                var pendingOperation = new OpenWindowOperation(
+                    m_PendingRoot, openAttemptId: m_PendingRoot.OpenAttemptId);
                 PulletOperationSystem.Start(pendingOperation);
                 return pendingOperation;
             }
@@ -532,13 +534,18 @@ namespace PulletFramework.Window
 
             if (window.Visible || window.IsLoading)
             {
-                var existingOperation = new OpenWindowOperation(window);
+                var existingOperation = new OpenWindowOperation(
+                    window, openAttemptId: window.OpenAttemptId);
                 PulletOperationSystem.Start(existingOperation);
                 return existingOperation;
             }
 
-            OpenWindowOperation operation = new OpenWindowOperation(window, ownsOpenAttempt: true);
+            long openAttemptId = window.InternalBeginOpenAttempt();
+            OpenWindowOperation operation = new OpenWindowOperation(
+                window, ownsOpenAttempt: true, openAttemptId: openAttemptId);
             PulletOperationSystem.Start(operation);
+            if (operation.IsDone)
+                return operation;
 
             if (window.WindowLayer != EWindowLayer.IndependentLayer)
             {
@@ -812,6 +819,8 @@ namespace PulletFramework.Window
                 return false;
 
             destroy = destroy || window.CachePolicy == EWindowCachePolicy.DestroyOnClose;
+            if (!window.IsOpenCompleted)
+                window.InternalCancelOpenAttempt(window.OpenAttemptId);
             if (window.IsLoading)
             {
                 window.InternalCancelLoad();
@@ -926,10 +935,12 @@ namespace PulletFramework.Window
             }
         }
 
-        internal static void CancelOpen(UIWindow window)
+        internal static void CancelOpen(UIWindow window, long openAttemptId)
         {
-            if (window == null || !m_OpenStack.Contains(window))
+            if (window == null || !window.IsOpenAttemptCurrent(openAttemptId)
+                || !m_OpenStack.Contains(window))
                 return;
+            window.InternalCancelOpenAttempt(openAttemptId);
             CloseWindowInternal(window, true, EWindowCloseReason.User, true);
         }
 

@@ -87,7 +87,8 @@ namespace PulletMiniGame.Platform.Douyin.Editor
             if (string.IsNullOrWhiteSpace(artifactPath))
                 throw new InvalidOperationException("TTSDK completed without returning an artifact path.");
 
-            MiniGameLoadingPagePostprocessor.Apply(artifactPath, settings.showDefaultUnityLoadingLogo);
+            MiniGameFirstPackageCdnPublisher.ReconcileExport(Id, settings);
+            MiniGameLoadingPagePostprocessor.ApplyDouyin(artifactPath, settings);
             InjectLaunchProgressLogging(artifactPath);
             PulletFramework.PLogger.EditorInfo(
                 $"[PulletMiniGame] Douyin mini game build completed: {artifactPath}");
@@ -114,9 +115,14 @@ namespace PulletMiniGame.Platform.Douyin.Editor
             SetRequired(target, "menuButtonStyle", settings.menuButtonStyle.ToString());
             SetRequired(target, "isOldBuildFormat", settings.useLegacyBuildFormat);
             SetRequired(target, "iOSPerformancePlus", settings.iosHighPerformancePlus);
+            TrySet(target, "clearStreamingAssets", !MiniGameYooAssetBuiltinIntegration.IsEnabled);
+            TrySet(target, "useDataCDNAsStreamingAssetsUrl", false);
             TrySet(target, "idePath", settings.developerToolPath ?? string.Empty);
+            SetRequired(target, "dataLoadType",
+                settings.firstPackageResourceMode == EFirstPackageResourceMode.Cdn ? 0 : 1);
+            TrySet(target, "dataFileSubPrefix", string.Empty);
             TrySet(target, "CDN", settings.firstPackageResourceMode == EFirstPackageResourceMode.Cdn
-                ? settings.cdnUrl ?? string.Empty
+                ? EnsureTrailingSlash(settings.cdnUrl)
                 : string.Empty);
         }
 
@@ -303,6 +309,11 @@ namespace PulletMiniGame.Platform.Douyin.Editor
                     ? Enum.Parse(targetType, name)
                     : Enum.ToObject(targetType, value);
             return Convert.ChangeType(value, targetType);
+        }
+
+        private static string EnsureTrailingSlash(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.TrimEnd('/') + "/";
         }
     }
 }

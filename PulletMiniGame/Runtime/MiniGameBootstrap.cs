@@ -57,7 +57,7 @@ namespace PulletMiniGame
             CancellationToken cancellationToken = default)
         {
             if (PulletMiniGames.IsInstalled)
-                return PulletPlatform.InitializeAsync(cancellationToken);
+                return PulletMiniGames.InitializeAsync(PulletPlatform.Adapter, cancellationToken);
 
             IPlatformAdapter adapter;
             try { adapter = CreateAdapter(); }

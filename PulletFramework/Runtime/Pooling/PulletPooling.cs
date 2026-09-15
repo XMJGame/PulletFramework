@@ -13,6 +13,8 @@ namespace PulletFramework.Pooling
     {
         private static bool m_IsInitialize = false;
         private static readonly List<Spawner> m_Spawners = new List<Spawner>();
+        private static readonly Dictionary<string, Spawner> m_SpawnersByPackage =
+            new Dictionary<string, Spawner>(StringComparer.Ordinal);
         private static GameObject m_GameObject;
         public static GameObject gameObject { get { return m_GameObject; } }
         public static Transform transform { get { return m_GameObject.transform; } }
@@ -60,10 +62,13 @@ namespace PulletFramework.Pooling
                     spawner.Destroy();
                 }
                 m_Spawners.Clear();
+                m_SpawnersByPackage.Clear();
 
                 m_IsInitialize = false;
-                if (gameObject != null)
-                    GameObject.Destroy(gameObject);
+                GameObject root = m_GameObject;
+                m_GameObject = null;
+                if (root != null)
+                    GameObject.Destroy(root);
                 PLogger.Log($"{nameof(PulletPooling)} destroy all !");
             }
         }
@@ -75,10 +80,15 @@ namespace PulletFramework.Pooling
 		/// <param name="packageName">资源包名称</param>
 		public static Spawner CreateSpawner(string packageName)
         {
+            if (string.IsNullOrWhiteSpace(packageName))
+                throw new ArgumentException("Package name is required.", nameof(packageName));
             if (!m_IsInitialize)
             {
                 Initialize();
             }
+            if (m_SpawnersByPackage.TryGetValue(packageName, out Spawner existing))
+                return existing;
+
             // 获取资源包
             if (!PulletResources.TryGetPackage(packageName, out IResourcePackage assetPackage))
                 throw new Exception($"Not found asset package : {packageName}");
@@ -89,11 +99,9 @@ namespace PulletFramework.Pooling
             if (assetPackage.Status == EResourcePackageStatus.Failed)
                 throw new Exception($"Asset package {packageName} initialize failed: {assetPackage.Error}");
 
-            if (HasSpawner(packageName))
-                return GetSpawner(packageName);
-
             Spawner spawner = new Spawner(gameObject, assetPackage);
             m_Spawners.Add(spawner);
+            m_SpawnersByPackage.Add(packageName, spawner);
             return spawner;
         }
 
@@ -107,11 +115,9 @@ namespace PulletFramework.Pooling
             {
                 Initialize();
             }
-            foreach (var spawner in m_Spawners)
-            {
-                if (spawner.packageName == packageName)
-                    return spawner;
-            }
+            if (packageName != null
+                && m_SpawnersByPackage.TryGetValue(packageName, out Spawner spawner))
+                return spawner;
 
             PLogger.Warning($"Not found spawner : {packageName}");
             return null;
@@ -122,16 +128,13 @@ namespace PulletFramework.Pooling
 		{
 			if (!m_IsInitialize)
 				return false;
-			for (int i = 0; i < m_Spawners.Count; i++)
-			{
-				if (m_Spawners[i].packageName != packageName)
-					continue;
-				Spawner spawner = m_Spawners[i];
-				m_Spawners.RemoveAt(i);
-				spawner.Destroy();
-				return true;
-			}
-			return false;
+			if (packageName == null
+				|| !m_SpawnersByPackage.TryGetValue(packageName, out Spawner spawner))
+				return false;
+			m_SpawnersByPackage.Remove(packageName);
+			m_Spawners.Remove(spawner);
+			spawner.Destroy();
+			return true;
 		}
 
         /// <summary>
@@ -144,12 +147,7 @@ namespace PulletFramework.Pooling
             {
                 Initialize();
             }
-            foreach (var spawner in m_Spawners)
-            {
-                if (spawner.packageName == packageName)
-                    return true;
-            }
-            return false;
+            return packageName != null && m_SpawnersByPackage.ContainsKey(packageName);
         }
         #endregion
     }
