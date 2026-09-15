@@ -1,8 +1,19 @@
 # Pullet Framework
 
-Pullet Framework 是一套面向 Unity 游戏、App 和微信/抖音小游戏的模块化基础架构。基础框架只提供通用运行时能力，资源管理、小游戏平台和 HybridCLR 均为可选模块，可按项目需要组合安装。
+> [!IMPORTANT]
+> 这是作者用于个人学习、架构实验和 Unity 小游戏适配验证的公开仓库，不是稳定发行的商业框架或开箱即用的项目模板。当前 API、目录、配置和模块边界仍可能发生不兼容调整，请不要仅因为仓库公开就默认它已经适合生产环境。
 
-当前版本处于 `0.x` 开发阶段，统一使用 `main` 分支。已在 Unity `2022.3.62f3` 中完成三种全新 UPM 组合编译、Windows x64 Player 构建与运行，以及微信、抖音开发者工具基础运行验证；小游戏真机缓存和性能仍待验收。
+Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小游戏的模块化基础架构。基础框架只保留通用运行时能力，资源管理、小游戏平台和 HybridCLR 作为可选模块按需组合。这些实现主要用于沉淀思路、验证技术路线和复盘实际问题，也欢迎作为学习参考。
+
+当前版本处于 `0.x` 开发阶段，只维护 `main` 分支，尚未承诺稳定 API 或长期兼容性。项目已在 Unity `2022.3.62f3` 中完成三种全新 UPM 组合编译、Windows x64 Player 构建与运行，以及微信、抖音开发者工具基础运行验证；小游戏真机缓存、完整平台能力和性能仍待验收。
+
+## 使用前须知
+
+- **适合**：阅读实现、讨论架构、验证 YooAsset/CDN/小游戏流程，以及在可自行维护的实验项目中试用。
+- **暂不建议直接用于**：无法接受破坏性变更、缺少独立回归能力或需要正式技术支持承诺的生产项目。
+- 自动化测试和已记录的运行结果只覆盖文档注明的版本与场景，不代表所有 Unity、YooAsset、微信 SDK、TTSDK 或设备组合均已通过。
+- 在实际项目中使用时，请自行审查源码、第三方依赖许可、安全配置和平台规则，并固定到经过自己验证的提交。
+- 本仓库不提供稳定性、兼容性或持续维护承诺；已知边界和待验证事项以[开发状态文档](Documentation/DevelopmentStatus.zh-CN.md)为准。
 
 ## 模块
 
@@ -31,6 +42,14 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.AssetPublis
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
 https://github.com/XMJGame/PulletFramework.git?path=/PulletMiniGame
 ```
+
+以上地址跟随 `main`，适合体验最新开发状态。需要可重复构建时，应在 URL 末尾固定已自行验证的 commit，例如：
+
+```text
+https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework#<commit>
+```
+
+当前尚未提供稳定版标签，不建议把未固定的 `main` 依赖直接用于正式项目。
 
 `PulletFramework.YooAsset` 使用 YooAsset `3.0.5`。若项目无法从依赖声明自动解析 YooAsset，请先安装：
 
@@ -84,3 +103,7 @@ https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
 ## 当前重点
 
 下一阶段是平台真机与性能验收：分别在抖音和微信确认首次下载、失败重试、二次启动缓存命中、前后台恢复和资源占用，并使用 Player Profiler 采集 CPU/GC 数据。具体进度以[开发状态文档](Documentation/DevelopmentStatus.zh-CN.md)为准。
+
+## 许可说明
+
+本仓库当前主要作为公开的个人学习记录，尚未附加开源许可证。仓库公开可见不等于已经授予复制、修改、分发或商用许可；第三方组件仍分别受其自身许可证约束。若后续决定正式开放使用范围，应再添加明确的 `LICENSE` 文件。
