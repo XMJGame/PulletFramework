@@ -68,6 +68,20 @@ if (operation.Succeeded)
 }
 ```
 
+同一个 Package 内也可以用 YooAsset Tag 做分批下载。例如把第一章 Collector 标记为
+`chapter_1`，进入章节前调用：
+
+```csharp
+var operation = PulletYooAssets.DownloadPackageAsync(
+    "DefaultPackage", "chapter_1");
+yield return operation;
+if (!operation.Succeeded)
+    PLogger.Error(operation.Error);
+```
+
+多个 Tag 可以一次传入。YooAsset 的 Collector Group 只负责编辑器构建组织，不是运行时下载组；
+需要边玩边下载时，为资源设置 Tag，或把生命周期完全独立的大型关卡拆成单独 Package。
+
 也可以拆开控制流程：`InitializePackageAsync` 只初始化文件系统，`CheckPackageAsync` 只检查
 远端版本，`UpdatePackageAsync` 加载指定或最新清单，`DownloadPackageAsync` 下载全包或指定
 标签，`UnloadPackageAsync` 销毁并移除包。下载操作提供进度、文件数、字节数以及
@@ -121,7 +135,7 @@ GameObject 由业务或对象池负责销毁、回收。
 4. “上传当前版本”使用“资源发布”页面当前激活的供应商，按照资源、清单、版本指针的顺序发布。
 
 “着色器变体”区域按当前 Package 收集到的材质及其启用关键字生成
-`Assets/Generated/Pullet/ShaderVariants/PulletShaderVariants_<Package>.shadervariants`，
+`Assets/PulletGenerate/ShaderVariants/PulletShaderVariants_<Package>.shadervariants`，
 并自动使用 YooAsset 的 `PackShaderVariants` 规则加入该 Package 的 Shader Bundle。“构建前自动收集”
 默认开启，因此日常仍只需点击“构建当前版本”；也可手动收集并查看 Shader、变体及跳过数量。
 

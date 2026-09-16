@@ -1,0 +1,15 @@
+{
+    "name": "PulletFramework.MiniGame.Editor",
+    "rootNamespace": "PulletFramework.MiniGame.Editor",
+    "references": [
+        "GUID:c67d5a3b7b6846e3903b42aff3945a77",
+        "GUID:896fe1de26f139c46890ffb552bc8345",
+        "GUID:ddc57d55c33f19e418665cf8c80338d7",
+        "PulletFramework.Editor.Workspace.Contracts",
+        "PulletFramework.AssetPublishing.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}

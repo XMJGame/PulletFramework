@@ -11,14 +11,14 @@ PulletFramework 是不依赖 YooAsset、小游戏 SDK 或云供应商的 Unity �
 | `PulletFramework` | 是 | UI、网络、对象池、事件及资源抽象 |
 | `PulletFramework.AssetPublishing` | 否 | 对象存储供应商、凭据、CORS 与资源发布 |
 | `PulletFramework.YooAsset` | 否 | YooAsset 3.x 初始化、资源构建与 CDN 加载 |
-| `PulletMiniGame` | 否 | 微信、抖音等小游戏平台能力和发布配置 |
+| `PulletFramework.MiniGame` | 否 | 微信、抖音等小游戏平台能力和发布配置 |
 | `PulletFramework.HybridCLR` | 否 | HybridCLR 构建与程序集复制工具，已验证 8.14.1 |
 
 ```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.AssetPublishing
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
-https://github.com/XMJGame/PulletFramework.git?path=/PulletMiniGame
+https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.MiniGame
 ```
 
 需要代码热更新时，先安装官方 HybridCLR，再安装可选工作流模块：
@@ -29,7 +29,7 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.HybridCLR
 ```
 
 普通 App 或单机项目只安装基础框架即可。使用 YooAsset 时先安装 YooAsset 3.0.5，再安装适配包；
-发布微信或抖音小游戏时再安装 `PulletMiniGame`。模块页面会自动汇入同一个 `Pullets/Workspace`，
+发布微信或抖音小游戏时再安装 `PulletFramework.MiniGame`。模块页面会自动汇入同一个 `Pullets/Workspace`，
 不会各自增加一组顶级菜单。
 
 ## 启动与关闭
@@ -56,7 +56,7 @@ PulletFrameworks.Destroy();
 - `Player 构建`：通用 Player 版本、目标平台、本机签名参数和 Unity 构建入口。
 - `YooAsset 资源`：资源运行模式、CDN、资源版本、收集器和构建器。
 - `资源发布`：选择对象存储供应商，配置凭据、下载域名和发布目录。
-- `小游戏发布`：安装 `PulletMiniGame` 后出现，管理微信、抖音、平台宏和导出参数。
+- `小游戏发布`：安装 `PulletFramework.MiniGame` 后出现，管理微信、抖音、平台宏和导出参数。
 - `HybridCLR`：安装并启用 HybridCLR 后出现，管理 AOT 与热更新程序集流程。
 
 旧编辑器设置、旧 YooAsset 构建窗口及兼容入口均已移除，所有配置统一从 Workspace 对应模块进入。
@@ -354,7 +354,7 @@ PulletNetwork.DestroyWebSocketClient(socket);
 
 业务与框架模块统一使用 `PulletPlayerPrefs` 保存轻量设置。其 API 与 Unity `PlayerPrefs`
 保持接近，默认后端就是 Unity；可选宿主模块可以通过 `InstallBackend` 切换存储实现。
-`PulletMiniGame` 会在平台初始化成功后自动安装微信或抖音后端，业务代码无需平台判断。
+`PulletFramework.MiniGame` 会在平台初始化成功后自动安装微信或抖音后端，业务代码无需平台判断。
 
 ```csharp
 PulletPlayerPrefs.SetInt("guide.completed", 1);

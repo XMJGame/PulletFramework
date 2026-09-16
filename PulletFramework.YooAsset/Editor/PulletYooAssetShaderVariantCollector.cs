@@ -33,8 +33,12 @@ namespace PulletFramework.Editor
     /// <summary>使用公开编辑器 API 收集指定 YooAsset Package 的材质变体。</summary>
     public static class PulletYooAssetShaderVariantCollector
     {
-        private const string DefaultGeneratedRoot = "Assets/Generated/Pullet/ShaderVariants";
-        private const string LegacyGeneratedRoot = "Assets/Generated/Pullet/YooAsset/ShaderVariants";
+        private const string DefaultGeneratedRoot = "Assets/PulletGenerate/ShaderVariants";
+        private static readonly string[] LegacyGeneratedRoots =
+        {
+            "Assets/Generated/Pullet/ShaderVariants",
+            "Assets/Generated/Pullet/YooAsset/ShaderVariants"
+        };
         private const string CollectorGroupName = "PulletGeneratedShaderVariants";
         private static readonly ShaderTagId LightModeTag = new ShaderTagId("LightMode");
         private static readonly ShaderTagId RenderPipelineTag = new ShaderTagId("RenderPipeline");
@@ -199,13 +203,15 @@ namespace PulletFramework.Editor
             if (group == null)
                 group = BundleCollectorSettingData.CreateGroup(package, CollectorGroupName);
 
-            string legacyPath = $"{LegacyGeneratedRoot}/PulletShaderVariants_{packageName}.shadervariants";
+            string[] legacyPaths = LegacyGeneratedRoots.Select(root =>
+                $"{root}/PulletShaderVariants_{packageName}.shadervariants").ToArray();
             BundleCollector collector = group.Collectors.FirstOrDefault(item =>
                 string.Equals(item.CollectPath, assetPath, StringComparison.OrdinalIgnoreCase))
                 ?? group.Collectors.FirstOrDefault(item =>
                     string.Equals(item.UserData, packageName, StringComparison.Ordinal))
                 ?? group.Collectors.FirstOrDefault(item =>
-                    string.Equals(item.CollectPath, legacyPath, StringComparison.OrdinalIgnoreCase));
+                    legacyPaths.Any(path => string.Equals(
+                        item.CollectPath, path, StringComparison.OrdinalIgnoreCase)));
             if (collector == null)
             {
                 collector = new BundleCollector();

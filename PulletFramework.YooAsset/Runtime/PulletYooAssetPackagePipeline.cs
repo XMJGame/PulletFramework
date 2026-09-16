@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using YooAsset;
 
@@ -27,13 +28,29 @@ namespace PulletFramework.YooAssetAdapter
             TargetVersion = targetVersion;
             Download = download;
             ClearUnusedCache = clearUnusedCache;
-            Tags = tags;
+            Tags = NormalizeTags(tags);
         }
 
         public PulletYooAssetPipelineRequest WithPackageName(string packageName)
         {
             return new PulletYooAssetPipelineRequest(
                 packageName, OperationType, TargetVersion, Download, ClearUnusedCache, Tags);
+        }
+
+        private static string[] NormalizeTags(string[] tags)
+        {
+            if (tags == null || tags.Length == 0)
+                return Array.Empty<string>();
+
+            var result = new List<string>(tags.Length);
+            var unique = new HashSet<string>(StringComparer.Ordinal);
+            for (int index = 0; index < tags.Length; index++)
+            {
+                string tag = tags[index]?.Trim();
+                if (!string.IsNullOrEmpty(tag) && unique.Add(tag))
+                    result.Add(tag);
+            }
+            return result.ToArray();
         }
     }
 

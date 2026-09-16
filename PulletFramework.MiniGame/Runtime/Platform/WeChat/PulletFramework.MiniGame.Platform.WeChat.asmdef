@@ -1,0 +1,8 @@
+{
+    "name": "PulletFramework.MiniGame.Platform.WeChat",
+    "rootNamespace": "PulletFramework.MiniGame.Platform.WeChat",
+    "references": [
+        "GUID:c67d5a3b7b6846e3903b42aff3945a77"
+    ],
+    "autoReferenced": true
+}

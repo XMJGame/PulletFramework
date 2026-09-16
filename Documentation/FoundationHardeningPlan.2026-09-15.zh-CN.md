@@ -219,7 +219,7 @@
 
 ### 2026-09-15：S6（自动化部分）
 
-- 使用三个全新临时 Unity 2022.3.62f3 工程验证本地 UPM 组合：仅 `PulletFramework`、核心 + `PulletFramework.YooAsset` + `AssetPublishing`、以及再叠加 `PulletMiniGame`，三组均完成 Package Manager 解析和脚本编译。
+- 使用三个全新临时 Unity 2022.3.62f3 工程验证本地 UPM 组合：仅 `PulletFramework`、核心 + `PulletFramework.YooAsset` + `AssetPublishing`、以及再叠加 `PulletFramework.MiniGame`，三组均完成 Package Manager 解析和脚本编译。
 - 最小安装暴露并修复核心包清单缺少直接 Unity 依赖的问题；现在显式声明 UGUI、Animation、Audio、JSON Serialize、UI、UnityWebRequest 与 UnityWebRequest Audio。
 - 将验证工程已经使用的小游戏首包 CDN、YooAsset 内置资源融合、加载页配置及文档同步回独立仓库，并补齐平台 Sample 缺失的固定 `.meta`；同步后的 FullStack 组合重新编译通过。
 - 从 CoreOnly 临时工程成功构建 Windows x64 Player，并实际启动验证：框架初始化成功、运行一帧、销毁成功，进程以退出码 0 结束。

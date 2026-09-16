@@ -4,7 +4,7 @@
 
 ## 范围与证据
 
-- 主要审查对象：`G:/XuMingJun/2026/Mini_Games/PulletMiniGameValidation/Assets` 中的 PulletFramework、PulletFramework.YooAsset、PulletFramework.AssetPublishing、PulletMiniGame。
+- 主要审查对象：`G:/XuMingJun/2026/Mini_Games/PulletMiniGameValidation/Assets` 中的 PulletFramework、PulletFramework.YooAsset、PulletFramework.AssetPublishing、PulletFramework.MiniGame。
 - 对照源仓库：`G:/GitHub/PulletFramework`。HybridCLR 未安装在本轮验证工程中，仅查看其源码和包声明，没有重新安装或验证。
 - 下文源码位置均相对于验证工程 `Assets/`，行号是首次审查快照，仅用于定位历史问题。
 - 首次审查本身没有改运行时实现、重新构建小游戏或上传 CDN；后续修复与验证过程记录在加固计划中。
@@ -106,7 +106,7 @@ Reset 只调用 Cancel 设置请求标志，随后清空操作表并销毁协程
 
 处理状态：**已修复并通过自动化回归**。初始化、重试及成功后的平台存储和声音偏好绑定已统一入口，并隔离取消与迟到结果。
 
-位置：`PulletMiniGame/Runtime/MiniGameBootstrap.cs:59`、`PulletMiniGames.cs:27`。
+位置：`PulletFramework.MiniGame/Runtime/MiniGameBootstrap.cs:59`、`PulletMiniGames.cs:27`。
 
 第一次初始化已经 Install adapter，但初始化失败或调用者取消时，成功分支没有安装平台 PlayerPrefs。之后通过 MiniGameBootstrap 重试，因为 IsInstalled 为 true，只调用 PulletPlatform.InitializeAsync，不再经过 PulletMiniGames 的成功处理。即使重试成功，平台存储后端安装和声音偏好重新读取仍可能被跳过。
 
@@ -159,7 +159,7 @@ Demo 的 GameLaunch 主动执行销毁，但基础框架驱动器自身缺少等
 | PulletFramework | 10 |
 | PulletFramework.YooAsset | 9 |
 | PulletFramework.AssetPublishing | 4 |
-| PulletMiniGame | 12 |
+| PulletFramework.MiniGame | 12 |
 | 合计 | 35 |
 
 这不是 35 个 bug，也不是包含所有资源及源仓库独有文件的全量差异计数。但着色器收集、首包 CDN 和通用发布服务等已有实现，不能假定已经全部进入独立仓库。

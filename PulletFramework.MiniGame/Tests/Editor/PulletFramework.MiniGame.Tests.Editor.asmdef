@@ -1,0 +1,15 @@
+{
+    "name": "PulletFramework.MiniGame.Tests.Editor",
+    "rootNamespace": "PulletFramework.MiniGame.Tests",
+    "references": [
+        "PulletFramework.Runtime",
+        "PulletFramework.MiniGame.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

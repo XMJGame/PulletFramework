@@ -69,5 +69,16 @@ namespace PulletFramework.YooAssetAdapter.Tests
 
             Assert.That(completionCount, Is.EqualTo(1));
         }
+
+        [Test]
+        public void PipelineRequestNormalizesDownloadTags()
+        {
+            var request = new PulletYooAssetPipelineRequest(
+                "DefaultPackage", EPulletYooAssetOperationType.Download,
+                download: true,
+                tags: new[] { " chapter_1 ", "", null, "common", "chapter_1" });
+
+            Assert.That(request.Tags, Is.EqualTo(new[] { "chapter_1", "common" }));
+        }
     }
 }

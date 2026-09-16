@@ -46,7 +46,7 @@ namespace PulletFramework.YooAssetAdapter
 
         [Header("Shader variants")]
         [Tooltip("着色器变体集合的生成目录，必须位于 Assets 下。")]
-        public string shaderVariantOutputDirectory = "Assets/Generated/Pullet/ShaderVariants";
+        public string shaderVariantOutputDirectory = "Assets/PulletGenerate/ShaderVariants";
         [Tooltip("着色器变体集合名称。支持 {package} 占位符，多 Package 项目建议保留该占位符。")]
         public string shaderVariantNameTemplate = "PulletShaderVariants_{package}";
         [Tooltip("构建 Package 前，根据该 Package 收集到的材质刷新着色器变体集合。")]
