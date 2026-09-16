@@ -22,13 +22,9 @@ namespace PulletFramework.AssetPublishing.Editor
         public void OnEnable()
         {
             _providers.Clear();
-            foreach (Type type in TypeCache.GetTypesDerivedFrom<IPulletAssetPublishingProvider>()
-                         .Where(type => !type.IsAbstract && !type.IsInterface))
-            {
-                if (Activator.CreateInstance(type) is IPulletAssetPublishingProvider provider
-                    && _providers.All(item => item.Id != provider.Id))
-                    _providers.Add(provider);
-            }
+            _providers.AddRange(
+                PulletAssetPublishingProviderRegistry
+                    .CreateProviders<IPulletAssetPublishingProvider>());
             _providers.Sort((left, right) =>
                 string.Compare(left.DisplayName, right.DisplayName, StringComparison.Ordinal));
         }

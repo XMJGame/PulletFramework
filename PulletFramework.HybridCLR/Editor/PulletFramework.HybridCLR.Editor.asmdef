@@ -3,6 +3,7 @@
     "rootNamespace": "PulletFramework.Editor",
     "references": [
         "PulletFramework.Runtime",
+        "PulletFramework.HybridCLR.Runtime",
         "PulletFramework.Editor.Workspace.Contracts",
         "HybridCLR.Editor"
     ],
