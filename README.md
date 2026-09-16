@@ -23,7 +23,7 @@ Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小
 | `PulletFramework.AssetPublishing` | `com.xmjgame.pullet-framework.asset-publishing` | 编辑器资源发布与对象存储供应商抽象 | 否 |
 | `PulletFramework.YooAsset` | `com.xmjgame.pullet-framework.yooasset` | YooAsset 初始化、多 Package 更新、构建与 CDN 发布 | 否 |
 | `PulletMiniGame` | `com.xmjgame.pullet-minigame` | 微信、抖音平台能力、SDK 桥接和统一发布窗口 | 否 |
-| `PulletFramework.HybridCLR` | `com.xmjgame.pullet-framework.hybridclr` | HybridCLR 编辑器工作流 | 否 |
+| `PulletFramework.HybridCLR` | `com.xmjgame.pullet-framework.hybridclr` | HybridCLR 构建、清单与运行时加载 | 否 |
 
 推荐组合：
 

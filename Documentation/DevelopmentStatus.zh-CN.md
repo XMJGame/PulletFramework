@@ -77,10 +77,11 @@
 
 ### PulletFramework.HybridCLR
 
-状态：**已完成兼容性评估，当前项目不启用**
+状态：**Windows IL2CPP 代码更新与 AOT 补充元数据链路已实测**
 
 - 模块保持独立，不作为小游戏基础依赖。
-- 当前验证项目以平台包体和 YooAsset 资源更新为主，不引入代码热更新成本。
+- 运行时通过 `PulletResources` 读取清单与 DLL，具体资源系统由项目安装适配器；小游戏主场景不启用代码热更新。
+- Windows x64 IL2CPP Player 已读取资源版本 `1.0.5`，加载热更新 DLL 与 `mscorlib` AOT 补充元数据，并成功执行入口中的 AOT 泛型代码。
 
 ## 已完成验证
 

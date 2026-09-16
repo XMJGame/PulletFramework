@@ -1,8 +1,8 @@
 {
     "name": "com.xmjgame.pullet-framework.hybridclr",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "displayName": "Pullet Framework HybridCLR Tools",
-    "description": "Optional HybridCLR editor workflow for Pullet Framework.",
+    "description": "Optional HybridCLR build, manifest, validation, and runtime loading workflow for Pullet Framework.",
     "unity": "2021.3",
     "dependencies": {
         "com.xmjgame.pullet-framework": "0.1.0",

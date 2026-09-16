@@ -69,7 +69,7 @@ namespace PulletFramework.Resource
         void Cancel();
     }
 
-    /// <summary>仅包含框架 UI、表格、音频和对象池需要的单资源加载能力。</summary>
+    /// <summary>仅包含框架 UI、表格、音频、对象池和扩展模块需要的单资源加载能力。</summary>
     public interface IResourcePackage
     {
         string Name { get; }

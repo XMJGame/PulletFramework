@@ -81,9 +81,13 @@ namespace PulletFramework.YooAssetAdapter
             string packageName)
         {
             IRemoteService remoteService = CreateRemoteService(settings, packageName);
-            FileSystemParameters builtin =
-                FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
-            builtin.AddParameter(EFileSystemParameter.CopyBuiltinPackageManifest, true);
+            FileSystemParameters builtin = null;
+            if (settings.includeDefaultPackageInStreamingAssets
+                && string.Equals(packageName, settings.packageName, StringComparison.Ordinal))
+            {
+                builtin = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+                builtin.AddParameter(EFileSystemParameter.CopyBuiltinPackageManifest, true);
+            }
             FileSystemParameters cache =
                 FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remoteService);
             cache.AddParameter(

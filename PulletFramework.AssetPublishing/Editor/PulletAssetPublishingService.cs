@@ -162,9 +162,8 @@ namespace PulletFramework.AssetPublishing.Editor
             bool validateProfile)
         {
             PulletAssetPublishingSettings setting = PulletAssetPublishingSettingsData.Setting;
-            provider = TypeCache.GetTypesDerivedFrom<IPulletObjectStorageProvider>()
-                .Where(type => !type.IsAbstract && !type.IsInterface)
-                .Select(type => Activator.CreateInstance(type) as IPulletObjectStorageProvider)
+            provider = PulletAssetPublishingProviderRegistry
+                .CreateProviders<IPulletObjectStorageProvider>()
                 .FirstOrDefault(item => item != null && item.Id == setting.activeProviderId);
             profile = setting.GetOrCreateProfile(setting.activeProviderId);
 
