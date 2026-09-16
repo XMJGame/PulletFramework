@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using PulletFramework.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,6 +7,25 @@ namespace PulletFramework.YooAssetAdapter.Tests
 {
     public sealed class PulletYooAssetVersionAndPlatformTests
     {
+        [Test]
+        public void NewSettingsUseRecognizableShaderVariantDirectory()
+        {
+            var settings = ScriptableObject.CreateInstance<PulletYooAssetSettings>();
+            try
+            {
+                Assert.That(settings.shaderVariantOutputDirectory,
+                    Is.EqualTo("Assets/PulletGenerate/ShaderVariants"));
+                Assert.That(PulletYooAssetShaderVariantCollector.GetAssetPath(
+                        settings, "DefaultPackage"),
+                    Is.EqualTo("Assets/PulletGenerate/ShaderVariants/" +
+                        "PulletShaderVariants_DefaultPackage.shadervariants"));
+            }
+            finally
+            {
+                Object.DestroyImmediate(settings);
+            }
+        }
+
         [TestCase(BuildTarget.WebGL, RuntimePlatform.WebGLPlayer, "WebGL")]
         [TestCase(BuildTarget.Android, RuntimePlatform.Android, "Android")]
         [TestCase(BuildTarget.iOS, RuntimePlatform.IPhonePlayer, "IPhone")]

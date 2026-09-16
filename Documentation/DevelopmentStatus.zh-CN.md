@@ -55,7 +55,7 @@
 - 发布会话冻结供应商配置并在版本指针前校验文件，清单失败或文件变化不会继续发布指针。
 - `YooAsset.Extension` 将 YooAsset 内部 Web 策略桥接为公开的平台接口，平台 SDK 程序集不直接依赖 internal 类型。
 
-### PulletMiniGame
+### PulletFramework.MiniGame
 
 状态：**基础平台链路已用户验收，部分线上能力待验证**
 
@@ -128,7 +128,7 @@
 - 正式小游戏 AppID：`wx045e11844757f853`。
 - 启动失败的关键原因是缺少开放数据域渲染库 Layout 插件 `wx7a727ff7d940bb3f`；添加后恢复。
 - Unity 引擎插件 provider 为 `wxe5a48f1ed5f544b7`。
-- 详细问题记录见 `PulletMiniGame/Documentation/PlatformTroubleshooting.zh-CN.md`（若路径调整，应同步更新本链接）。
+- 详细问题记录见 `PulletFramework.MiniGame/Documentation/PlatformTroubleshooting.zh-CN.md`（若路径调整，应同步更新本链接）。
 
 ## 关键架构决定
 

@@ -1,9 +1,0 @@
-{
-    "name": "PulletMiniGame.Platform.Douyin",
-    "rootNamespace": "PulletMiniGame.Platform.Douyin",
-    "references": [
-        "GUID:c67d5a3b7b6846e3903b42aff3945a77"
-    ],
-    "autoReferenced": true,
-    "defineConstraints": ["PULLET_PLATFORM_DOUYIN"]
-}

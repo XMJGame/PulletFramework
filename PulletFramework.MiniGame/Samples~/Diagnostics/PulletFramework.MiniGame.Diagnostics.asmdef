@@ -1,0 +1,9 @@
+{
+    "name": "PulletFramework.MiniGame.Diagnostics",
+    "rootNamespace": "PulletFramework.MiniGame.Diagnostics",
+    "references": [
+        "PulletFramework.Runtime",
+        "PulletFramework.MiniGame.Runtime"
+    ],
+    "autoReferenced": true
+}
