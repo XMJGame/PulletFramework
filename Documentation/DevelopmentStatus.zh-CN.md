@@ -1,6 +1,6 @@
 # Pullet 开发状态
 
-最后更新：2026-09-15
+最后更新：2026-09-18
 
 本文档是 Pullet 各模块当前状态的事实入口，用于避免依赖聊天记录或压缩摘要判断工程状态。
 
@@ -82,6 +82,17 @@
 - 模块保持独立，不作为小游戏基础依赖。
 - 运行时通过 `PulletResources` 读取清单与 DLL，具体资源系统由项目安装适配器；小游戏主场景不启用代码热更新。
 - Windows x64 IL2CPP Player 已读取资源版本 `1.0.5`，加载热更新 DLL 与 `mscorlib` AOT 补充元数据，并成功执行入口中的 AOT 泛型代码。
+
+### PulletFramework.NetClient
+
+状态：**PulletNet 源码测试已确认，Unity Player 端到端连接待验证**
+
+- 模块可独立安装，不依赖 `PulletFramework`、YooAsset 或小游戏模块。
+- 底层直接复用 `PulletNet.ClientSDK` 与 `PulletNet.Protocol`，Unity 层只负责配置、生命周期、主线程事件派发和局域网发现。
+- 支持桌面与移动端 TCP、UDP、WebSocket；当前显式排除 WebGL、微信和抖音小游戏，后续需实现平台 SDK/JavaScript WebSocket Transport。
+- 业务协议、序列化、鉴权和消息处理器仍由业务项目持有，不进入通用客户端包。
+- PulletNet Release 构建零警告，Protocol、ClientSDK、NetCore、Hosting 与 Integration 共 212 项测试通过。
+- Unity 2022.3 中独立 UPM 安装及与基础框架并装均编译通过，包内 5 项 EditMode 测试和导入 Sample 编译通过；桌面/移动 Player 实际连接与发现仍待验证。
 
 ## 已完成验证
 
