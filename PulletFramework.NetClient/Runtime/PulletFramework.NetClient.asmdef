@@ -1,0 +1,19 @@
+{
+  "name": "PulletFramework.NetClient",
+  "rootNamespace": "PulletFramework.NetClient",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [
+    "WebGL"
+  ],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "PulletNet.Protocol.dll",
+    "PulletNet.ClientSDK.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

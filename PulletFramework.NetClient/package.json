@@ -1,0 +1,25 @@
+{
+  "name": "com.xmjgame.pullet-framework.netclient",
+  "displayName": "Pullet Framework NetClient",
+  "version": "0.1.0",
+  "unity": "2021.3",
+  "description": "Standalone Unity client integration for PulletNet TCP, UDP and WebSocket servers.",
+  "keywords": [
+    "pulletnet",
+    "networking",
+    "udp",
+    "tcp",
+    "netclient",
+    "unity"
+  ],
+  "author": {
+    "name": "XMJGame"
+  },
+  "samples": [
+    {
+      "displayName": "Connection Sample",
+      "description": "PulletNet connection, discovery and message receiving example.",
+      "path": "Samples~/ConnectionSample"
+    }
+  ]
+}
