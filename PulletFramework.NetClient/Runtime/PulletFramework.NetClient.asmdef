@@ -10,7 +10,8 @@
   "overrideReferences": true,
   "precompiledReferences": [
     "PulletNet.Protocol.dll",
-    "PulletNet.ClientSDK.dll"
+    "PulletNet.ClientSDK.dll",
+    "Newtonsoft.Json.dll"
   ],
   "autoReferenced": true,
   "defineConstraints": [],

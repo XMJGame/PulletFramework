@@ -1,7 +1,8 @@
-# Connection Sample
+# 连接示例
 
-Create a `PulletNetworkSettings` asset, add `PulletNetworkManager` and
-`PulletNetConnectionSample` to a GameObject, then assign the references in the Inspector.
+1. 在同一个 GameObject 上添加 `PulletNetworkManager` 和 `PulletNetConnectionSample`。
+2. 直接在 `PulletNetworkManager` Inspector 中填写端口和自动发现策略。
+3. 在示例组件中指定 Manager 引用。
+4. 先启动兼容的 PulletNet 服务端，再通过组件的右键菜单连接、发送一条 UTF-8 消息或断开连接。
 
-The component context menu can connect, send one UTF-8 payload and disconnect. Start a compatible
-PulletNet server first and keep business serialization outside this package.
+此示例只演示客户端接入流程。业务消息格式和序列化由具体项目负责，不应放进通用网络包。
