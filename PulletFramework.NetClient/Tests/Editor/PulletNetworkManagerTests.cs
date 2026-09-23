@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using PulletNet.ClientSDK;
+using UnityEditor;
 using UnityEngine;
 
 namespace PulletFramework.NetClient.Tests
@@ -45,6 +46,23 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(_manager.OnDiscoverySucceeded, Is.Not.Null);
             Assert.That(_manager.OnDiscoveryFailed, Is.Not.Null);
             Assert.That(_manager.OnDiscoveryStopped, Is.Not.Null);
+        }
+
+        [Test]
+        public void PackagePrefab_UsesReusableDefaults()
+        {
+            const string prefabPath =
+                "Packages/com.xmjgame.pullet-framework.netclient/Runtime/Prefabs/PulletNetworkManager.prefab";
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+
+            Assert.That(prefab, Is.Not.Null, $"Missing package prefab: {prefabPath}");
+            PulletNetworkManager manager = prefab.GetComponent<PulletNetworkManager>();
+            Assert.That(manager, Is.Not.Null);
+            Assert.That(manager.tcpPort, Is.EqualTo(7778));
+            Assert.That(manager.udpPort, Is.EqualTo(7777));
+            Assert.That(manager.autoConnectMode, Is.EqualTo(AutoConnectMode.DirectThenDiscover));
+            Assert.That(manager.discoveryServiceType, Is.EqualTo("pulletnet"));
+            Assert.That(manager.runtimeId, Is.EqualTo(1));
         }
 
         [Test]
