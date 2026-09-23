@@ -12,13 +12,13 @@ namespace PulletFramework.NetClient.Samples
         private void OnEnable()
         {
             if (manager != null)
-                manager.MessageReceived += OnMessageReceived;
+                manager.PayloadReceived += OnPayloadReceived;
         }
 
         private void OnDisable()
         {
             if (manager != null)
-                manager.MessageReceived -= OnMessageReceived;
+                manager.PayloadReceived -= OnPayloadReceived;
         }
 
         [ContextMenu("Connect")]
@@ -27,7 +27,7 @@ namespace PulletFramework.NetClient.Samples
             if (manager == null)
                 return;
 
-            ConnectResult result = await manager.ConnectAsync();
+            ConnectionResult result = await manager.ConnectAsync();
             Debug.Log($"[PulletNet Sample] Connect: {result}");
         }
 
@@ -37,7 +37,7 @@ namespace PulletFramework.NetClient.Samples
             if (manager == null)
                 return;
 
-            ConnectResult result = await manager.SendAsync(Encoding.UTF8.GetBytes(message));
+            SendResult result = await manager.SendAsync(Encoding.UTF8.GetBytes(message));
             Debug.Log($"[PulletNet Sample] Send: {result}");
         }
 
@@ -47,13 +47,13 @@ namespace PulletFramework.NetClient.Samples
             if (manager == null)
                 return;
 
-            ConnectResult result = await manager.DisconnectAsync();
+            ConnectionResult result = await manager.DisconnectAsync();
             Debug.Log($"[PulletNet Sample] Disconnect: {result}");
         }
 
-        private static void OnMessageReceived(ReceivedMessage value)
+        private static void OnPayloadReceived(ReceivedPayload value)
         {
-            Debug.Log($"[PulletNet Sample] Received {value.Payload.Length} bytes.");
+            Debug.Log($"[PulletNet Sample] Received {value.Memory.Length} bytes.");
         }
     }
 }
