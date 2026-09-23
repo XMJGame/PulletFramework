@@ -1,6 +1,6 @@
 {
     "name": "com.xmjgame.pullet-framework.yooasset",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "displayName": "Pullet Framework YooAsset Adapter",
     "description": "Optional YooAsset runtime and editor integration for Pullet Framework.",
     "unity": "2021.3",

@@ -139,6 +139,9 @@ GameObject 由业务或对象池负责销毁、回收。
 并自动使用 YooAsset 的 `PackShaderVariants` 规则加入该 Package 的 Shader Bundle。“构建前自动收集”
 默认开启，因此日常仍只需点击“构建当前版本”；也可手动收集并查看 Shader、变体及跳过数量。
 
+Unity 2021.3 没有渐进式 Shader 预热 API，因此会降级调用
+`ShaderVariantCollection.WarmUp()`；Unity 2022.2 及以上仍按批次渐进预热。
+
 输出目录和集合名称模板可在配置界面修改，名称模板支持 `{package}` 占位符。编辑器收集与
 运行时预热共用同一名称解析规则，多 Package 项目应保留占位符以避免集合互相覆盖。
 

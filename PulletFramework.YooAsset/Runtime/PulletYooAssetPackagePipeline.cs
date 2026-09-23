@@ -503,6 +503,7 @@ namespace PulletFramework.YooAssetAdapter
             }
 
             int variantCount = collection.variantCount;
+#if UNITY_2022_2_OR_NEWER
             while (!collection.WarmUpProgressively(settings.shaderVariantWarmupBatchSize))
             {
                 if (operation.CancellationRequested)
@@ -518,6 +519,18 @@ namespace PulletFramework.YooAssetAdapter
                     0.92f + Mathf.Clamp01(ratio) * 0.04f);
                 yield return null;
             }
+#else
+            // Unity 2021.3 does not expose the progressive warm-up API or its progress counter.
+            // Keep the same pipeline contract and fall back to Unity's synchronous public API.
+            if (operation.CancellationRequested)
+            {
+                handle.Release();
+                Cancel(state, operation, finished);
+                yield break;
+            }
+            collection.WarmUp();
+            SetState(state, operation, EPulletYooAssetPackageStatus.WarmingShaderVariants, 0.96f);
+#endif
             PLogger.Info(
                 $"[PulletYooAsset] {request.PackageName}: 已预热 {variantCount} 个着色器变体。");
             handle.Release();
