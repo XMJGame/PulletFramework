@@ -113,7 +113,24 @@ namespace PulletFramework.NetClient
             CancellationToken cancellationToken = default)
         {
             ValidateArguments(port, timeoutSeconds, maxAttempts, sendIntervalSeconds);
+            return await DiscoverCoreAsync(
+                new IPEndPoint(IPAddress.Broadcast, port),
+                timeoutSeconds, maxAttempts, sendIntervalSeconds,
+                serviceType, onAttempt, cancellationToken);
+        }
 
+        // The destination is injected so the full UDP discovery loop can be tested on loopback.
+        internal static async Task<IReadOnlyList<PulletServerInfo>> DiscoverCoreAsync(
+            IPEndPoint destination,
+            float timeoutSeconds,
+            int maxAttempts,
+            float sendIntervalSeconds,
+            string serviceType,
+            Action<int, int> onAttempt,
+            CancellationToken cancellationToken = default)
+        {
+            if (destination == null) throw new ArgumentNullException(nameof(destination));
+            ValidateArguments(destination.Port, timeoutSeconds, maxAttempts, sendIntervalSeconds);
             var timeout = TimeSpan.FromSeconds(timeoutSeconds);
             var interval = TimeSpan.FromSeconds(sendIntervalSeconds);
             var requestId = Guid.NewGuid().ToString("N");
@@ -130,7 +147,6 @@ namespace PulletFramework.NetClient
             using (var client = new UdpClient(0) { EnableBroadcast = true, MulticastLoopback = false })
             using (cancellationToken.Register(client.Close))
             {
-                var destination = new IPEndPoint(IPAddress.Broadcast, port);
                 var stopwatch = Stopwatch.StartNew();
                 var nextSendAt = TimeSpan.Zero;
                 int attempt = 0;
@@ -230,6 +246,7 @@ namespace PulletFramework.NetClient
             }
             catch (Exception ex)
             {
+                Debug.LogException(ex);
                 PublishSafely(OnFailure, ex.Message);
             }
             finally
