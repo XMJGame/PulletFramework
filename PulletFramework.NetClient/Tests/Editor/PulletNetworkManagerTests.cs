@@ -1,3 +1,4 @@
+using System.Reflection;
 using NUnit.Framework;
 using PulletNet.ClientSDK;
 using UnityEditor;
@@ -37,15 +38,16 @@ namespace PulletFramework.NetClient.Tests
         }
 
         [Test]
-        public void InspectorEvents_ArePublicAndInitialized()
+        public void CodeEvents_AreExposedByManagerAndInspectorEventsLiveInOptionalRelay()
         {
-            Assert.That(_manager.OnConnected, Is.Not.Null);
-            Assert.That(_manager.OnConnectedFailed, Is.Not.Null);
-            Assert.That(_manager.OnDisconnected, Is.Not.Null);
-            Assert.That(_manager.OnDiscoveryStarted, Is.Not.Null);
-            Assert.That(_manager.OnDiscoverySucceeded, Is.Not.Null);
-            Assert.That(_manager.OnDiscoveryFailed, Is.Not.Null);
-            Assert.That(_manager.OnDiscoveryStopped, Is.Not.Null);
+            PulletNetworkEventRelay relay = _gameObject.AddComponent<PulletNetworkEventRelay>();
+            Assert.That(relay.onConnected, Is.Not.Null);
+            Assert.That(relay.onConnectFailed, Is.Not.Null);
+            Assert.That(relay.onDisconnected, Is.Not.Null);
+            Assert.That(relay.onDiscoveryStarted, Is.Not.Null);
+            Assert.That(relay.onDiscoverySucceeded, Is.Not.Null);
+            Assert.That(relay.onDiscoveryFailed, Is.Not.Null);
+            Assert.That(relay.onDiscoveryStopped, Is.Not.Null);
         }
 
         [Test]
@@ -62,6 +64,9 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(manager.udpPort, Is.EqualTo(7777));
             Assert.That(manager.autoConnectMode, Is.EqualTo(AutoConnectMode.DirectThenDiscover));
             Assert.That(manager.discoveryServiceType, Is.EqualTo("pulletnet"));
+            Assert.That(manager.keepReconnectingActiveServer, Is.False,
+                "通用 Prefab 不应默认无限连接旧服务器，由具体项目明确开启。");
+            Assert.That(manager.activeServerReconnectDelaySeconds, Is.EqualTo(3f));
         }
 
         [Test]
@@ -109,6 +114,34 @@ namespace PulletFramework.NetClient.Tests
 
             Assert.That(_manager.ValidateConfiguration(out string error), Is.False);
             StringAssert.Contains("Discovery", error);
+        }
+
+        [Test]
+        public void QueuedDisconnect_RemainsVisibleAfterClientIsReplaced()
+        {
+            var oldClient = new PulletNet.ClientSDK.NetClient(new NetClientOptions());
+            FieldInfo clientField = typeof(PulletNetworkManager).GetField("_client",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo update = typeof(PulletNetworkManager).GetMethod("Update",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(clientField, Is.Not.Null);
+            Assert.That(update, Is.Not.Null);
+            var events = new System.Collections.Generic.List<string>();
+            _manager.Connected += _ => events.Add("connected");
+            _manager.Disconnected += _ => events.Add("disconnected");
+            clientField.SetValue(_manager, oldClient);
+
+            _manager.HandleClientConnected(oldClient, 0,
+                new ConnectedEvent(1, 1, ConnectionMode.UdpWithTcpControl));
+            _manager.HandleClientDisconnected(oldClient, new DisconnectedEvent("old session ended", false));
+            clientField.SetValue(_manager, null);
+            update.Invoke(_manager, null);
+
+            Assert.That(events, Is.EqualTo(new[] { "connected", "disconnected" }));
+            _manager.HandleClientDisconnected(oldClient, new DisconnectedEvent("late old callback", false));
+            update.Invoke(_manager, null);
+            Assert.That(events, Is.EqualTo(new[] { "connected", "disconnected" }));
+            ((System.IDisposable)oldClient).Dispose();
         }
 
     }

@@ -79,6 +79,20 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(late.IsDisposed, Is.True);
         }
 
+        [Test]
+        public void DequeuePreservesSessionGeneration()
+        {
+            using var queue = new BoundedPayloadQueue(1);
+            queue.Enqueue(Create(7, ChannelType.ReliableOrdered), null, 12);
+
+            Assert.That(queue.TryDequeue(out OwnedPayload payload, out _, out long generation), Is.True);
+            using (payload)
+            {
+                Assert.That(generation, Is.EqualTo(12));
+                Assert.That(payload.Memory.Span[0], Is.EqualTo(7));
+            }
+        }
+
         private static OwnedPayload Create(byte value, ChannelType channelType)
         {
             return new ReceivedPayload(new[] { value }, TransportKind.Udp, channelType).ToOwned();
@@ -86,7 +100,7 @@ namespace PulletFramework.NetClient.Tests
 
         private static OwnedPayload Dequeue(BoundedPayloadQueue queue)
         {
-            Assert.That(queue.TryDequeue(out OwnedPayload payload, out _), Is.True);
+            Assert.That(queue.TryDequeue(out OwnedPayload payload, out _, out _), Is.True);
             return payload;
         }
     }

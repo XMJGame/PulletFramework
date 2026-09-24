@@ -43,7 +43,8 @@ powershell -ExecutionPolicy Bypass -File .\Tools\Build-PulletNetUnityPackage.ps1
 3. 订阅 `Connected`、`Disconnected`、`PayloadReceived`，或在 Inspector 中绑定公开的
    `OnConnected`、`OnConnectedFailed`、`OnDisconnected` UnityEvent。重连结果通过代码事件
    `ReconnectAttempt`、`Reconnected`、`ReconnectFailed` 交给业务层制定恢复策略。
-4. 等待 `ConnectAsync` 或 `AutoConnectAsync` 成功，再通过 `SendAsync` 发送业务层自行编码的消息。
+4. 等待 `ConnectAsync` 或 `AutoConnectAsync` 成功，再通过 `SendMessageAsync` 发送强类型业务消息，
+   或通过 `CallAsync` 发起需要响应的 RPC；只有自定义二进制协议时才直接调用 `SendAsync`。
 
 服务器地址由业务层决定：可以使用固定 IP、选择发现列表中的服务器，或使用 Manager 的自动发现流程。
 `AutoConnectMode` 支持直接连接、优先发现、直连失败后发现。发现响应中的 `0.0.0.0`、回环地址会自动
@@ -58,6 +59,12 @@ powershell -ExecutionPolicy Bypass -File .\Tools\Build-PulletNetUnityPackage.ps1
 断线后，ClientSDK 会按 `maxReconnectAttempts` 对当前服务器执行一轮重连，并通过
 `ReconnectAttempt`、`Reconnected`、`ReconnectFailed` 报告结果。达到重连上限后是否继续连接、
 是否重新发现或是否切换服务器属于应用业务策略，通用 Manager 不替业务作出决定。
+
+一次新的显式连接或断开会取消仍在进行的旧连接请求。旧请求迟到的结果不会覆盖新的目标服务器。
+断线时 Manager 会立即取消旧会话的待完成 RPC，并清空尚未交付给主线程的旧会话消息；
+业务层收到重连成功后，仍应按自身协议重新注册和同步状态。
+已经确认属于当前连接的连接/断开事件会按入队顺序交付，即使主线程派发前 Client 已被替换；
+旧 Client 在替换后才到达的回调仍会被忽略。
 
 主线程 Payload 队列默认上限为 1024，每帧最多派发 256 条，可直接在 `PulletNetworkManager`
 中调整。`Unreliable`/`Sequenced` 满队列时丢弃较旧的非可靠数据；可靠通道满队列时不会
@@ -83,6 +90,36 @@ manager.DiscoveryFailed += error => ShowDiscoveryError(error);
 manager.StartDiscovery();
 // manager.StopDiscovery();
 ```
+
+## 强类型业务消息
+
+Manager 内置 JSON 序列化、强类型消息订阅和 RPC；业务层仍负责定义消息 ID 与数据结构。
+`Subscribe<T>` 返回可安全重复取消的 `IMessageSubscription`。单条订阅既可以调用
+`Unsubscribe()`，也可以交给 `MessageSubscriptionGroup` 随业务模块统一释放：
+
+```csharp
+using PulletFramework.Messaging;
+
+IMessageSubscription poseSubscription = manager.Subscribe<VehiclePose>(
+    VehicleMessageIds.Pose,
+    pose => vehicleInfo.UpdatePose(pose));
+
+// 单独取消；重复调用是安全的。
+manager.Unsubscribe(poseSubscription);
+
+// 页面或业务管理器拥有多条订阅时集中管理。
+var subscriptions = new MessageSubscriptionGroup();
+subscriptions.Add(manager.Subscribe<VehiclePose>(VehicleMessageIds.Pose, OnPose));
+subscriptions.Add(manager.Subscribe<ExperienceState>(VehicleMessageIds.State, OnState));
+subscriptions.UnsubscribeAll(); // 可继续向该组添加新订阅
+subscriptions.Dispose();        // 生命周期结束，不再允许添加
+```
+
+同一个消息 ID 只能绑定一种消息类型；同类型可以有多个订阅者。某一个订阅者抛出异常时，
+剩余订阅者仍会继续执行，错误通过 `MessageProtocolError` 报告。发送与 RPC 接口仍使用
+`SendMessageAsync` 和 `CallAsync`。
+`CallAsync` 的超时覆盖发送与等待响应的整个过程；收到没有待完成请求对应的响应时，
+不会将其当作普通业务通知派发。
 
 `PulletServerDiscovery` 同时提供静态 `StartDiscovery` / `StopDiscovery`，以及 `OnStarted`、
 `OnAttempt`、`OnSuccess`、`OnFailure`、`OnStopped` 回调。`discoveryMaxAttempts` 只限制广播次数；
