@@ -68,8 +68,6 @@ MonoBehaviour:
   discoveryServiceType: pulletnet
   payloadQueueCapacity: 1024
   maxPayloadCallbacksPerFrame: 256
-  clientVersion: 1.0.0
-  runtimeId: 1
   enableConnectionLogs: 1
   OnConnected:
     m_PersistentCalls:
