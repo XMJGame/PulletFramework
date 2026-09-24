@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using PulletFramework.Messaging;
 using PulletNet.ClientSDK;
 using PulletClient = PulletNet.ClientSDK.NetClient;
+using ConnectionIntent = PulletFramework.NetClient.PulletConnectionCoordinator.ConnectionIntent;
 using UnityEngine;
 
 namespace PulletFramework.NetClient
@@ -88,60 +88,13 @@ namespace PulletFramework.NetClient
         [Tooltip("输出连接模式、服务器发现、连接结果及重连状态等关键日志。不会输出每个数据包。")]
         public bool enableConnectionLogs = true;
 
-        private sealed class MainThreadWorkItem
-        {
-            private readonly Action _action;
-            public MainThreadWorkItem(Action action) => _action = action;
-            public void Complete(bool invoke) { if (invoke) _action(); }
-        }
-
-        private sealed class ConnectionIntent : IDisposable
-        {
-            private readonly object _gate = new object();
-            private readonly CancellationTokenSource _source;
-            private bool _disposed;
-
-            public long Version { get; }
-            public CancellationToken Token => _source.Token;
-
-            public ConnectionIntent(long version, CancellationToken lifetimeToken, CancellationToken requestToken)
-            {
-                Version = version;
-                _source = CancellationTokenSource.CreateLinkedTokenSource(lifetimeToken, requestToken);
-            }
-
-            public void Cancel()
-            {
-                lock (_gate)
-                {
-                    if (!_disposed) _source.Cancel();
-                }
-            }
-
-            public void Dispose()
-            {
-                lock (_gate)
-                {
-                    if (_disposed) return;
-                    _disposed = true;
-                    _source.Dispose();
-                }
-            }
-        }
-
-        private readonly ConcurrentQueue<MainThreadWorkItem> _mainThreadActions = new ConcurrentQueue<MainThreadWorkItem>();
+        private readonly PulletMainThreadEventPump _eventPump = new PulletMainThreadEventPump();
         private readonly object _clientGate = new object();
-        private readonly object _connectionIntentGate = new object();
-        private readonly SemaphoreSlim _connectionOperationGate = new SemaphoreSlim(1, 1);
-        private ConnectionIntent _activeConnectionIntent;
-        private long _connectionIntentVersion;
-        private long _sessionGeneration;
+        private readonly PulletConnectionCoordinator _connectionCoordinator = new PulletConnectionCoordinator();
         private PulletClient _client;
         private PulletMessageClient _messages;
-        private BoundedPayloadQueue _payloadQueue;
         private CancellationTokenSource _lifetimeCts;
         private bool _resumeShouldReconnect;
-        private int _pendingReliablePayloadOverflows;
         private volatile bool _isShuttingDown;
         private int _autoConnectRunning;
         private PulletActiveServerRecovery _activeServerRecovery;
@@ -157,8 +110,8 @@ namespace PulletFramework.NetClient
         /// <summary>最近一次成功连接或明确选择的服务器。</summary>
         public PulletServerInfo ActiveServer { get; private set; }
         public IReadOnlyList<PulletServerInfo> LastDiscoveredServers { get; private set; } = Array.Empty<PulletServerInfo>();
-        public long DroppedPayloadCount => _payloadQueue != null ? _payloadQueue.DroppedCount : 0;
-        public long ReliablePayloadOverflowCount => _payloadQueue != null ? _payloadQueue.ReliableOverflowCount : 0;
+        public long DroppedPayloadCount => _eventPump.DroppedPayloadCount;
+        public long ReliablePayloadOverflowCount => _eventPump.ReliablePayloadOverflowCount;
         public bool IsMessagingConfigured => _messages != null;
         /// <summary>是否正在持续恢复最后一次选择的服务器。</summary>
         public bool IsRecoveringActiveServer => _activeServerRecovery != null && _activeServerRecovery.IsRunning;
@@ -271,13 +224,13 @@ namespace PulletFramework.NetClient
                 () => IsConnected,
                 (target, token) => ConnectEndpointAsync(
                     target.host, target.tcpPort, target.udpPort, target.webPort, target,
-                    token, Volatile.Read(ref _connectionIntentVersion)),
+                    token, _connectionCoordinator.Version),
                 ReleaseDisconnectedClient,
                 () => !_isShuttingDown,
                 attempt => ActiveServerReconnectAttempt?.Invoke(attempt),
                 LogInfo,
                 LogWarning);
-            ResetPayloadQueue();
+            _eventPump.Reset(payloadQueueCapacity);
             BindDiscoveryEvents();
         }
 
@@ -289,14 +242,14 @@ namespace PulletFramework.NetClient
 
         private void Update()
         {
-            while (_mainThreadActions.TryDequeue(out var workItem))
-            {
-                try { workItem.Complete(!_isShuttingDown); }
-                catch (Exception ex) { Debug.LogException(ex); }
-            }
-
-            DrainPayloadQueue();
-            int reliableOverflows = Interlocked.Exchange(ref _pendingReliablePayloadOverflows, 0);
+            _eventPump.DrainActions(!_isShuttingDown, ex => Debug.LogException(ex));
+            _eventPump.DrainPayloads(
+                maxPayloadCallbacksPerFrame,
+                context => !_isShuttingDown && ReferenceEquals(context, _client),
+                payload => _messages?.HandlePayload(payload, out _),
+                payload => PayloadReceived?.Invoke(payload),
+                ex => Debug.LogException(ex));
+            int reliableOverflows = _eventPump.TakeReliableOverflowCount();
             if (reliableOverflows <= 0) return;
 
             string error = $"Reliable payload queue overflowed {reliableOverflows} time(s); application delivery is no longer complete.";
@@ -456,6 +409,7 @@ namespace PulletFramework.NetClient
             }
             catch (Exception ex)
             {
+                Debug.LogException(ex, this);
                 Enqueue(() => PublishDiscoveryFailure(ex.Message));
                 return Array.Empty<PulletServerInfo>();
             }
@@ -505,9 +459,9 @@ namespace PulletFramework.NetClient
             bool acquired = false;
             try
             {
-                await _connectionOperationGate.WaitAsync();
+                await _connectionCoordinator.OperationGate.WaitAsync();
                 acquired = true;
-                if (Volatile.Read(ref _connectionIntentVersion) != intentVersion)
+                if (!_connectionCoordinator.IsCurrent(intentVersion))
                     return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Disconnect was superseded.");
                 PulletClient client = _client;
                 ConnectionResult result = client == null ? ConnectionResult.Ok() : await client.DisconnectAsync();
@@ -517,7 +471,7 @@ namespace PulletFramework.NetClient
             {
                 return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message);
             }
-            finally { if (acquired) _connectionOperationGate.Release(); }
+            finally { if (acquired) _connectionCoordinator.OperationGate.Release(); }
         }
 
         /// <summary>应用暂停时挂起底层网络会话。</summary>
@@ -621,7 +575,7 @@ namespace PulletFramework.NetClient
             bool acquired = false;
             try
             {
-                await _connectionOperationGate.WaitAsync(cancellationToken);
+                await _connectionCoordinator.OperationGate.WaitAsync(cancellationToken);
                 acquired = true;
                 if (!IsCurrentIntent(intentVersion) || cancellationToken.IsCancellationRequested)
                     return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Connection was superseded.");
@@ -663,7 +617,7 @@ namespace PulletFramework.NetClient
             {
                 return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message);
             }
-            finally { if (acquired) _connectionOperationGate.Release(); }
+            finally { if (acquired) _connectionCoordinator.OperationGate.Release(); }
         }
 
         private PulletClient GetOrCreateClient(
@@ -738,10 +692,7 @@ namespace PulletFramework.NetClient
             client.PayloadReceived += value =>
             {
                 if (!IsCurrentClient(client, intentVersion)) return;
-                long generation = Volatile.Read(ref _sessionGeneration);
-                PayloadEnqueueResult result = _payloadQueue.Enqueue(value.ToOwned(), client, generation);
-                if (result == PayloadEnqueueResult.ReliableOverflow)
-                    Interlocked.Increment(ref _pendingReliablePayloadOverflows);
+                _eventPump.EnqueuePayload(value, client);
             };
         }
 
@@ -879,7 +830,7 @@ namespace PulletFramework.NetClient
         private bool IsCurrentClient(PulletClient client) => !_isShuttingDown && ReferenceEquals(client, _client);
         private bool IsCurrentClient(PulletClient client, long intentVersion)
             => IsCurrentClient(client) && IsCurrentIntent(intentVersion);
-        private void Enqueue(Action action) { if (!_isShuttingDown) _mainThreadActions.Enqueue(new MainThreadWorkItem(action)); }
+        private void Enqueue(Action action) { if (!_isShuttingDown) _eventPump.Enqueue(action); }
 
         private PulletMessageClient GetMessages()
         {
@@ -903,51 +854,24 @@ namespace PulletFramework.NetClient
         private ConnectionIntent BeginConnectionIntent(CancellationToken requestToken = default)
         {
             _activeServerRecovery?.Cancel();
-            ConnectionIntent previous;
-            ConnectionIntent current;
-            lock (_connectionIntentGate)
-            {
-                previous = _activeConnectionIntent;
-                long version = ++_connectionIntentVersion;
-                current = new ConnectionIntent(version, _lifetimeCts.Token, requestToken);
-                _activeConnectionIntent = current;
-            }
-            previous?.Cancel();
-            return current;
+            return _connectionCoordinator.BeginConnection(_lifetimeCts.Token, requestToken);
         }
 
         private long BeginDisconnectIntent()
         {
             _activeServerRecovery?.Cancel();
-            ConnectionIntent previous;
-            long version;
-            lock (_connectionIntentGate)
-            {
-                previous = _activeConnectionIntent;
-                _activeConnectionIntent = null;
-                version = ++_connectionIntentVersion;
-            }
-            previous?.Cancel();
-            return version;
+            return _connectionCoordinator.BeginDisconnect();
         }
 
         private void CompleteConnectionIntent(ConnectionIntent intent)
-        {
-            lock (_connectionIntentGate)
-            {
-                if (ReferenceEquals(_activeConnectionIntent, intent))
-                    _activeConnectionIntent = null;
-            }
-            intent.Dispose();
-        }
+            => _connectionCoordinator.Complete(intent);
 
         private bool IsCurrentIntent(long version)
-            => !_isShuttingDown && Volatile.Read(ref _connectionIntentVersion) == version;
+            => !_isShuttingDown && _connectionCoordinator.IsCurrent(version);
 
         private void InvalidateSession(string reason)
         {
-            Interlocked.Increment(ref _sessionGeneration);
-            _payloadQueue?.Clear();
+            _eventPump.InvalidateSession();
             _messages?.CancelPending(reason);
         }
 
@@ -984,39 +908,6 @@ namespace PulletFramework.NetClient
                 udpPort = _activeUdpPort > 0 ? _activeUdpPort : source?.udpPort ?? udpPort,
                 webPort = _activeWebSocketPort > 0 ? _activeWebSocketPort : source?.webPort ?? webSocketPort
             };
-        }
-
-        private void DrainPayloadQueue()
-        {
-            if (_payloadQueue == null) return;
-            int limit = Mathf.Max(1, maxPayloadCallbacksPerFrame);
-            for (int i = 0; i < limit && _payloadQueue.TryDequeue(
-                     out OwnedPayload owned, out object context, out long generation); i++)
-            {
-                using (owned)
-                {
-                    if (_isShuttingDown || !ReferenceEquals(context, _client) ||
-                        generation != Volatile.Read(ref _sessionGeneration)) continue;
-                    try
-                    {
-                        byte[] payload = owned.ToArray();
-                        if (generation != Volatile.Read(ref _sessionGeneration)) continue;
-                        if (_messages != null)
-                            _messages.HandlePayload(payload, out _);
-                        if (generation != Volatile.Read(ref _sessionGeneration)) continue;
-                        var borrowed = new ReceivedPayload(owned.Memory, owned.TransportType, owned.ChannelType);
-                        PayloadReceived?.Invoke(borrowed);
-                    }
-                    catch (Exception ex) { Debug.LogException(ex); }
-                }
-            }
-        }
-
-        private void ResetPayloadQueue()
-        {
-            _payloadQueue?.Dispose();
-            _payloadQueue = new BoundedPayloadQueue(Mathf.Max(1, payloadQueueCapacity));
-            Interlocked.Exchange(ref _pendingReliablePayloadOverflows, 0);
         }
 
         private async Task AutoConnectAndReportAsync()
@@ -1067,8 +958,7 @@ namespace PulletFramework.NetClient
                     _messages.Dispose();
                     _messages = null;
                 }
-                while (_mainThreadActions.TryDequeue(out var workItem)) workItem.Complete(false);
-                _payloadQueue?.Dispose();
+                _eventPump.Dispose();
                 _lifetimeCts.Dispose();
             }
         }
