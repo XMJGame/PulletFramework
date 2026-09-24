@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using PulletFramework.Messaging;
 using PulletNet.ClientSDK;
 using PulletClient = PulletNet.ClientSDK.NetClient;
-using ConnectionIntent = PulletFramework.NetClient.PulletConnectionCoordinator.ConnectionIntent;
 using UnityEngine;
 
 namespace PulletFramework.NetClient
@@ -297,7 +296,7 @@ namespace PulletFramework.NetClient
             if (IsConnected)
                 return ConnectionResult.Fail(ConnectionErrorCode.InvalidState,
                     "Disconnect the current server before starting another connection.");
-            ConnectionIntent intent;
+            PulletConnectionCoordinator.ConnectionIntent intent;
             try { intent = BeginConnectionIntent(); }
             catch (ObjectDisposedException)
             {
@@ -331,7 +330,7 @@ namespace PulletFramework.NetClient
             {
                 if (_isShuttingDown || _lifetimeCts == null || _lifetimeCts.IsCancellationRequested)
                     return ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is shutting down.");
-                ConnectionIntent intent = BeginConnectionIntent(cancellationToken);
+                PulletConnectionCoordinator.ConnectionIntent intent = BeginConnectionIntent(cancellationToken);
                 try
                 {
                     var strategy = new PulletAutoConnectStrategy(
@@ -851,7 +850,7 @@ namespace PulletFramework.NetClient
         }
 
         /// <summary>每次明确连接或断开都会取消旧请求，并使旧请求的回调失效。</summary>
-        private ConnectionIntent BeginConnectionIntent(CancellationToken requestToken = default)
+        private PulletConnectionCoordinator.ConnectionIntent BeginConnectionIntent(CancellationToken requestToken = default)
         {
             _activeServerRecovery?.Cancel();
             return _connectionCoordinator.BeginConnection(_lifetimeCts.Token, requestToken);
@@ -863,7 +862,7 @@ namespace PulletFramework.NetClient
             return _connectionCoordinator.BeginDisconnect();
         }
 
-        private void CompleteConnectionIntent(ConnectionIntent intent)
+        private void CompleteConnectionIntent(PulletConnectionCoordinator.ConnectionIntent intent)
             => _connectionCoordinator.Complete(intent);
 
         private bool IsCurrentIntent(long version)
