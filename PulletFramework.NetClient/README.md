@@ -39,7 +39,7 @@ powershell -ExecutionPolicy Bypass -File .\Tools\Build-PulletNetUnityPackage.ps1
 1. 将包内 `Runtime/Prefabs/PulletNetworkManager.prefab` 拖入启动场景；也可以在自己的
    GameObject 上手动添加 `PulletNetworkManager`。
 2. 直接在组件 Inspector 中填写地址、端口、连接模式与发现策略。包内 Prefab 使用通用默认值，
-   业务项目建议创建 Prefab Variant 保存自己的端口、RuntimeType 和发现服务类型。
+   业务项目建议创建 Prefab Variant 保存自己的端口和发现服务类型。客户端运行时、设备身份与应用版本应由业务登录消息声明。
 3. 订阅 `Connected`、`Disconnected`、`PayloadReceived`，或在 Inspector 中绑定公开的
    `OnConnected`、`OnConnectedFailed`、`OnDisconnected` UnityEvent。重连结果通过代码事件
    `ReconnectAttempt`、`Reconnected`、`ReconnectFailed` 交给业务层制定恢复策略。

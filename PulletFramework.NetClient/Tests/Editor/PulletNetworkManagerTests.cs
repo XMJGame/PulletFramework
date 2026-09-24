@@ -62,7 +62,6 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(manager.udpPort, Is.EqualTo(7777));
             Assert.That(manager.autoConnectMode, Is.EqualTo(AutoConnectMode.DirectThenDiscover));
             Assert.That(manager.discoveryServiceType, Is.EqualTo("pulletnet"));
-            Assert.That(manager.runtimeId, Is.EqualTo(1));
         }
 
         [Test]

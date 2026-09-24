@@ -19,8 +19,8 @@ namespace PulletFramework.NetClient
     }
 
     /// <summary>Unity 生命周期、Inspector 配置、局域网发现和 PulletNet ClientSDK 的统一入口。</summary>
-    public sealed class PulletNetworkManager : MonoBehaviour
-    {
+public sealed class PulletNetworkManager : MonoBehaviour
+{
         [Serializable] public sealed class BoolEvent : UnityEvent<bool> { }
         [Serializable] public sealed class StringEvent : UnityEvent<string> { }
         [Serializable] public sealed class BytesEvent : UnityEvent<byte[]> { }
@@ -60,10 +60,6 @@ namespace PulletFramework.NetClient
         [Header("主线程事件队列")]
         [Min(1)] public int payloadQueueCapacity = 1024;
         [Min(1)] public int maxPayloadCallbacksPerFrame = 256;
-
-        [Header("客户端标识")]
-        public string clientVersion = "1.0.0";
-        [Range(0, 255)] public int runtimeId = 1;
 
         [Header("日志")]
         [Tooltip("输出连接模式、服务器发现、连接结果及重连状态等关键日志。不会输出每个数据包。")]
@@ -539,11 +535,6 @@ namespace PulletFramework.NetClient
                     WsUseTls = webSocketUseTls,
                     ConnectionMode = connectionMode
                 },
-                Version = new VersionOptions
-                {
-                    ClientVersion = clientVersion,
-                    Runtime = (byte)Mathf.Clamp(runtimeId, 0, 255)
-                },
                 KeepAlive = new KeepAliveOptions { EnableKeepAlive = enableKeepAlive },
                 Reconnect = new ReconnectOptions
                 {
@@ -557,8 +548,7 @@ namespace PulletFramework.NetClient
         {
             if (servers == null || servers.Count == 0) return null;
             return servers
-                .OrderByDescending(s => string.Equals(s.status, "Ready", StringComparison.OrdinalIgnoreCase))
-                .ThenBy(s => s.serverName ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(s => s.serverName ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(s => s.instanceId ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault();
         }
@@ -732,7 +722,7 @@ namespace PulletFramework.NetClient
             string name = string.IsNullOrWhiteSpace(server.serverName)
                 ? server.serverId ?? "未命名服务器"
                 : server.serverName;
-            return $"{name} @ {FormatEndpoint(server.host, server.tcpPort, server.udpPort)}，Status={server.status ?? "Unknown"}";
+            return $"{name} @ {FormatEndpoint(server.host, server.tcpPort, server.udpPort)}";
         }
 
         private static string FormatResultError(ConnectionResult result)

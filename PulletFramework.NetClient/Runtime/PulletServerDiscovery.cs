@@ -25,11 +25,9 @@ namespace PulletFramework.NetClient
         [JsonProperty("tcpPort")] public int tcpPort;
         [JsonProperty("udpPort")] public int udpPort;
         [JsonProperty("webPort")] public int webPort;
-        [JsonProperty("status")] public string status;
-        [JsonProperty("protocolVersion")] public string protocolVersion;
 
         public override string ToString()
-            => $"{serverName ?? serverId ?? "PulletNet Server"} ({host}:{tcpPort}, {status ?? "Unknown"})";
+            => $"{serverName ?? serverId ?? "PulletNet Server"} ({host}:{tcpPort})";
     }
 
     internal sealed class DiscoveryRequest
