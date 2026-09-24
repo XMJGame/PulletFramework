@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using PulletFramework.Messaging;
 using PulletNet.ClientSDK;
 using PulletClient = PulletNet.ClientSDK.NetClient;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace PulletFramework.NetClient
 {
@@ -19,65 +19,74 @@ namespace PulletFramework.NetClient
     }
 
     /// <summary>Unity 生命周期、Inspector 配置、局域网发现和 PulletNet ClientSDK 的统一入口。</summary>
-public sealed class PulletNetworkManager : MonoBehaviour
-{
-        [Serializable] public sealed class BoolEvent : UnityEvent<bool> { }
-        [Serializable] public sealed class StringEvent : UnityEvent<string> { }
-        [Serializable] public sealed class BytesEvent : UnityEvent<byte[]> { }
-        [Serializable] public sealed class ServerListEvent : UnityEvent<PulletServerInfo[]> { }
-        [Serializable] public sealed class DiscoveryAttemptEvent : UnityEvent<int, int> { }
-
+    public sealed class PulletNetworkManager : MonoBehaviour
+    {
+        /// <summary>当前进程中生效的网络管理器实例。</summary>
         public static PulletNetworkManager Instance { get; private set; }
 
         [Header("服务器")]
+        [Tooltip("固定连接使用的服务器 IP 地址或主机名。通过局域网发现选择服务器时，会使用发现结果覆盖本次连接目标。")]
         public string host = "127.0.0.1";
+        [Tooltip("TCP 数据或控制通道端口。仅 TcpOnly、UdpWithTcpControl 模式使用。")]
         public int tcpPort = 7778;
+        [Tooltip("UDP 数据通道端口。仅 UdpOnly、UdpWithTcpControl、UdpWithWebSocketControl 模式使用。")]
         public int udpPort = 7777;
+        [Tooltip("WebSocket 数据或控制通道端口。仅 WebSocketOnly、UdpWithWebSocketControl 模式使用。")]
         public int webSocketPort = 7779;
+        [Tooltip("WebSocket 握手路径，必须以 / 开头。例如 /ws。")]
         public string webSocketPath = "/ws";
+        [Tooltip("是否使用加密 WebSocket（wss）。启用后服务器必须已配置 TLS 证书。")]
         public bool webSocketUseTls;
 
         [Header("连接")]
+        [Tooltip("底层传输组合。XRVehicle 当前使用 UDP 传输实时数据、TCP 传输可靠控制消息。")]
         public ConnectionMode connectionMode = ConnectionMode.UdpWithTcpControl;
+        [Tooltip("自动连接策略：Direct=只连固定地址；DiscoverFirst=跳过固定地址并发现后自动择优连接；DirectThenDiscover=固定地址失败后再发现并自动连接。")]
         public AutoConnectMode autoConnectMode = AutoConnectMode.DirectThenDiscover;
+        [Tooltip("组件启动时是否立即执行 Auto Connect Mode。关闭后由业务界面调用连接或发现。")]
         public bool connectOnStart = true;
+        [Tooltip("切换 Unity 场景时是否保留此网络管理器。场景内明确管理生命周期时应关闭。")]
         public bool dontDestroyOnLoad = true;
+        [Tooltip("应用从后台或头显休眠恢复时，如果恢复前处于连接状态，是否尝试恢复连接。")]
         public bool reconnectOnApplicationResume = true;
+        [Tooltip("是否启用底层心跳保活，用于及时发现对端不可达或网络断开。")]
         public bool enableKeepAlive = true;
+        [Tooltip("连接意外断开后，是否执行 PulletNet 内部快速重连。")]
         public bool enableReconnect = true;
-        [Min(0)] public int maxReconnectAttempts = 10;
+        [Tooltip("PulletNet 内部快速重连全部失败后，是否继续定期连接最后一次明确选择的服务器。不会重新发现或切换服务器。")]
+        public bool keepReconnectingActiveServer;
+        [Min(0.5f), Tooltip("持续恢复最后服务器时，两次连接尝试之间的间隔（秒）。")]
+        public float activeServerReconnectDelaySeconds = 3f;
+        [Min(0), Tooltip("PulletNet 内部快速重连的最大尝试次数。设为 0 表示不进行快速重连。")]
+        public int maxReconnectAttempts = 10;
 
         [Header("局域网发现")]
+        [Tooltip("是否允许通过 UDP 广播发现局域网内的 PulletNet 服务器。")]
         public bool enableDiscovery = true;
+        [Tooltip("发送和接收服务器发现广播的 UDP 端口。客户端与服务器必须一致。")]
         public int discoveryPort = 58888;
-        [Min(0.25f)] public float discoveryTimeoutSeconds = 3f;
-        [Min(1)] public int discoveryMaxAttempts = 5;
-        [Min(0.1f)] public float discoverySendIntervalSeconds = 0.5f;
-        [Min(0.25f)] public float discoveryRetrySeconds = 1f;
+        [Min(0.25f), Tooltip("单轮发现的总接收窗口（秒）。到期后汇总本轮找到的服务器。")]
+        public float discoveryTimeoutSeconds = 3f;
+        [Min(1), Tooltip("单轮发现中最多发送的广播次数。")]
+        public int discoveryMaxAttempts = 5;
+        [Min(0.1f), Tooltip("同一轮发现中，两次 UDP 广播之间的间隔（秒）。")]
+        public float discoverySendIntervalSeconds = 0.5f;
+        [Min(0.25f), Tooltip("自动连接策略需要重新发起下一轮发现时，两轮之间等待的时间（秒）。")]
+        public float discoveryRetrySeconds = 1f;
+        [Tooltip("一轮发现没有找到可连接服务器时，是否继续重复发现。关闭后由业务界面决定何时重试。")]
         public bool retryDiscoveryUntilConnected = true;
+        [Tooltip("发现服务类型过滤标识。只接受 Service Type 完全相同的服务器，避免连接到同网段的其他 PulletNet 应用。")]
         public string discoveryServiceType = "pulletnet";
 
         [Header("主线程事件队列")]
-        [Min(1)] public int payloadQueueCapacity = 1024;
-        [Min(1)] public int maxPayloadCallbacksPerFrame = 256;
+        [Min(1), Tooltip("后台网络线程等待派发到 Unity 主线程的最大 Payload 数量。队列长期满载说明主线程处理不过来。")]
+        public int payloadQueueCapacity = 1024;
+        [Min(1), Tooltip("每帧最多在 Unity 主线程执行的 Payload 回调数量。数值过小会增加延迟，过大会造成单帧卡顿。")]
+        public int maxPayloadCallbacksPerFrame = 256;
 
         [Header("日志")]
         [Tooltip("输出连接模式、服务器发现、连接结果及重连状态等关键日志。不会输出每个数据包。")]
         public bool enableConnectionLogs = true;
-
-        [Header("连接事件（Inspector 与代码均可订阅）")]
-        public BoolEvent OnConnected = new BoolEvent();
-        public StringEvent OnConnectedFailed = new StringEvent();
-        public UnityEvent OnDisconnected = new UnityEvent();
-        public BytesEvent OnMessageReceived = new BytesEvent();
-        public StringEvent OnNetworkError = new StringEvent();
-
-        [Header("发现事件（Inspector 与代码均可订阅）")]
-        public UnityEvent OnDiscoveryStarted = new UnityEvent();
-        public DiscoveryAttemptEvent OnDiscoveryAttempt = new DiscoveryAttemptEvent();
-        public ServerListEvent OnDiscoverySucceeded = new ServerListEvent();
-        public StringEvent OnDiscoveryFailed = new StringEvent();
-        public UnityEvent OnDiscoveryStopped = new UnityEvent();
 
         private sealed class MainThreadWorkItem
         {
@@ -86,41 +95,166 @@ public sealed class PulletNetworkManager : MonoBehaviour
             public void Complete(bool invoke) { if (invoke) _action(); }
         }
 
+        private sealed class ConnectionIntent : IDisposable
+        {
+            private readonly object _gate = new object();
+            private readonly CancellationTokenSource _source;
+            private bool _disposed;
+
+            public long Version { get; }
+            public CancellationToken Token => _source.Token;
+
+            public ConnectionIntent(long version, CancellationToken lifetimeToken, CancellationToken requestToken)
+            {
+                Version = version;
+                _source = CancellationTokenSource.CreateLinkedTokenSource(lifetimeToken, requestToken);
+            }
+
+            public void Cancel()
+            {
+                lock (_gate)
+                {
+                    if (!_disposed) _source.Cancel();
+                }
+            }
+
+            public void Dispose()
+            {
+                lock (_gate)
+                {
+                    if (_disposed) return;
+                    _disposed = true;
+                    _source.Dispose();
+                }
+            }
+        }
+
         private readonly ConcurrentQueue<MainThreadWorkItem> _mainThreadActions = new ConcurrentQueue<MainThreadWorkItem>();
         private readonly object _clientGate = new object();
+        private readonly object _connectionIntentGate = new object();
+        private readonly SemaphoreSlim _connectionOperationGate = new SemaphoreSlim(1, 1);
+        private ConnectionIntent _activeConnectionIntent;
+        private long _connectionIntentVersion;
+        private long _sessionGeneration;
         private PulletClient _client;
+        private PulletMessageClient _messages;
         private BoundedPayloadQueue _payloadQueue;
         private CancellationTokenSource _lifetimeCts;
         private bool _resumeShouldReconnect;
         private int _pendingReliablePayloadOverflows;
         private volatile bool _isShuttingDown;
         private int _autoConnectRunning;
+        private PulletActiveServerRecovery _activeServerRecovery;
         private string _activeHost;
         private int _activeTcpPort;
         private int _activeUdpPort;
         private int _activeWebSocketPort;
 
+        /// <summary>底层传输已完成握手，可安全发送应用消息。</summary>
         public bool IsConnected => _client != null && _client.State == ConnectionState.Connected;
+        /// <summary>当前是否正在执行一轮局域网服务器发现。</summary>
         public bool IsDiscovering { get; private set; }
+        /// <summary>最近一次成功连接或明确选择的服务器。</summary>
         public PulletServerInfo ActiveServer { get; private set; }
         public IReadOnlyList<PulletServerInfo> LastDiscoveredServers { get; private set; } = Array.Empty<PulletServerInfo>();
         public long DroppedPayloadCount => _payloadQueue != null ? _payloadQueue.DroppedCount : 0;
         public long ReliablePayloadOverflowCount => _payloadQueue != null ? _payloadQueue.ReliableOverflowCount : 0;
+        public bool IsMessagingConfigured => _messages != null;
+        /// <summary>是否正在持续恢复最后一次选择的服务器。</summary>
+        public bool IsRecoveringActiveServer => _activeServerRecovery != null && _activeServerRecovery.IsRunning;
 
+        /// <summary>首次连接成功。重连成功使用 <see cref="Reconnected"/>。</summary>
         public event Action<ConnectedEvent> Connected;
+        /// <summary>一次显式连接请求失败。</summary>
         public event Action<ConnectFailedEvent> ConnectFailed;
+        /// <summary>现有连接已断开。</summary>
         public event Action<DisconnectedEvent> Disconnected;
+        /// <summary>原始应用 Payload。强类型业务优先使用 <see cref="Subscribe{T}"/>。</summary>
         public event Action<ReceivedPayload> PayloadReceived;
+        /// <summary>主线程 Payload 队列丢失了可靠消息，应用数据可能不完整。</summary>
         public event Action<string> PayloadQueueFaulted;
+        /// <summary>PulletNet 内部快速重连正在进行。</summary>
         public event Action<ReconnectAttemptEvent> ReconnectAttempt;
+        /// <summary>PulletNet 内部快速重连成功。</summary>
         public event Action Reconnected;
+        /// <summary>PulletNet 内部快速重连已耗尽。</summary>
         public event Action<ReconnectFailedEvent> ReconnectFailed;
+        /// <summary>持续恢复最后服务器的尝试次数。该阶段发生在内部快速重连耗尽之后。</summary>
+        public event Action<int> ActiveServerReconnectAttempt;
+        /// <summary>局域网发现开始。</summary>
         public event Action DiscoveryStarted;
+        /// <summary>局域网发现发送了一次广播，参数为当前次数和最大次数。</summary>
         public event Action<int, int> DiscoveryAttempted;
+        /// <summary>局域网发现结束并获得至少一个匹配服务器。</summary>
         public event Action<IReadOnlyList<PulletServerInfo>> DiscoverySucceeded;
+        /// <summary>局域网发现失败或未找到匹配服务器。</summary>
         public event Action<string> DiscoveryFailed;
+        /// <summary>局域网发现流程已完全停止。</summary>
         public event Action DiscoveryStopped;
+        /// <summary>每次发现成功时发布服务器快照；保留用于服务器选择 UI。</summary>
         public event Action<IReadOnlyList<PulletServerInfo>> ServersDiscovered;
+        /// <summary>收到合法但没有业务订阅者的消息。</summary>
+        public event Action<uint> UnhandledBusinessMessage;
+        /// <summary>业务信封、序列化或 RPC 响应出现协议错误。</summary>
+        public event Action<string> MessageProtocolError;
+
+        /// <summary>
+        /// 为当前应用配置一个业务消息协议。serializer 为空时使用 SDK 内置 JSON。
+        /// 应在订阅消息或建立连接前调用一次。
+        /// </summary>
+        public void ConfigureMessaging(
+            PulletMessageProtocolOptions protocol,
+            IMessageSerializer serializer = null)
+        {
+            if (protocol == null) throw new ArgumentNullException(nameof(protocol));
+            PulletMessageClient replacement = new PulletMessageClient(
+                protocol,
+                serializer ?? new JsonMessageSerializer(),
+                (payload, channel, cancellationToken) => SendAsync(payload, channel, cancellationToken));
+            replacement.UnhandledMessage += ForwardUnhandledBusinessMessage;
+            replacement.ProtocolError += ForwardMessageProtocolError;
+
+            PulletMessageClient previous = _messages;
+            _messages = replacement;
+            if (previous != null)
+            {
+                previous.UnhandledMessage -= ForwardUnhandledBusinessMessage;
+                previous.ProtocolError -= ForwardMessageProtocolError;
+                previous.Dispose();
+            }
+        }
+
+        /// <summary>订阅指定业务消息。返回值必须在模块停用或销毁时 Dispose。</summary>
+        public IMessageSubscription Subscribe<T>(uint messageId, Action<T> handler)
+            => GetMessages().Subscribe(messageId, handler);
+
+        /// <summary>显式取消订阅；也可以直接调用订阅句柄的 Unsubscribe 或 Dispose。</summary>
+        public bool Unsubscribe(IMessageSubscription subscription)
+            => _messages != null && _messages.Unsubscribe(subscription);
+
+        /// <summary>发送无响应的强类型业务通知。</summary>
+        public Task SendMessageAsync<T>(
+            uint messageId,
+            T value,
+            ChannelType channel = ChannelType.ReliableOrdered,
+            CancellationToken cancellationToken = default)
+            => GetMessages().SendAsync(messageId, value, channel, cancellationToken);
+
+        /// <summary>发送请求并等待 correlationId 匹配的响应、超时或取消。</summary>
+        public Task<TResponse> CallAsync<TRequest, TResponse>(
+            uint requestId,
+            uint responseId,
+            TRequest request,
+            TimeSpan timeout,
+            CancellationToken cancellationToken = default)
+            => GetMessages().CallAsync<TRequest, TResponse>(
+                requestId, responseId, request, timeout, cancellationToken);
+
+        /// <summary>取消属于当前会话的全部未完成 RPC。断线时会自动调用。</summary>
+        public void CancelPendingMessages(string reason)
+        {
+            _messages?.CancelPending(reason);
+        }
 
         private void Awake()
         {
@@ -133,6 +267,16 @@ public sealed class PulletNetworkManager : MonoBehaviour
             Instance = this;
             if (dontDestroyOnLoad) DontDestroyOnLoad(gameObject);
             _lifetimeCts = new CancellationTokenSource();
+            _activeServerRecovery = new PulletActiveServerRecovery(
+                () => IsConnected,
+                (target, token) => ConnectEndpointAsync(
+                    target.host, target.tcpPort, target.udpPort, target.webPort, target,
+                    token, Volatile.Read(ref _connectionIntentVersion)),
+                ReleaseDisconnectedClient,
+                () => !_isShuttingDown,
+                attempt => ActiveServerReconnectAttempt?.Invoke(attempt),
+                LogInfo,
+                LogWarning);
             ResetPayloadQueue();
             BindDiscoveryEvents();
         }
@@ -160,43 +304,70 @@ public sealed class PulletNetworkManager : MonoBehaviour
             try
             {
                 PayloadQueueFaulted?.Invoke(error);
-                OnNetworkError?.Invoke(error);
             }
             catch (Exception ex) { Debug.LogException(ex); }
         }
 
+        /// <summary>连接 Inspector 中配置的固定端点。</summary>
         public async Task<ConnectionResult> ConnectAsync()
         {
-            LogInfo($"手动连接固定服务器：{FormatEndpoint(host, tcpPort, udpPort)}");
-            ConnectionResult result = await ConnectEndpointAsync(host, tcpPort, udpPort, webSocketPort, null);
-            if (!result.IsSuccess) Enqueue(() => ReportConnectFailure(result));
-            return result;
+            return await ConnectManualAsync(host, tcpPort, udpPort, webSocketPort, null,
+                $"手动连接固定服务器：{FormatEndpoint(host, tcpPort, udpPort)}");
         }
 
+        /// <summary>使用当前端口配置连接指定主机。</summary>
         public async Task<ConnectionResult> ConnectAsync(string targetHost)
         {
-            LogInfo($"手动连接指定服务器：{FormatEndpoint(targetHost, tcpPort, udpPort)}");
-            ConnectionResult result = await ConnectEndpointAsync(targetHost, tcpPort, udpPort, webSocketPort, null);
-            if (!result.IsSuccess) Enqueue(() => ReportConnectFailure(result));
-            return result;
+            return await ConnectManualAsync(targetHost, tcpPort, udpPort, webSocketPort, null,
+                $"手动连接指定服务器：{FormatEndpoint(targetHost, tcpPort, udpPort)}");
         }
 
+        /// <summary>连接服务器发现结果中的明确目标，并将其记为最后选择的服务器。</summary>
         public async Task<ConnectionResult> ConnectAsync(PulletServerInfo server)
         {
             if (server == null) throw new ArgumentNullException(nameof(server));
-            LogInfo($"连接已选择的服务器：{FormatServer(server)}");
-            ConnectionResult result = await ConnectEndpointAsync(
+            return await ConnectManualAsync(
                 server.host,
                 server.tcpPort > 0 ? server.tcpPort : tcpPort,
                 server.udpPort > 0 ? server.udpPort : udpPort,
                 server.webPort > 0 ? server.webPort : webSocketPort,
-                server);
-            if (!result.IsSuccess) Enqueue(() => ReportConnectFailure(result));
-            return result;
+                server,
+                $"连接已选择的服务器：{FormatServer(server)}");
         }
 
+        private async Task<ConnectionResult> ConnectManualAsync(
+            string targetHost, int targetTcpPort, int targetUdpPort, int targetWebSocketPort,
+            PulletServerInfo server, string description)
+        {
+            if (_isShuttingDown || _lifetimeCts == null || _lifetimeCts.IsCancellationRequested)
+                return ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is shutting down.");
+            if (IsConnected)
+                return ConnectionResult.Fail(ConnectionErrorCode.InvalidState,
+                    "Disconnect the current server before starting another connection.");
+            ConnectionIntent intent;
+            try { intent = BeginConnectionIntent(); }
+            catch (ObjectDisposedException)
+            {
+                return ConnectionResult.Fail(ConnectionErrorCode.Disposed,
+                    "PulletNet client is shutting down.");
+            }
+            try
+            {
+                LogInfo(description);
+                ConnectionResult result = await ConnectEndpointAsync(
+                    targetHost, targetTcpPort, targetUdpPort, targetWebSocketPort, server,
+                    intent.Token, intent.Version);
+                if (!result.IsSuccess && IsCurrentIntent(intent.Version) && !intent.Token.IsCancellationRequested)
+                    Enqueue(() => { if (IsCurrentIntent(intent.Version)) ReportConnectFailure(result); });
+                return result;
+            }
+            finally { CompleteConnectionIntent(intent); }
+        }
+
+        /// <summary>按照 AutoConnectMode 执行固定端点连接与局域网发现策略。</summary>
         public async Task<ConnectionResult> AutoConnectAsync(CancellationToken cancellationToken = default)
         {
+            if (IsConnected) return ConnectionResult.Ok();
             if (Interlocked.Exchange(ref _autoConnectRunning, 1) != 0)
             {
                 LogWarning("自动连接请求被忽略：已有自动连接流程正在运行。");
@@ -205,85 +376,45 @@ public sealed class PulletNetworkManager : MonoBehaviour
 
             try
             {
-                LogInfo($"自动连接开始：Mode={autoConnectMode}（{DescribeAutoConnectMode(autoConnectMode)}）。");
-                if (!enableDiscovery)
+                if (_isShuttingDown || _lifetimeCts == null || _lifetimeCts.IsCancellationRequested)
+                    return ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is shutting down.");
+                ConnectionIntent intent = BeginConnectionIntent(cancellationToken);
+                try
                 {
-                    LogWarning($"局域网发现已禁用，改为连接固定服务器：{FormatEndpoint(host, tcpPort, udpPort)}");
-                    ConnectionResult fixedResult = await ConnectEndpointAsync(host, tcpPort, udpPort, webSocketPort, null);
-                    LogAutoConnectResult(fixedResult, "固定服务器");
-                    return fixedResult;
+                    var strategy = new PulletAutoConnectStrategy(
+                        token => ConnectEndpointAsync(host, tcpPort, udpPort, webSocketPort, null,
+                            token, intent.Version),
+                        DiscoverAsync,
+                        (server, token) => ConnectEndpointAsync(
+                            server.host,
+                            server.tcpPort > 0 ? server.tcpPort : tcpPort,
+                            server.udpPort > 0 ? server.udpPort : udpPort,
+                            server.webPort > 0 ? server.webPort : webSocketPort,
+                            server, token, intent.Version),
+                        ReleaseDisconnectedClient,
+                        () => !_isShuttingDown,
+                        LogInfo,
+                        LogWarning);
+                    return await strategy.RunAsync(new PulletAutoConnectStrategy.Options
+                    {
+                        Mode = autoConnectMode,
+                        EnableDiscovery = enableDiscovery,
+                        RetryDiscoveryUntilConnected = retryDiscoveryUntilConnected,
+                        DiscoveryRetrySeconds = discoveryRetrySeconds,
+                        FixedEndpointDescription = FormatEndpoint(host, tcpPort, udpPort),
+                        DiscoveryDescription = $"UDP {discoveryPort}，ServiceType={discoveryServiceType}"
+                    }, intent.Token);
                 }
-
-                if (autoConnectMode != AutoConnectMode.DiscoverFirst)
-                {
-                    LogInfo($"{autoConnectMode}：正在尝试固定服务器 {FormatEndpoint(host, tcpPort, udpPort)}。");
-                    ConnectionResult direct = await ConnectEndpointAsync(host, tcpPort, udpPort, webSocketPort, null);
-                    if (direct.IsSuccess)
-                    {
-                        LogInfo($"{autoConnectMode}：固定服务器连接成功。");
-                        return direct;
-                    }
-                    if (autoConnectMode == AutoConnectMode.Direct)
-                    {
-                        LogWarning($"Direct：固定服务器连接失败，不会启动发现。原因：{FormatResultError(direct)}");
-                        return direct;
-                    }
-
-                    LogWarning($"DirectThenDiscover：固定服务器连接失败，切换到局域网发现。原因：{FormatResultError(direct)}");
-                    ReleaseDisconnectedClient();
-                }
-                else
-                {
-                    LogInfo("DiscoverFirst：跳过固定地址，优先搜索局域网内可用服务器。");
-                }
-
-                ConnectionResult last = ConnectionResult.Fail(ConnectionErrorCode.TransportUnavailable, "No matching server was discovered.");
-                int discoveryRound = 0;
-                do
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    discoveryRound++;
-                    LogInfo($"开始第 {discoveryRound} 轮服务器发现：UDP {discoveryPort}，ServiceType={discoveryServiceType}。");
-                    IReadOnlyList<PulletServerInfo> servers = await DiscoverAsync(cancellationToken);
-                    PulletServerInfo selected = SelectPreferredServer(servers);
-                    if (selected != null)
-                    {
-                        LogInfo($"发现 {servers.Count} 个匹配服务器，自动选择：{FormatServer(selected)}");
-                        last = await ConnectEndpointAsync(
-                            selected.host,
-                            selected.tcpPort > 0 ? selected.tcpPort : tcpPort,
-                            selected.udpPort > 0 ? selected.udpPort : udpPort,
-                            selected.webPort > 0 ? selected.webPort : webSocketPort,
-                            selected);
-                        if (last.IsSuccess)
-                        {
-                            LogInfo($"自动连接成功：{FormatServer(selected)}");
-                            return last;
-                        }
-                        LogWarning($"已发现服务器但连接失败：{FormatServer(selected)}；原因：{FormatResultError(last)}");
-                        ReleaseDisconnectedClient();
-                    }
-                    else
-                    {
-                        LogWarning($"第 {discoveryRound} 轮未发现匹配服务器。");
-                    }
-
-                    if (!retryDiscoveryUntilConnected)
-                    {
-                        LogWarning("自动连接结束：未启用发现循环重试。");
-                        return last;
-                    }
-                    LogInfo($"将在 {Math.Max(0.25f, discoveryRetrySeconds):0.##} 秒后重新发现服务器。");
-                    await Task.Delay(TimeSpan.FromSeconds(Math.Max(0.25f, discoveryRetrySeconds)), cancellationToken);
-                }
-                while (!cancellationToken.IsCancellationRequested && !_isShuttingDown);
-
-                return last;
+                finally { CompleteConnectionIntent(intent); }
             }
             catch (OperationCanceledException)
             {
                 LogWarning("自动连接已取消。");
                 return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Auto connect was cancelled.");
+            }
+            catch (ObjectDisposedException)
+            {
+                return ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is shutting down.");
             }
             finally
             {
@@ -291,6 +422,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
             }
         }
 
+        /// <summary>执行一轮可等待的局域网发现，返回这一轮的完整服务器快照。</summary>
         public async Task<IReadOnlyList<PulletServerInfo>> DiscoverAsync(CancellationToken cancellationToken = default)
         {
             if (!enableDiscovery)
@@ -335,6 +467,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
         }
 
         /// <summary>开始一次可由 StopDiscovery 停止的有限次数发现。</summary>
+        /// <summary>启动事件驱动的局域网发现；已有发现运行时返回 false。</summary>
         public bool StartDiscovery()
         {
             if (!enableDiscovery)
@@ -362,21 +495,32 @@ public sealed class PulletNetworkManager : MonoBehaviour
             }
         }
 
+        /// <summary>停止事件驱动的局域网发现。停止属于正常取消。</summary>
         public void StopDiscovery() => PulletServerDiscovery.StopDiscovery();
 
+        /// <summary>主动断开当前连接，同时终止旧端点的持续恢复。</summary>
         public async Task<ConnectionResult> DisconnectAsync()
         {
+            long intentVersion = BeginDisconnectIntent();
+            bool acquired = false;
             try
             {
+                await _connectionOperationGate.WaitAsync();
+                acquired = true;
+                if (Volatile.Read(ref _connectionIntentVersion) != intentVersion)
+                    return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Disconnect was superseded.");
                 PulletClient client = _client;
-                return client == null ? ConnectionResult.Ok() : await client.DisconnectAsync();
+                ConnectionResult result = client == null ? ConnectionResult.Ok() : await client.DisconnectAsync();
+                return result;
             }
             catch (Exception ex)
             {
                 return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message);
             }
+            finally { if (acquired) _connectionOperationGate.Release(); }
         }
 
+        /// <summary>应用暂停时挂起底层网络会话。</summary>
         public async Task<ConnectionResult> SuspendAsync()
         {
             try
@@ -389,6 +533,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
             catch (Exception ex) { return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message); }
         }
 
+        /// <summary>恢复此前挂起的底层网络会话。</summary>
         public async Task<ConnectionResult> ResumeAsync()
         {
             try
@@ -401,6 +546,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
             catch (Exception ex) { return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message); }
         }
 
+        /// <summary>发送原始 Payload。普通业务优先使用 SendMessageAsync 或 CallAsync。</summary>
         public ValueTask<SendResult> SendAsync(
             byte[] payload,
             ChannelType channelType = ChannelType.ReliableOrdered,
@@ -412,6 +558,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
             return client.SendAsync(payload, channelType, cancellationToken);
         }
 
+        /// <summary>验证当前连接、发现和队列配置是否可以启动。</summary>
         public bool ValidateConfiguration(out string error, string targetHost = null)
             => ValidateConfiguration(targetHost ?? host, tcpPort, udpPort, webSocketPort, out error);
 
@@ -463,18 +610,36 @@ public sealed class PulletNetworkManager : MonoBehaviour
         }
 
         private async Task<ConnectionResult> ConnectEndpointAsync(
-            string targetHost, int targetTcpPort, int targetUdpPort, int targetWebSocketPort, PulletServerInfo server)
+            string targetHost, int targetTcpPort, int targetUdpPort, int targetWebSocketPort,
+            PulletServerInfo server, CancellationToken cancellationToken, long intentVersion)
         {
             if (!ValidateConfiguration(targetHost, targetTcpPort, targetUdpPort, targetWebSocketPort, out string validationError))
                 return ConnectionResult.Fail(ConnectionErrorCode.InvalidState, validationError);
             if (_isShuttingDown || _lifetimeCts == null || _lifetimeCts.IsCancellationRequested)
                 return ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is shutting down.");
 
+            bool acquired = false;
             try
             {
+                await _connectionOperationGate.WaitAsync(cancellationToken);
+                acquired = true;
+                if (!IsCurrentIntent(intentVersion) || cancellationToken.IsCancellationRequested)
+                    return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Connection was superseded.");
                 ReleaseDisconnectedClient();
-                PulletClient client = GetOrCreateClient(targetHost, targetTcpPort, targetUdpPort, targetWebSocketPort);
-                ConnectionResult result = await client.ConnectAsync(_lifetimeCts.Token);
+                PulletClient client = GetOrCreateClient(
+                    targetHost, targetTcpPort, targetUdpPort, targetWebSocketPort, intentVersion);
+                ConnectionResult result = await client.ConnectAsync(cancellationToken);
+                if (!IsCurrentIntent(intentVersion) || cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (client.State == ConnectionState.Connected)
+                            await client.DisconnectAsync();
+                    }
+                    catch (Exception ex) { LogWarning("清理过期连接失败：" + ex.Message); }
+                    finally { DisposeClient(); }
+                    return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Connection was superseded.");
+                }
                 if (result.IsSuccess)
                 {
                     ActiveServer = server;
@@ -483,6 +648,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
                     udpPort = targetUdpPort;
                     webSocketPort = targetWebSocketPort;
                 }
+                else ReleaseDisconnectedClient();
                 return result;
             }
             catch (OperationCanceledException)
@@ -497,9 +663,11 @@ public sealed class PulletNetworkManager : MonoBehaviour
             {
                 return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message);
             }
+            finally { if (acquired) _connectionOperationGate.Release(); }
         }
 
-        private PulletClient GetOrCreateClient(string targetHost, int targetTcpPort, int targetUdpPort, int targetWebSocketPort)
+        private PulletClient GetOrCreateClient(
+            string targetHost, int targetTcpPort, int targetUdpPort, int targetWebSocketPort, long intentVersion)
         {
             lock (_clientGate)
             {
@@ -516,7 +684,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
                 _activeTcpPort = targetTcpPort;
                 _activeUdpPort = targetUdpPort;
                 _activeWebSocketPort = targetWebSocketPort;
-                BindClientEvents(_client);
+                BindClientEvents(_client, intentVersion);
                 return _client;
             }
         }
@@ -544,59 +712,34 @@ public sealed class PulletNetworkManager : MonoBehaviour
             };
         }
 
-        private static PulletServerInfo SelectPreferredServer(IReadOnlyList<PulletServerInfo> servers)
+        private void BindClientEvents(PulletClient client, long intentVersion)
         {
-            if (servers == null || servers.Count == 0) return null;
-            return servers
-                .OrderBy(s => s.serverName ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(s => s.instanceId ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                .FirstOrDefault();
-        }
-
-        private void BindClientEvents(PulletClient client)
-        {
-            client.CallbackError += error => Enqueue(() => { if (IsCurrentClient(client)) Debug.LogException(error); });
-            client.Connected += value =>
+            client.CallbackError += error => Enqueue(() =>
             {
-                Enqueue(() =>
-                {
-                    if (!IsCurrentClient(client)) return;
-                    LogInfo($"服务器连接成功：{FormatEndpoint(_activeHost, _activeTcpPort, _activeUdpPort)}，SessionId={value.SessionId}。");
-                    Connected?.Invoke(value);
-                    OnConnected?.Invoke(false);
-                });
-            };
-            client.Disconnected += value => Enqueue(() =>
-            {
-                if (!IsCurrentClient(client)) return;
-                LogWarning($"服务器连接已断开：Reason={value.ReasonCode}，{value.Reason}");
-                Disconnected?.Invoke(value);
-                OnDisconnected?.Invoke();
+                if (IsCurrentClient(client, intentVersion)) Debug.LogException(error);
             });
+            client.Connected += value => HandleClientConnected(client, intentVersion, value);
+            client.Disconnected += value => HandleClientDisconnected(client, value);
             client.ReconnectAttempt += value => Enqueue(() =>
             {
-                if (!IsCurrentClient(client)) return;
+                if (!IsCurrentClient(client, intentVersion)) return;
                 LogInfo($"正在重连服务器：第 {value.Attempt}/{value.MaxAttempts} 次，延迟 {value.DelayMs}ms；原因：{value.Reason}");
                 ReconnectAttempt?.Invoke(value);
             });
-            client.Reconnected += () => Enqueue(() =>
-            {
-                if (!IsCurrentClient(client)) return;
-                LogInfo($"服务器重连成功：{FormatEndpoint(_activeHost, _activeTcpPort, _activeUdpPort)}。");
-                Reconnected?.Invoke();
-                OnConnected?.Invoke(true);
-            });
+            client.Reconnected += () => HandleClientReconnected(client, intentVersion);
             client.ReconnectFailed += value => Enqueue(() =>
             {
-                if (!IsCurrentClient(client)) return;
+                if (!IsCurrentClient(client, intentVersion)) return;
                 LogWarning($"服务器重连失败：已尝试 {value.Attempts} 次；原因：{value.Reason}");
                 ReconnectFailed?.Invoke(value);
-                OnNetworkError?.Invoke(value.Reason);
+                if (IsCurrentClient(client, intentVersion))
+                    BeginPersistentActiveServerReconnect(value.Reason);
             });
             client.PayloadReceived += value =>
             {
-                if (!IsCurrentClient(client)) return;
-                PayloadEnqueueResult result = _payloadQueue.Enqueue(value.ToOwned(), client);
+                if (!IsCurrentClient(client, intentVersion)) return;
+                long generation = Volatile.Read(ref _sessionGeneration);
+                PayloadEnqueueResult result = _payloadQueue.Enqueue(value.ToOwned(), client, generation);
                 if (result == PayloadEnqueueResult.ReliableOverflow)
                     Interlocked.Increment(ref _pendingReliablePayloadOverflows);
             };
@@ -609,6 +752,40 @@ public sealed class PulletNetworkManager : MonoBehaviour
             PulletServerDiscovery.OnSuccess += HandleDiscoverySuccess;
             PulletServerDiscovery.OnFailure += HandleDiscoveryFailure;
             PulletServerDiscovery.OnStopped += HandleDiscoveryStopped;
+        }
+
+        // 生命周期事件只在接收时确认归属。确认后即使切换 Client，也按入队顺序交付。
+        internal void HandleClientConnected(PulletClient client, long intentVersion, ConnectedEvent value)
+        {
+            if (!IsCurrentClient(client, intentVersion)) return;
+            string endpoint = FormatEndpoint(_activeHost, _activeTcpPort, _activeUdpPort);
+            Enqueue(() =>
+            {
+                LogInfo($"服务器连接成功：{endpoint}，SessionId={value.SessionId}。");
+                Connected?.Invoke(value);
+            });
+        }
+
+        internal void HandleClientDisconnected(PulletClient client, DisconnectedEvent value)
+        {
+            if (!IsCurrentClient(client)) return;
+            InvalidateSession("PulletNet transport disconnected: " + value.Reason);
+            Enqueue(() =>
+            {
+                LogWarning($"服务器连接已断开：Reason={value.ReasonCode}，{value.Reason}");
+                Disconnected?.Invoke(value);
+            });
+        }
+
+        internal void HandleClientReconnected(PulletClient client, long intentVersion)
+        {
+            if (!IsCurrentClient(client, intentVersion)) return;
+            string endpoint = FormatEndpoint(_activeHost, _activeTcpPort, _activeUdpPort);
+            Enqueue(() =>
+            {
+                LogInfo($"服务器重连成功：{endpoint}。");
+                Reconnected?.Invoke();
+            });
         }
 
         private void UnbindDiscoveryEvents()
@@ -635,13 +812,11 @@ public sealed class PulletNetworkManager : MonoBehaviour
             LogInfo($"服务器发现开始：UDP {discoveryPort}，最多广播 {discoveryMaxAttempts} 次，" +
                     $"间隔 {discoverySendIntervalSeconds:0.##} 秒，接收窗口 {discoveryTimeoutSeconds:0.##} 秒。");
             DiscoveryStarted?.Invoke();
-            OnDiscoveryStarted?.Invoke();
         }
 
         private void PublishDiscoveryAttempt(int attempt, int maximum)
         {
             DiscoveryAttempted?.Invoke(attempt, maximum);
-            OnDiscoveryAttempt?.Invoke(attempt, maximum);
         }
 
         private void PublishDiscoverySuccess(IReadOnlyList<PulletServerInfo> servers)
@@ -651,7 +826,6 @@ public sealed class PulletNetworkManager : MonoBehaviour
             LastDiscoveredServers = snapshot;
             ServersDiscovered?.Invoke(snapshot);
             DiscoverySucceeded?.Invoke(snapshot);
-            OnDiscoverySucceeded?.Invoke(snapshot);
         }
 
         private void PublishDiscoveryFailure(string error)
@@ -659,7 +833,6 @@ public sealed class PulletNetworkManager : MonoBehaviour
             string message = string.IsNullOrWhiteSpace(error) ? "Server discovery failed." : error;
             LogWarning("服务器发现失败：" + message);
             DiscoveryFailed?.Invoke(message);
-            OnDiscoveryFailed?.Invoke(message);
         }
 
         private void PublishDiscoveryStopped()
@@ -667,7 +840,6 @@ public sealed class PulletNetworkManager : MonoBehaviour
             IsDiscovering = false;
             LogInfo("服务器发现结束。");
             DiscoveryStopped?.Invoke();
-            OnDiscoveryStopped?.Invoke();
         }
 
         private void ReportConnectFailure(ConnectionResult result)
@@ -677,15 +849,6 @@ public sealed class PulletNetworkManager : MonoBehaviour
             LogWarning("服务器连接失败：" + message);
             var value = new ConnectFailedEvent(message);
             ConnectFailed?.Invoke(value);
-            OnConnectedFailed?.Invoke(message);
-        }
-
-        private void LogAutoConnectResult(ConnectionResult result, string target)
-        {
-            if (result.IsSuccess)
-                LogInfo($"自动连接成功：{target}。");
-            else
-                LogWarning($"自动连接失败：{target}；原因：{FormatResultError(result)}");
         }
 
         private void LogInfo(string message)
@@ -696,21 +859,6 @@ public sealed class PulletNetworkManager : MonoBehaviour
         private void LogWarning(string message)
         {
             if (enableConnectionLogs) Debug.LogWarning("[PulletNet] " + message, this);
-        }
-
-        private static string DescribeAutoConnectMode(AutoConnectMode mode)
-        {
-            switch (mode)
-            {
-                case AutoConnectMode.Direct:
-                    return "只连接 Inspector 中配置的固定地址";
-                case AutoConnectMode.DiscoverFirst:
-                    return "先发现局域网服务器，再自动选择连接";
-                case AutoConnectMode.DirectThenDiscover:
-                    return "先连接固定地址，失败后再启动局域网发现";
-                default:
-                    return "未知模式";
-            }
         }
 
         private static string FormatEndpoint(string targetHost, int targetTcpPort, int targetUdpPort)
@@ -729,22 +877,135 @@ public sealed class PulletNetworkManager : MonoBehaviour
             => string.IsNullOrWhiteSpace(result.Message) ? result.ErrorCode.ToString() : result.Message;
 
         private bool IsCurrentClient(PulletClient client) => !_isShuttingDown && ReferenceEquals(client, _client);
+        private bool IsCurrentClient(PulletClient client, long intentVersion)
+            => IsCurrentClient(client) && IsCurrentIntent(intentVersion);
         private void Enqueue(Action action) { if (!_isShuttingDown) _mainThreadActions.Enqueue(new MainThreadWorkItem(action)); }
+
+        private PulletMessageClient GetMessages()
+        {
+            if (_messages == null)
+                throw new InvalidOperationException(
+                    "Messaging is not configured. Call ConfigureMessaging before using typed messages.");
+            return _messages;
+        }
+
+        private void ForwardUnhandledBusinessMessage(uint messageId)
+        {
+            UnhandledBusinessMessage?.Invoke(messageId);
+        }
+
+        private void ForwardMessageProtocolError(string error)
+        {
+            MessageProtocolError?.Invoke(error);
+        }
+
+        /// <summary>每次明确连接或断开都会取消旧请求，并使旧请求的回调失效。</summary>
+        private ConnectionIntent BeginConnectionIntent(CancellationToken requestToken = default)
+        {
+            _activeServerRecovery?.Cancel();
+            ConnectionIntent previous;
+            ConnectionIntent current;
+            lock (_connectionIntentGate)
+            {
+                previous = _activeConnectionIntent;
+                long version = ++_connectionIntentVersion;
+                current = new ConnectionIntent(version, _lifetimeCts.Token, requestToken);
+                _activeConnectionIntent = current;
+            }
+            previous?.Cancel();
+            return current;
+        }
+
+        private long BeginDisconnectIntent()
+        {
+            _activeServerRecovery?.Cancel();
+            ConnectionIntent previous;
+            long version;
+            lock (_connectionIntentGate)
+            {
+                previous = _activeConnectionIntent;
+                _activeConnectionIntent = null;
+                version = ++_connectionIntentVersion;
+            }
+            previous?.Cancel();
+            return version;
+        }
+
+        private void CompleteConnectionIntent(ConnectionIntent intent)
+        {
+            lock (_connectionIntentGate)
+            {
+                if (ReferenceEquals(_activeConnectionIntent, intent))
+                    _activeConnectionIntent = null;
+            }
+            intent.Dispose();
+        }
+
+        private bool IsCurrentIntent(long version)
+            => !_isShuttingDown && Volatile.Read(ref _connectionIntentVersion) == version;
+
+        private void InvalidateSession(string reason)
+        {
+            Interlocked.Increment(ref _sessionGeneration);
+            _payloadQueue?.Clear();
+            _messages?.CancelPending(reason);
+        }
+
+        private void BeginPersistentActiveServerReconnect(string reason)
+        {
+            if (!keepReconnectingActiveServer || _isShuttingDown || _activeServerRecovery == null ||
+                _lifetimeCts == null || _lifetimeCts.IsCancellationRequested)
+                return;
+
+            PulletServerInfo target = SnapshotActiveServer();
+            if (target == null || string.IsNullOrWhiteSpace(target.host))
+            {
+                LogWarning("持续恢复已启用，但没有可恢复的服务器端点。");
+                return;
+            }
+            _activeServerRecovery.Start(
+                target,
+                activeServerReconnectDelaySeconds,
+                reason,
+                _lifetimeCts.Token);
+        }
+
+        private PulletServerInfo SnapshotActiveServer()
+        {
+            PulletServerInfo source = ActiveServer;
+            return new PulletServerInfo
+            {
+                instanceId = source?.instanceId,
+                serverId = source?.serverId,
+                serverName = source?.serverName,
+                serviceType = source?.serviceType,
+                host = string.IsNullOrWhiteSpace(_activeHost) ? source?.host : _activeHost,
+                tcpPort = _activeTcpPort > 0 ? _activeTcpPort : source?.tcpPort ?? tcpPort,
+                udpPort = _activeUdpPort > 0 ? _activeUdpPort : source?.udpPort ?? udpPort,
+                webPort = _activeWebSocketPort > 0 ? _activeWebSocketPort : source?.webPort ?? webSocketPort
+            };
+        }
 
         private void DrainPayloadQueue()
         {
             if (_payloadQueue == null) return;
             int limit = Mathf.Max(1, maxPayloadCallbacksPerFrame);
-            for (int i = 0; i < limit && _payloadQueue.TryDequeue(out OwnedPayload owned, out object context); i++)
+            for (int i = 0; i < limit && _payloadQueue.TryDequeue(
+                     out OwnedPayload owned, out object context, out long generation); i++)
             {
                 using (owned)
                 {
-                    if (_isShuttingDown || !ReferenceEquals(context, _client)) continue;
+                    if (_isShuttingDown || !ReferenceEquals(context, _client) ||
+                        generation != Volatile.Read(ref _sessionGeneration)) continue;
                     try
                     {
+                        byte[] payload = owned.ToArray();
+                        if (generation != Volatile.Read(ref _sessionGeneration)) continue;
+                        if (_messages != null)
+                            _messages.HandlePayload(payload, out _);
+                        if (generation != Volatile.Read(ref _sessionGeneration)) continue;
                         var borrowed = new ReceivedPayload(owned.Memory, owned.TransportType, owned.ChannelType);
                         PayloadReceived?.Invoke(borrowed);
-                        OnMessageReceived?.Invoke(owned.ToArray());
                     }
                     catch (Exception ex) { Debug.LogException(ex); }
                 }
@@ -761,7 +1022,7 @@ public sealed class PulletNetworkManager : MonoBehaviour
         private async Task AutoConnectAndReportAsync()
         {
             ConnectionResult result = await AutoConnectAsync(_lifetimeCts.Token);
-            if (!result.IsSuccess && !_isShuttingDown)
+            if (!result.IsSuccess && result.ErrorCode != ConnectionErrorCode.Canceled && !_isShuttingDown)
                 Enqueue(() => ReportConnectFailure(result));
         }
 
@@ -779,10 +1040,10 @@ public sealed class PulletNetworkManager : MonoBehaviour
                 {
                     _resumeShouldReconnect = false;
                     ConnectionResult result = await ResumeAsync();
-                    if (!result.IsSuccess) Enqueue(() => OnNetworkError?.Invoke(result.Message ?? "PulletNet resume failed."));
+                    if (!result.IsSuccess) Enqueue(() => LogWarning(result.Message ?? "PulletNet resume failed."));
                 }
             }
-            catch (Exception ex) { Enqueue(() => OnNetworkError?.Invoke(ex.Message)); }
+            catch (Exception ex) { Enqueue(() => LogWarning(ex.Message)); }
         }
 
         private async void OnDestroy()
@@ -797,6 +1058,15 @@ public sealed class PulletNetworkManager : MonoBehaviour
             catch (Exception ex) { Debug.LogWarning($"[PulletNet] Disconnect during destroy failed: {ex.Message}"); }
             finally
             {
+                _activeServerRecovery?.Dispose();
+                _activeServerRecovery = null;
+                if (_messages != null)
+                {
+                    _messages.UnhandledMessage -= ForwardUnhandledBusinessMessage;
+                    _messages.ProtocolError -= ForwardMessageProtocolError;
+                    _messages.Dispose();
+                    _messages = null;
+                }
                 while (_mainThreadActions.TryDequeue(out var workItem)) workItem.Complete(false);
                 _payloadQueue?.Dispose();
                 _lifetimeCts.Dispose();
@@ -821,8 +1091,8 @@ public sealed class PulletNetworkManager : MonoBehaviour
                 _activeTcpPort = _activeUdpPort = _activeWebSocketPort = 0;
             }
             if (client == null) return;
+            InvalidateSession("PulletNet client was replaced or disposed.");
             ((IDisposable)client).Dispose();
-            _payloadQueue?.Clear();
         }
 
         private static bool IsValidPort(int port) => port > 0 && port <= 65535;

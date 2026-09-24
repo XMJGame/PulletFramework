@@ -45,7 +45,7 @@ namespace PulletFramework.NetClient
             get { lock (_gate) return _reliableOverflowCount; }
         }
 
-        public PayloadEnqueueResult Enqueue(OwnedPayload payload, object context)
+        public PayloadEnqueueResult Enqueue(OwnedPayload payload, object context, long sessionGeneration = 0)
         {
             if (payload == null)
                 throw new ArgumentNullException(nameof(payload));
@@ -60,7 +60,7 @@ namespace PulletFramework.NetClient
 
                 if (_items.Count < _capacity)
                 {
-                    _items.AddLast(new QueuedPayload(payload, context));
+                    _items.AddLast(new QueuedPayload(payload, context, sessionGeneration));
                     return PayloadEnqueueResult.Enqueued;
                 }
 
@@ -85,12 +85,12 @@ namespace PulletFramework.NetClient
                 OwnedPayload dropped = node.Value.Payload;
                 _items.Remove(node);
                 dropped.Dispose();
-                _items.AddLast(new QueuedPayload(payload, context));
+                _items.AddLast(new QueuedPayload(payload, context, sessionGeneration));
                 return PayloadEnqueueResult.EnqueuedAfterDroppingOldest;
             }
         }
 
-        public bool TryDequeue(out OwnedPayload payload, out object context)
+        public bool TryDequeue(out OwnedPayload payload, out object context, out long sessionGeneration)
         {
             lock (_gate)
             {
@@ -98,11 +98,13 @@ namespace PulletFramework.NetClient
                 {
                     payload = null;
                     context = null;
+                    sessionGeneration = 0;
                     return false;
                 }
 
                 payload = _items.First.Value.Payload;
                 context = _items.First.Value.Context;
+                sessionGeneration = _items.First.Value.SessionGeneration;
                 _items.RemoveFirst();
                 return true;
             }
@@ -145,14 +147,16 @@ namespace PulletFramework.NetClient
 
         private sealed class QueuedPayload
         {
-            public QueuedPayload(OwnedPayload payload, object context)
+            public QueuedPayload(OwnedPayload payload, object context, long sessionGeneration)
             {
                 Payload = payload;
                 Context = context;
+                SessionGeneration = sessionGeneration;
             }
 
             public OwnedPayload Payload { get; }
             public object Context { get; }
+            public long SessionGeneration { get; }
         }
     }
 }

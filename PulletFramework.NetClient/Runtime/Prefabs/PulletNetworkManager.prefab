@@ -57,6 +57,8 @@ MonoBehaviour:
   reconnectOnApplicationResume: 1
   enableKeepAlive: 1
   enableReconnect: 1
+  keepReconnectingActiveServer: 0
+  activeServerReconnectDelaySeconds: 3
   maxReconnectAttempts: 10
   enableDiscovery: 1
   discoveryPort: 58888
@@ -69,33 +71,3 @@ MonoBehaviour:
   payloadQueueCapacity: 1024
   maxPayloadCallbacksPerFrame: 256
   enableConnectionLogs: 1
-  OnConnected:
-    m_PersistentCalls:
-      m_Calls: []
-  OnConnectedFailed:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDisconnected:
-    m_PersistentCalls:
-      m_Calls: []
-  OnMessageReceived:
-    m_PersistentCalls:
-      m_Calls: []
-  OnNetworkError:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDiscoveryStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDiscoveryAttempt:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDiscoverySucceeded:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDiscoveryFailed:
-    m_PersistentCalls:
-      m_Calls: []
-  OnDiscoveryStopped:
-    m_PersistentCalls:
-      m_Calls: []
