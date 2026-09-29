@@ -15,6 +15,57 @@ namespace PulletFramework.Messaging
         Protobuf = 2
     }
 
+    /// <summary>业务消息类型提供的编号与交互语义契约。</summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public abstract class PulletMessageAttribute : Attribute
+    {
+        protected PulletMessageAttribute(uint messageId, PulletMessageKind kind)
+        {
+            if (messageId == 0) throw new ArgumentOutOfRangeException(nameof(messageId));
+            MessageId = messageId;
+            Kind = kind;
+        }
+
+        public uint MessageId { get; private set; }
+        public PulletMessageKind Kind { get; private set; }
+    }
+
+    public sealed class PulletMessageMetadata
+    {
+        internal PulletMessageMetadata(uint messageId, PulletMessageKind kind, Type messageType)
+        {
+            MessageId = messageId;
+            Kind = kind;
+            MessageType = messageType;
+        }
+
+        public uint MessageId { get; private set; }
+        public PulletMessageKind Kind { get; private set; }
+        public Type MessageType { get; private set; }
+    }
+
+    /// <summary>每种消息类型只反射一次，后续发送和订阅读取泛型静态缓存。</summary>
+    public static class PulletMessageContract
+    {
+        public static PulletMessageMetadata Get<T>() => Cache<T>.Value;
+
+        public static PulletMessageMetadata Get(Type messageType)
+        {
+            if (messageType == null) throw new ArgumentNullException(nameof(messageType));
+            object[] attributes = messageType.GetCustomAttributes(typeof(PulletMessageAttribute), false);
+            if (attributes.Length != 1)
+                throw new InvalidOperationException(
+                    $"Message type {messageType.FullName} must declare exactly one PulletMessageAttribute.");
+            var attribute = (PulletMessageAttribute)attributes[0];
+            return new PulletMessageMetadata(attribute.MessageId, attribute.Kind, messageType);
+        }
+
+        private static class Cache<T>
+        {
+            internal static readonly PulletMessageMetadata Value = Get(typeof(T));
+        }
+    }
+
     /// <summary>业务协议参数。Magic 由业务分配，不属于 PulletNet 传输协议。</summary>
     public sealed class PulletMessageProtocolOptions
     {
@@ -41,7 +92,7 @@ namespace PulletFramework.Messaging
         public PulletMessageEncoding Encoding { get; private set; }
         public PulletMessageKind Kind { get; private set; }
         public uint MessageId { get; private set; }
-        public ulong CorrelationId { get; private set; }
+        public ulong RpcId { get; private set; }
         public byte[] Body { get; private set; }
 
         private PulletMessageFrame() { }
@@ -51,7 +102,7 @@ namespace PulletFramework.Messaging
             PulletMessageEncoding encoding,
             PulletMessageKind kind,
             uint messageId,
-            ulong correlationId,
+            ulong rpcId,
             byte[] body)
         {
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -59,7 +110,7 @@ namespace PulletFramework.Messaging
             if (messageId == 0) throw new ArgumentOutOfRangeException(nameof(messageId));
             if (body.Length > options.MaximumBodyBytes)
                 throw new ArgumentOutOfRangeException(nameof(body), "Message body exceeds the configured limit.");
-            ValidateKindAndCorrelation(kind, correlationId);
+            ValidateKindAndRpcId(kind, rpcId);
             if (encoding != PulletMessageEncoding.Json && encoding != PulletMessageEncoding.Protobuf)
                 throw new ArgumentOutOfRangeException(nameof(encoding));
 
@@ -71,7 +122,7 @@ namespace PulletFramework.Messaging
             output[5] = 0;
             WriteUInt16(output, 6, 0);
             WriteUInt32(output, 8, messageId);
-            WriteUInt64(output, 12, correlationId);
+            WriteUInt64(output, 12, rpcId);
             WriteUInt32(output, 20, checked((uint)body.Length));
             Buffer.BlockCopy(body, 0, output, HeaderSize, body.Length);
             return output;
@@ -109,8 +160,8 @@ namespace PulletFramework.Messaging
             if (payload.Length != HeaderSize + (int)bodyLength)
                 return Fail("Message body length does not match the frame header.", out error);
 
-            ulong correlationId = ReadUInt64(payload, 12);
-            try { ValidateKindAndCorrelation(kind, correlationId); }
+            ulong rpcId = ReadUInt64(payload, 12);
+            try { ValidateKindAndRpcId(kind, rpcId); }
             catch (ArgumentException exception) { return Fail(exception.Message, out error); }
 
             var body = new byte[(int)bodyLength];
@@ -120,7 +171,7 @@ namespace PulletFramework.Messaging
                 Encoding = encoding,
                 Kind = kind,
                 MessageId = ReadUInt32(payload, 8),
-                CorrelationId = correlationId,
+                RpcId = rpcId,
                 Body = body
             };
             if (frame.MessageId == 0)
@@ -131,10 +182,10 @@ namespace PulletFramework.Messaging
             return true;
         }
 
-        private static void ValidateKindAndCorrelation(PulletMessageKind kind, ulong correlationId)
+        private static void ValidateKindAndRpcId(PulletMessageKind kind, ulong rpcId)
         {
-            bool valid = kind == PulletMessageKind.Notification ? correlationId == 0 : correlationId != 0;
-            if (!valid) throw new ArgumentException("Correlation id does not match the message kind.");
+            bool valid = kind == PulletMessageKind.Notification ? rpcId == 0 : rpcId != 0;
+            if (!valid) throw new ArgumentException("RPC id does not match the message kind.");
         }
 
         private static bool Fail(string value, out string error) { error = value; return false; }

@@ -55,6 +55,39 @@ namespace PulletFramework.NetClient.Tests
         }
 
         [Test]
+        public void TypedNotification_InfersMessageIdAndKindFromContract()
+        {
+            var serializer = new JsonMessageSerializer();
+            byte[] sentPayload = null;
+            var client = new PulletMessageClient(Protocol, serializer, (payload, channel, cancellationToken) =>
+            {
+                sentPayload = payload;
+                return new ValueTask<SendResult>(SendResult.Accepted());
+            });
+
+            client.SendAsync(new TestNotification { number = 17 }).GetAwaiter().GetResult();
+
+            Assert.That(PulletMessageFrame.TryDecode(
+                Protocol, sentPayload, out PulletMessageFrame frame, out string error), Is.True, error);
+            Assert.That(frame.MessageId, Is.EqualTo(3001));
+            Assert.That(frame.Kind, Is.EqualTo(PulletMessageKind.Notification));
+            Assert.That(frame.RpcId, Is.Zero);
+            client.Dispose();
+        }
+
+        [Test]
+        public void TypedSubscribe_RejectsRequestContract()
+        {
+            var client = CreateClient(new JsonMessageSerializer());
+
+            InvalidOperationException error = Assert.Throws<InvalidOperationException>(() =>
+                client.Subscribe<TestRequest>(_ => { }));
+
+            StringAssert.Contains("Notification", error.Message);
+            client.Dispose();
+        }
+
+        [Test]
         public void Subscription_CanBeExplicitlyUnsubscribed()
         {
             var serializer = new JsonMessageSerializer();
@@ -133,7 +166,7 @@ namespace PulletFramework.NetClient.Tests
                     serializer.Encoding,
                     PulletMessageKind.Response,
                     1002,
-                    request.CorrelationId,
+                    request.RpcId,
                     serializer.Serialize(new TestMessage { number = 9 }));
                 Assert.That(client.HandlePayload(response, out string responseError), Is.True, responseError);
                 return new ValueTask<SendResult>(SendResult.Accepted());
@@ -237,6 +270,27 @@ namespace PulletFramework.NetClient.Tests
         private sealed class OtherMessage
         {
             public bool value = true;
+        }
+
+        [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+        private sealed class TestContractAttribute : PulletMessageAttribute
+        {
+            public TestContractAttribute(uint messageId, PulletMessageKind kind)
+                : base(messageId, kind) { }
+        }
+
+        [Serializable]
+        [TestContract(3001, PulletMessageKind.Notification)]
+        private sealed class TestNotification
+        {
+            public int number;
+        }
+
+        [Serializable]
+        [TestContract(3002, PulletMessageKind.Request)]
+        private sealed class TestRequest
+        {
+            public int number = 1;
         }
 
         private sealed class TestSerializer : IMessageSerializer

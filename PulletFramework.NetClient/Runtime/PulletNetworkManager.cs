@@ -180,6 +180,10 @@ namespace PulletFramework.NetClient
         public IMessageSubscription Subscribe<T>(uint messageId, Action<T> handler)
             => GetMessages().Subscribe(messageId, handler);
 
+        /// <summary>根据消息类型上的契约订阅业务 Notification。</summary>
+        public IMessageSubscription Subscribe<T>(Action<T> handler)
+            => GetMessages().Subscribe(handler);
+
         /// <summary>显式取消订阅；也可以直接调用订阅句柄的 Unsubscribe 或 Dispose。</summary>
         public bool Unsubscribe(IMessageSubscription subscription)
             => _messages != null && _messages.Unsubscribe(subscription);
@@ -192,7 +196,14 @@ namespace PulletFramework.NetClient
             CancellationToken cancellationToken = default)
             => GetMessages().SendAsync(messageId, value, channel, cancellationToken);
 
-        /// <summary>发送请求并等待 correlationId 匹配的响应、超时或取消。</summary>
+        /// <summary>根据消息类型上的契约发送无响应的业务 Notification。</summary>
+        public Task SendMessageAsync<T>(
+            T value,
+            ChannelType channel = ChannelType.ReliableOrdered,
+            CancellationToken cancellationToken = default)
+            => GetMessages().SendAsync(value, channel, cancellationToken);
+
+        /// <summary>发送请求并等待 RpcId 匹配的响应、超时或取消。</summary>
         public Task<TResponse> CallAsync<TRequest, TResponse>(
             uint requestId,
             uint responseId,
@@ -201,6 +212,13 @@ namespace PulletFramework.NetClient
             CancellationToken cancellationToken = default)
             => GetMessages().CallAsync<TRequest, TResponse>(
                 requestId, responseId, request, timeout, cancellationToken);
+
+        /// <summary>根据请求和响应类型上的契约完成一次 RPC。</summary>
+        public Task<TResponse> CallAsync<TRequest, TResponse>(
+            TRequest request,
+            TimeSpan timeout,
+            CancellationToken cancellationToken = default)
+            => GetMessages().CallAsync<TRequest, TResponse>(request, timeout, cancellationToken);
 
         /// <summary>取消属于当前会话的全部未完成 RPC。断线时会自动调用。</summary>
         public void CancelPendingMessages(string reason)
