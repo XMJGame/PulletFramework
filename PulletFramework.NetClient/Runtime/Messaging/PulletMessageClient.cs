@@ -15,7 +15,7 @@ namespace PulletFramework.Messaging
         private readonly IMessageSerializer _serializer;
         private readonly PulletMessageRouter _router;
         private readonly Dictionary<ulong, IPendingCall> _pending = new Dictionary<ulong, IPendingCall>();
-        private long _nextCorrelationId;
+        private long _nextRpcId;
         private bool _disposed;
 
         /// <summary>消息信封合法，但当前没有任何模块订阅该 MessageId。</summary>
@@ -37,6 +37,13 @@ namespace PulletFramework.Messaging
         /// <summary>订阅强类型消息；调用方负责释放返回的订阅句柄。</summary>
         public IMessageSubscription Subscribe<T>(uint messageId, Action<T> handler)
             => _router.Subscribe(messageId, handler);
+
+        /// <summary>根据消息类型上的契约订阅 Notification。</summary>
+        public IMessageSubscription Subscribe<T>(Action<T> handler)
+        {
+            PulletMessageMetadata metadata = RequireKind<T>(PulletMessageKind.Notification);
+            return _router.Subscribe(metadata.MessageId, handler);
+        }
 
         /// <summary>显式取消订阅；也可以直接调用订阅句柄的 Unsubscribe 或 Dispose。</summary>
         public bool Unsubscribe(IMessageSubscription subscription)
@@ -60,6 +67,16 @@ namespace PulletFramework.Messaging
                 throw new InvalidOperationException(result.Message ?? result.ErrorCode.ToString());
         }
 
+        /// <summary>根据消息类型上的契约发送 Notification。</summary>
+        public Task SendAsync<T>(
+            T value,
+            ChannelType channel = ChannelType.ReliableOrdered,
+            CancellationToken cancellationToken = default)
+        {
+            PulletMessageMetadata metadata = RequireKind<T>(PulletMessageKind.Notification);
+            return SendAsync(metadata.MessageId, value, channel, cancellationToken);
+        }
+
         /// <summary>发送请求并等待对应响应，支持超时、外部取消和断线取消。</summary>
         public async Task<TResponse> CallAsync<TRequest, TResponse>(
             uint requestId,
@@ -70,12 +87,12 @@ namespace PulletFramework.Messaging
         {
             ThrowIfDisposed();
             if (timeout <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(timeout));
-            ulong correlationId = NextCorrelationId();
+            ulong rpcId = NextRpcId();
             var completion = new TaskCompletionSource<TResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
             lock (_gate)
             {
                 ThrowIfDisposed();
-                _pending.Add(correlationId, new PendingCall<TResponse>(responseId, completion, _serializer));
+                _pending.Add(rpcId, new PendingCall<TResponse>(responseId, completion, _serializer));
             }
 
             using (var deadlineCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
@@ -85,11 +102,11 @@ namespace PulletFramework.Messaging
                 Task<SendResult> send = null;
                 try
                 {
-                    byte[] payload = Encode(PulletMessageKind.Request, requestId, correlationId, request);
+                    byte[] payload = Encode(PulletMessageKind.Request, requestId, rpcId, request);
                     send = _sendAsync(payload, ChannelType.ReliableOrdered, deadlineCts.Token).AsTask();
                     Task first = await Task.WhenAny(send, deadline, completion.Task);
                     if (first == deadline)
-                        ThrowDeadlineOrCancellation(requestId, responseId, correlationId, cancellationToken);
+                        ThrowDeadlineOrCancellation(requestId, responseId, rpcId, cancellationToken);
                     if (first == completion.Task && !send.IsCompleted)
                     {
                         // 断线取消 RPC 时不能被仍在等待的发送阻塞。
@@ -97,7 +114,7 @@ namespace PulletFramework.Messaging
                             return await completion.Task;
                         first = await Task.WhenAny(send, deadline);
                         if (first == deadline)
-                            ThrowDeadlineOrCancellation(requestId, responseId, correlationId, cancellationToken);
+                            ThrowDeadlineOrCancellation(requestId, responseId, rpcId, cancellationToken);
                     }
 
                     SendResult result = await send;
@@ -106,7 +123,7 @@ namespace PulletFramework.Messaging
 
                     Task finished = await Task.WhenAny(completion.Task, deadline);
                     if (finished == deadline)
-                        ThrowDeadlineOrCancellation(requestId, responseId, correlationId, cancellationToken);
+                        ThrowDeadlineOrCancellation(requestId, responseId, rpcId, cancellationToken);
                     return await completion.Task;
                 }
                 finally
@@ -117,9 +134,22 @@ namespace PulletFramework.Messaging
                         _ = send.ContinueWith(task => { var ignored = task.Exception; },
                             CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted |
                             TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-                    lock (_gate) _pending.Remove(correlationId);
+                    lock (_gate) _pending.Remove(rpcId);
                 }
             }
+        }
+
+        /// <summary>根据请求和响应类型上的契约完成一次 RPC。</summary>
+        public Task<TResponse> CallAsync<TRequest, TResponse>(
+            TRequest request,
+            TimeSpan timeout,
+            CancellationToken cancellationToken = default)
+        {
+            PulletMessageMetadata requestMetadata = RequireKind<TRequest>(PulletMessageKind.Request);
+            PulletMessageMetadata responseMetadata = RequireKind<TResponse>(PulletMessageKind.Response);
+            return CallAsync<TRequest, TResponse>(
+                requestMetadata.MessageId, responseMetadata.MessageId,
+                request, timeout, cancellationToken);
         }
 
         /// <summary>解码并分发一个完整应用 Payload；应在 Unity 主线程调用。</summary>
@@ -137,7 +167,7 @@ namespace PulletFramework.Messaging
             {
                 if (!TryComplete(frame, out error))
                 {
-                    error = $"Unexpected RPC response: MessageId={frame.MessageId}, CorrelationId={frame.CorrelationId}.";
+                    error = $"Unexpected RPC response: MessageId={frame.MessageId}, RpcId={frame.RpcId}.";
                     ProtocolError?.Invoke(error);
                     return false;
                 }
@@ -178,10 +208,10 @@ namespace PulletFramework.Messaging
             ProtocolError = null;
         }
 
-        private byte[] Encode<T>(PulletMessageKind kind, uint messageId, ulong correlationId, T value)
+        private byte[] Encode<T>(PulletMessageKind kind, uint messageId, ulong rpcId, T value)
         {
             return PulletMessageFrame.Encode(
-                _protocol, _serializer.Encoding, kind, messageId, correlationId, _serializer.Serialize(value));
+                _protocol, _serializer.Encoding, kind, messageId, rpcId, _serializer.Serialize(value));
         }
 
         private bool TryComplete(PulletMessageFrame frame, out string error)
@@ -190,7 +220,7 @@ namespace PulletFramework.Messaging
             IPendingCall pending;
             lock (_gate)
             {
-                if (!_pending.TryGetValue(frame.CorrelationId, out pending)) return false;
+                if (!_pending.TryGetValue(frame.RpcId, out pending)) return false;
             }
             if (pending.ResponseMessageId != frame.MessageId)
             {
@@ -207,23 +237,32 @@ namespace PulletFramework.Messaging
             return true;
         }
 
-        private ulong NextCorrelationId()
+        private ulong NextRpcId()
         {
-            long next = Interlocked.Increment(ref _nextCorrelationId);
+            long next = Interlocked.Increment(ref _nextRpcId);
             if (next <= 0)
             {
-                Interlocked.Exchange(ref _nextCorrelationId, 1);
+                Interlocked.Exchange(ref _nextRpcId, 1);
                 next = 1;
             }
             return (ulong)next;
         }
 
         private static void ThrowDeadlineOrCancellation(
-            uint requestId, uint responseId, ulong correlationId, CancellationToken cancellationToken)
+            uint requestId, uint responseId, ulong rpcId, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             throw new TimeoutException(
-                $"RPC {requestId}->{responseId} timed out. CorrelationId={correlationId}.");
+                $"RPC {requestId}->{responseId} timed out. RpcId={rpcId}.");
+        }
+
+        private static PulletMessageMetadata RequireKind<T>(PulletMessageKind expected)
+        {
+            PulletMessageMetadata metadata = PulletMessageContract.Get<T>();
+            if (metadata.Kind != expected)
+                throw new InvalidOperationException(
+                    $"Message {metadata.MessageType.FullName} is {metadata.Kind}, expected {expected}.");
+            return metadata;
         }
 
         private void ThrowIfDisposed()

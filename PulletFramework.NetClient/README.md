@@ -93,7 +93,9 @@ manager.StartDiscovery();
 
 ## 强类型业务消息
 
-Manager 内置 JSON 序列化、强类型消息订阅和 RPC；业务层仍负责定义消息 ID 与数据结构。
+Manager 内置 JSON 序列化、强类型消息订阅和 RPC。业务层在 DTO 上通过继承
+`PulletMessageAttribute` 的属性声明固定消息 ID 和 Request/Response/Notification 类型，
+正常调用只传消息对象，不再在每个发送和订阅位置重复填写消息 ID。
 `Subscribe<T>` 返回可安全重复取消的 `IMessageSubscription`。单条订阅既可以调用
 `Unsubscribe()`，也可以交给 `MessageSubscriptionGroup` 随业务模块统一释放：
 
@@ -101,7 +103,6 @@ Manager 内置 JSON 序列化、强类型消息订阅和 RPC；业务层仍负�
 using PulletFramework.Messaging;
 
 IMessageSubscription poseSubscription = manager.Subscribe<VehiclePose>(
-    VehicleMessageIds.Pose,
     pose => vehicleInfo.UpdatePose(pose));
 
 // 单独取消；重复调用是安全的。
@@ -109,11 +110,16 @@ manager.Unsubscribe(poseSubscription);
 
 // 页面或业务管理器拥有多条订阅时集中管理。
 var subscriptions = new MessageSubscriptionGroup();
-subscriptions.Add(manager.Subscribe<VehiclePose>(VehicleMessageIds.Pose, OnPose));
-subscriptions.Add(manager.Subscribe<ExperienceState>(VehicleMessageIds.State, OnState));
+subscriptions.Add(manager.Subscribe<VehiclePose>(OnPose));
+subscriptions.Add(manager.Subscribe<ExperienceState>(OnState));
 subscriptions.UnsubscribeAll(); // 可继续向该组添加新订阅
 subscriptions.Dispose();        // 生命周期结束，不再允许添加
 ```
+
+通知使用 `SendMessageAsync(message, ...)`，RPC 使用
+`CallAsync<TRequest, TResponse>(request, timeout, ...)`。框架会校验 DTO 的消息类型；
+Request 不能作为通知发送，Response 也不能被订阅为通知。显式传入消息 ID 的重载保留给
+协议适配和底层工具使用，普通业务代码应优先使用类型契约重载。
 
 同一个消息 ID 只能绑定一种消息类型；同类型可以有多个订阅者。某一个订阅者抛出异常时，
 剩余订阅者仍会继续执行，错误通过 `MessageProtocolError` 报告。发送与 RPC 接口仍使用
