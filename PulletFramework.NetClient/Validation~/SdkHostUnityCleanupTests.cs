@@ -18,13 +18,14 @@ namespace PulletFramework.NetClient.Tests
         [UnityTest] public IEnumerator RemoveConnectedUdp() => UnityTaskTest.Run(() => Exchange(false, false));
         [UnityTest] public IEnumerator RemoveUdpAfterEcho() => UnityTaskTest.Run(() => Exchange(true, false));
         [UnityTest] public IEnumerator DisconnectUdpAfterEcho() => UnityTaskTest.Run(() => Exchange(true, true));
+        [UnityTest] public IEnumerator RebindUdpAfterEcho() => UnityTaskTest.Run(() => Exchange(true, false, true));
         [UnityTearDown] public IEnumerator TearDown() => UnityTaskTest.Run(async () =>
         {
             if (_host == null) return;
             var close = _host.CloseAllAsync(); await Observe(close, "host teardown");
             Assert.That(close.Result.IsSuccess, Is.True); _host = null;
         });
-        private async Task Exchange(bool echo, bool disconnect)
+        private async Task Exchange(bool echo, bool disconnect, bool rebind = false)
         {
             var ports = JsonUtility.FromJson<Ports>(File.ReadAllText(Environment.GetEnvironmentVariable("PULLETNET_U2_PORTS")));
             _host = new NetClientHost();
@@ -45,6 +46,17 @@ namespace PulletFramework.NetClient.Tests
             {
                 var stopped = source.Client.DisconnectAsync(); await Observe(stopped, "disconnect");
                 Assert.That(stopped.Result.IsSuccess, Is.True);
+            }
+            if (rebind)
+            {
+                var rebound = source.Client.RebindUdpAsync(); await Observe(rebound, "rebind");
+                Assert.That(rebound.Result.IsSuccess, Is.True, rebound.Result.Message);
+                Assert.That(rebound.Result.SessionContinuity, Is.EqualTo(SessionContinuity.PreservedSession));
+                Assert.That(rebound.Result.SessionId, Is.EqualTo(connect.Result.SessionId));
+                var received = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _host.PayloadReceived += e => received.TrySetResult(true);
+                var send = source.Client.SendAsync(new byte[] { 72 }, 0).AsTask(); await Observe(send, "rebound send");
+                Assert.That(send.Result.IsSuccess, Is.True); await Observe(received.Task, "rebound echo");
             }
             var remove = _host.RemoveAsync(source); await Observe(remove, "remove");
             Assert.That(remove.Result.IsSuccess, Is.True);

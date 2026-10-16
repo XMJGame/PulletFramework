@@ -47,3 +47,11 @@ Native代码、wire、两份DLL、旧Manager、Prefab/GUID和妈祖/XR正式依�
 本批在真实退出门槛处停止，新增竞态20轮尚未执行，不能以107项通过代替。下一有限前置任务是定位SDK UDP旧接收与物理IO的真实退出关系，建立可控反例后修 owning responsibility；若确需Native修改，先确认这一范围例外。不自动重新审计整个Native，不在Unity加超时成功、跳过接收等待、强行清零预算或调用内部Dispose绕过SDK Host。
 
 此阻挡关闭后，继续原U3/U4计划：真实双源独立移除/同名替代和可靠过载隔离、新关键竞态独立20轮、包检查点；之后才是U5/U6旧门面及生命周期迁移，最后U7 Player/IL2CPP/PICO。没有新增第三套架构路线。
+
+## 后续有限SDK修复进展（原失败不回写）
+
+用户再次授权继续后，已在Native UDP传输适配器定位并修复实际根因：本机Unity2022.3.62f3 Mono的Memory+CancellationToken Socket扩展在完成回调的Task结算try/catch之外抛取消异常，使原Task无法完成。纯Socket反例及准确本机System.dll IL已保留。SDK改为显式单物理read/缓冲owner、取消逻辑等待但复用原read，Close中断Socket并等待真实终态；不改Unity管理层补偿、不改wire。完整说明为`G:/XuMingJun/2026/PICO GPS XR/PulletNet/Docs/Reviews/2026-10-16-Unity-Udp-Receive-Exit-Owner.md`。
+
+新DLL仅在另一隔离目录`artifacts/udp-exit-owner-20261016/unity/Package`使用，正式Framework NativeInput/DLL仍为原RC1输入。最终SDK618/618、API/架构守卫10/10通过，新UDP owner12场景×20独立进程240/240通过；修复版真实Unity11/11及含其的包检查点118/118通过。首次测试服务已不运行造成9项连接失败，保留记录；之后验证脚本显式管理独立fixture启动/Ready/真实退出。
+
+Unity关键8场景独立20轮在第11进程遇到Editor初始化访问冲突`0xc0000005`，尚未执行测试、无XML、fixture回显0；前10轮80/80通过。按规则停止，未重跑覆盖，12—20未执行；本轮没有完整通过Unity重复门槛或签收U3/U4，适配实现继续留工作区。下一步先确认启动异常对补验方式的处理，再做候选输入锁/消费者更新；不得由本段推导正式包已修复、业务已升级或Unity全平台可靠。
