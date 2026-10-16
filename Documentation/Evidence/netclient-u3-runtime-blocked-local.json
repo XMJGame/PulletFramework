@@ -1,0 +1,349 @@
+{
+  "schema": 1,
+  "checkpoint": "U3/U4-B incomplete; blocked by real UDP exit",
+  "rawRoot": "G:/XuMingJun/2026/PICO GPS XR/PulletNet/artifacts/unity-u3-runtime-20261016",
+  "unity": "2022.3.62f3",
+  "platform": "Windows Editor EditMode",
+  "implementationCommitted": false,
+  "integrationAccepted": false,
+  "newRaceRepeatRuns": 0,
+  "nativeCodeChanged": false,
+  "nativeInputSource": "fa0145c4e86b1e9c3d4ca509711b5bbbcc1f105d",
+  "nativeFullSuiteOrCiRun": false,
+  "oldManagerChanged": false,
+  "downstreamChanged": false,
+  "pushed": false,
+  "published": false,
+  "observation": "SDK-only UDP Disconnect after echo did not settle in two independent Unity processes; exact underlying IO/exit cause unresolved. Preserve both passing Remove controls.",
+  "recordedUtc": "2026-10-16T09:11:49.6370031+00:00",
+  "frameworkBase": "120e37b3a8c25faf0ab93e2d915cf58062168e78",
+  "branch": "codex/unity-single-connection",
+  "sources": [
+    {
+      "path": "PulletFramework.NetClient/Runtime/ClientDispatchQueue.cs",
+      "sha256": "1c7cd1e599e9e67ea2fd01acee2cba52ecb26283c068cd066eacb64a32bbb2ee"
+    },
+    {
+      "path": "PulletFramework.NetClient/Runtime/PulletClientRuntime.cs",
+      "sha256": "5523619965f6e064618ae85b95fa7aff596e175748099a04d4910ede8b000d0c"
+    },
+    {
+      "path": "PulletFramework.NetClient/Runtime/PulletClientRuntimeContracts.cs",
+      "sha256": "ee08b9ff72fa38be1b7dbf517839f693556aa0fce7a81ffbda6d75e6509a40b7"
+    },
+    {
+      "path": "PulletFramework.NetClient/Tests/Editor/PulletClientRuntimeTests.cs",
+      "sha256": "753f0ff79e07d1aa7de9554722231d4939c5a4584ef296b836818cc1d496b97b"
+    },
+    {
+      "path": "PulletFramework.NetClient/Validation~/MultiConnectionEchoTests.cs",
+      "sha256": "5b4821d2e55a99127420766270a2c73908b8b3a249ac3ab32fcac545e1ebd8fb"
+    },
+    {
+      "path": "PulletFramework.NetClient/Validation~/SdkHostUnityCleanupTests.cs",
+      "sha256": "e34d0e068263ac915e261bf05e531a8dd7a3b44909c9dd83a8e03e426ea8007f"
+    }
+  ],
+  "libraries": [
+    {
+      "name": "PulletNet.ClientSDK.dll",
+      "sha256": "528e5652db4d203d781ba4707048fe257315369745dfa42e360ccd8e3d461488"
+    },
+    {
+      "name": "PulletNet.Protocol.dll",
+      "sha256": "9a357522c31c549865c7c40e40d15334632fa02c0f6df44909d87394a3ac2a6c"
+    }
+  ],
+  "runs": [
+    {
+      "name": "targeted",
+      "execution": {
+        "name": "targeted",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\targeted/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\targeted/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletClientRuntimeTests"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T16:53:11.5263011+08:00",
+        "finishedUtc": "2026-10-16T16:53:27.7198168+08:00"
+      },
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "files": [
+        {
+          "name": "execution.json",
+          "sha256": "5ef992183b19743e5b49b03a803c16f680acac710cb40f9e2a17c2e0b373916d"
+        },
+        {
+          "name": "results.xml",
+          "sha256": "b453755d6821a643ed70abef7d988b55da01010d5c71e8c5390400f8f244a818"
+        },
+        {
+          "name": "unity.log",
+          "sha256": "fbead499740fe0ee999669fa2f3f3ae48ae8b60038f40e8d8adea3bb93cb2dbf"
+        }
+      ]
+    },
+    {
+      "name": "checkpoint",
+      "execution": {
+        "name": "checkpoint",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\checkpoint/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\checkpoint/unity.log\""
+        ],
+        "exitCode": -1,
+        "startedUtc": "2026-10-16T16:56:00.7272039+08:00",
+        "finishedUtc": "2026-10-16T17:03:29.2326685+08:00"
+      },
+      "total": null,
+      "passed": null,
+      "failed": null,
+      "skipped": null,
+      "files": [
+        {
+          "name": "execution.json",
+          "sha256": "e1f3f984c5bc430931fbfc33bb7082b34ff6734fee1202c703942e4255e7db4d"
+        },
+        {
+          "name": "mono-owners.json",
+          "sha256": "6378326f8c655c5105614581e8664c9c2bb7fb2d594703c8b8b6972e618ab07e"
+        },
+        {
+          "name": "mono-receive-generation.json",
+          "sha256": "ad274ef741bd454a72cc58ea39c5ba12fa1703becaaa8a0393465b928793ec4a"
+        },
+        {
+          "name": "mono-threads.json",
+          "sha256": "775dc9bc4a17915466e9f3dd0ca074bb06bb249e910950702ec726790af339ae"
+        },
+        {
+          "name": "terminated-process.json",
+          "sha256": "3ddb4a60db8a1653fdebcfe3c308ba8b1e5cd0109218972b8087ee4e6e488c90"
+        },
+        {
+          "name": "unity.log",
+          "sha256": "6001c26dafafa3e2190080d221fb1e30cc970b1878cfc8a124308ead0ac79700"
+        }
+      ]
+    },
+    {
+      "name": "real-recheck-tests",
+      "execution": {
+        "name": "real-recheck-tests",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\real-recheck-tests/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\real-recheck-tests/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.MultiConnectionEchoTests"
+        ],
+        "exitCode": 2,
+        "startedUtc": "2026-10-16T17:04:27.8845301+08:00",
+        "finishedUtc": "2026-10-16T17:04:54.4113079+08:00"
+      },
+      "total": 2,
+      "passed": 1,
+      "failed": 1,
+      "skipped": 0,
+      "files": [
+        {
+          "name": "execution.json",
+          "sha256": "4b079b2e7d38e2fd49117dde1e0dc932c78094bf78627f7253be599276bd9858"
+        },
+        {
+          "name": "results.xml",
+          "sha256": "e0ed737fd851743bba2ad42dc4d83b1744c0e66f6bc5dea3bb7556c88937f828"
+        },
+        {
+          "name": "unity.log",
+          "sha256": "5639f0051e470754151102cd914f10d2dfb925057858973060100d7a18aebd61"
+        }
+      ]
+    },
+    {
+      "name": "sdk-control",
+      "execution": {
+        "name": "sdk-control",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\sdk-control/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\sdk-control/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.SdkHostUnityCleanupTests"
+        ],
+        "exitCode": 2,
+        "startedUtc": "2026-10-16T17:05:57.3833664+08:00",
+        "finishedUtc": "2026-10-16T17:06:26.9494101+08:00"
+      },
+      "total": 3,
+      "passed": 2,
+      "failed": 1,
+      "skipped": 0,
+      "files": [
+        {
+          "name": "execution.json",
+          "sha256": "6a14d32aad5ae597d525cd1fb6c72048d9326929895a77fb82678ba9bb55a0be"
+        },
+        {
+          "name": "results.xml",
+          "sha256": "df40a1612a3b2d7c19d3cf05fd02949d26ce2b06220b68aff9036b3e5c782326"
+        },
+        {
+          "name": "unity.log",
+          "sha256": "5eb3128328215570f7206057a0279e084c0957eaafa6c457786353d0ac99922d"
+        }
+      ]
+    },
+    {
+      "name": "unit-checkpoint",
+      "execution": {
+        "name": "unit-checkpoint",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\unit-checkpoint/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\unit-checkpoint/unity.log\""
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T17:09:33.0664367+08:00",
+        "finishedUtc": "2026-10-16T17:09:48.4189527+08:00"
+      },
+      "total": 107,
+      "passed": 107,
+      "failed": 0,
+      "skipped": 0,
+      "files": [
+        {
+          "name": "execution.json",
+          "sha256": "f6a4581bbca5091189730f34bbced69ecf916a8829aafd93aeac34aadf750a61"
+        },
+        {
+          "name": "results.xml",
+          "sha256": "803c50b16c6874980fb2f6c8a35c8d5e58ea73e4ad34baad79d655000c60dc5d"
+        },
+        {
+          "name": "unity.log",
+          "sha256": "f915cd0c3b537bd76d0a49a8386c86a56e39b53602a09c614a3486d08dd33803"
+        }
+      ]
+    },
+    {
+      "name": "sdk-disconnect-independent",
+      "execution": {
+        "name": "sdk-disconnect-independent",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\sdk-disconnect-independent/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-20261016\\sdk-disconnect-independent/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.SdkHostUnityCleanupTests.DisconnectUdpAfterEcho"
+        ],
+        "exitCode": 2,
+        "startedUtc": "2026-10-16T17:10:30.7006361+08:00",
+        "finishedUtc": "2026-10-16T17:10:59.5140326+08:00"
+      },
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "files": [
+        {
+          "name": "execution.json",
+          "sha256": "83905ac1a0bb93def083e2958f95aefe711f43498d7ccdce82698910ce87d628"
+        },
+        {
+          "name": "results.xml",
+          "sha256": "b04a04ec8b494061f0f27c03950467e231c9462bc1f10da10bf1bd2caa004b8a"
+        },
+        {
+          "name": "unity.log",
+          "sha256": "834086a2f1d534173e62a459c7bd8c590392ad683fc482e7cfa1cffb0e1003aa"
+        }
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "server-result.json",
+      "result": {
+        "failures": [],
+        "echoes": 2,
+        "sendFailures": []
+      }
+    },
+    {
+      "path": "real-recheck/server-result.json",
+      "result": {
+        "failures": [],
+        "echoes": 8,
+        "sendFailures": []
+      }
+    }
+  ]
+}

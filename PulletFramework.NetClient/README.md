@@ -13,6 +13,9 @@ Native 输入由 `NativeInput.json` 锁定到准确源码/包哈希；Native 包
 多连接、队列字节预算、公平派发及完整生命周期整理仍按 U1 的 U3—U6 后续推进，不能据本检查点宣称已经实现。
 U3/U4-A 已新增内部多来源派发内核并单独验证；尚未接入公开 Runtime 或替换 Manager，
 所以现有 Manager 的主线程队列仍不具备这套多来源/字节预算保证。详情见仓库 Documentation 中的派发内核检查点。
+后续 U3/U4-B 薄 Runtime 实现仍在工作区：107项包测试通过，但真实UDP退出和独立SDK对照测试未通过，
+未签收或提交为可用入口；当前不迁旧Manager或业务工程。阻挡记录见
+`Documentation/NetClient-U3-Runtime-Blocked.zh-CN.md`，不能把包测试通过等同于真实连接验收。
 2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
 
 ## 平台范围
