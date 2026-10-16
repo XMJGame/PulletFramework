@@ -57,3 +57,5 @@ Native代码、wire、两份DLL、旧Manager、Prefab/GUID和妈祖/XR正式依�
 Unity关键8场景独立20轮在第11进程遇到Editor初始化访问冲突`0xc0000005`，尚未执行测试、无XML、fixture回显0；前10轮80/80通过。按规则停止，未重跑覆盖，12—20未执行；本轮没有完整通过Unity重复门槛或签收U3/U4，适配实现继续留工作区。下一步先确认启动异常对补验方式的处理，再做候选输入锁/消费者更新；不得由本段推导正式包已修复、业务已升级或Unity全平台可靠。
 
 随后用户授权有限补验：原1—11完整保留，新增12—21全部通过；累计21次启动尝试、20次实际测试执行160/160通过，第11次测试前AV未结案。Native准确dac3c64隔离导出生成本地RC2，四包/元数据/API及15步公开消费者通过；准确包提取DLL的隔离Unity118/118、服务端20echo及真实退出通过。新版隔离NativeInput的CI字段为null，不继承旧CI；本目录正式DLL/NativeInput仍未切换。详见Native的`Docs/Reviews/2026-10-16-UDP-Exit-Candidate-Local.md`及同名Evidence收据。这只解除SDK退出专项的本地阻挡，薄Runtime自身新增竞态/开发输入门槛和U3/U4签收仍待完成。
+
+其后Runtime本地功能检查点已完成25项定向、12场景20独立进程240/240及包121/121；当前状态以[Runtime本地检查点](NetClient-U3-Runtime-Local-Checkpoint.zh-CN.md)为准。本页保留原失败，正式输入切换仍待新SDK远端门槛，不回写为当时已通过。
