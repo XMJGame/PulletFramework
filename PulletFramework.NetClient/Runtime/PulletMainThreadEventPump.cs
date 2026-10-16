@@ -77,7 +77,7 @@ namespace PulletFramework.NetClient
                         if (generation != Volatile.Read(ref _sessionGeneration)) continue;
                         onMessage(bytes);
                         if (generation != Volatile.Read(ref _sessionGeneration)) continue;
-                        onPayload(new ReceivedPayload(owned.Memory, owned.TransportType, owned.ChannelType));
+                        onPayload(new ReceivedPayload(owned.Memory, owned.TransportType, owned.ChannelType, owned.ChannelId));
                     }
                     catch (Exception ex) { onError(ex); }
                 }

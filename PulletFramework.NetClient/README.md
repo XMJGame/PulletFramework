@@ -7,6 +7,12 @@
 本包不依赖 `PulletFramework` 主模块：既可以单独安装，也可以与其他 Pullet Framework
 模块组合使用。服务端及跨平台 C# 网络内核仍使用 `PulletNet` 名称。
 
+当前为 `3.0.0-pre.1` 开发检查点，不是正式发布或完整 Unity 3.0 验收。仅完成单连接 U2：
+UDP/TCP/WebSocket 接入、标准模式发送、明确 ChannelId 发送和元数据传递。
+Native 输入由 `NativeInput.json` 锁定到准确源码/包哈希；Native 包仍为 `3.0.0-rc.1`，与本 Unity 包版本分别管理。
+多连接、队列字节预算、公平派发及完整生命周期整理仍按 U1 的 U3—U6 后续推进，不能据本检查点宣称已经实现。
+2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
+
 ## 平台范围
 
 - Windows、macOS、Linux、Android 和 iOS 是 ClientSDK 的 TCP、UDP、WebSocket 目标平台；
@@ -16,7 +22,8 @@
 - 局域网发现依赖 UDP 广播，因此也不适用于 WebGL 和小游戏。
 
 运行时程序集已排除 WebGL，避免把当前不支持的传输实现打入对应 Player。
-Unity 2021.3 下，单独安装以及与 `PulletFramework` 主模块并装的 EditMode 测试均已通过。
+本检查点在隔离 Unity 2022.3.62f3 / Windows Editor 中完成 61 项包测试及 3 项真实回显，共 64 项通过。
+旧 2.x 的 Unity 2021.3 记录不认证本版；包清单最低版本字段不是该版本已实测的证明。
 
 ## 安装
 
@@ -26,13 +33,9 @@ Unity 2021.3 下，单独安装以及与 `PulletFramework` 主模块并装的 Ed
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 ```
 
-在本地开发 PulletNet 时，也可以通过 Package Manager 添加
-`UnityPackages/PulletFramework.NetClient/package.json`。修改 `Protocol` 或 `ClientSDK` 源码后，
-先重新构建包内 DLL，再同步到 PulletFramework 仓库及验证工程：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\Tools\Build-PulletNetUnityPackage.ps1
-```
+本地 3.0 适配以本仓库 `PulletFramework.NetClient` 为源码 owner。先在隔离 Unity 工程中通过本地
+`package.json` 接入，不覆盖已有业务工程；不要再用 Native 仓库的旧 `UnityPackages` 镜像或旧同步脚本
+直接覆盖 DLL。更换输入时必须同时验证准确的 Protocol/ClientSDK 包、版本及哈希，并使用新的验证目录。
 
 ## 使用
 
@@ -40,6 +43,8 @@ powershell -ExecutionPolicy Bypass -File .\Tools\Build-PulletNetUnityPackage.ps1
    GameObject 上手动添加 `PulletNetworkManager`。
 2. 直接在组件 Inspector 中填写地址、端口、连接模式与发现策略。包内 Prefab 使用通用默认值，
    业务项目建议创建 Prefab Variant 保存自己的端口和发现服务类型。客户端运行时、设备身份与应用版本应由业务登录消息声明。
+   默认 `UdpOnly=1`；`TcpOnly=4`、`WebSocketOnly=5` 只使用各自端口。旧资产中的组合模式值 2/3
+   必须由使用者明确迁移，校验会拒绝它们；不要修改枚举编号或静默转成另一种模式。
 3. 订阅 `Connected`、`Disconnected`、`PayloadReceived`，或在 Inspector 中绑定公开的
    `OnConnected`、`OnConnectedFailed`、`OnDisconnected` UnityEvent。重连结果通过代码事件
    `ReconnectAttempt`、`Reconnected`、`ReconnectFailed` 交给业务层制定恢复策略。
@@ -81,6 +86,10 @@ ConnectionResult result = await manager.ConnectAsync();
 if (result.IsSuccess)
     await manager.SendAsync(payload, ChannelType.ReliableOrdered);
 
+// SendAsync 的旧模式门面委托 SDK.SendDefaultAsync；ID 入口明确分开，避免把枚举值当作 ID。
+await manager.SendOnChannelAsync(payload, channelId: 0);
+// 只能发送到已协商的 ID；成功仅表示本地接纳，不表示 Socket 完成、ACK 或业务处理。
+
 // 自动发现并连接；可通过 ServersDiscovered 获取完整列表供业务 UI 选择。
 ConnectionResult autoResult = await manager.AutoConnectAsync();
 
@@ -90,6 +99,9 @@ manager.DiscoveryFailed += error => ShowDiscoveryError(error);
 manager.StartDiscovery();
 // manager.StopDiscovery();
 ```
+
+单连接真实回显的可复用测试入口见 `Validation~/README.md`。U2 不暴露保留 Session 的 UDP 重绑入口；
+多来源代际和交付队列合同完成前，不把这一底层能力直接映射到 Unity。
 
 ## 强类型业务消息
 

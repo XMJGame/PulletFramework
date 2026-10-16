@@ -1,15 +1,17 @@
 using System;
+using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using PulletNet.ClientSDK;
 
 namespace PulletFramework.NetClient.Tests
 {
     public sealed class PulletActiveServerRecoveryTests
     {
-        [Test]
-        public async Task Recovery_AttemptsTheExactSelectedEndpoint()
+        [UnityTest]
+        public IEnumerator Recovery_AttemptsTheExactSelectedEndpoint() => UnityTaskTest.Run(async () =>
         {
             PulletServerInfo connectedTarget = null;
             var attempted = new TaskCompletionSource<bool>();
@@ -17,9 +19,10 @@ namespace PulletFramework.NetClient.Tests
                        (target, token) =>
                        {
                            connectedTarget = target;
+                           attempted.TrySetResult(true);
                            return Task.FromResult(ConnectionResult.Ok());
                        },
-                       _ => attempted.TrySetResult(true)))
+                       _ => { }))
             {
                 PulletServerInfo expected = Server("10.0.0.8");
                 Assert.That(recovery.Start(expected, 0.5f, "test", CancellationToken.None), Is.True);
@@ -28,10 +31,10 @@ namespace PulletFramework.NetClient.Tests
                 Assert.That(finished, Is.EqualTo(attempted.Task), "Recovery did not attempt within the test timeout.");
                 Assert.That(connectedTarget, Is.SameAs(expected));
             }
-        }
+        });
 
-        [Test]
-        public async Task NewConnectionIntent_CancelsOldEndpointBeforeAttempt()
+        [UnityTest]
+        public IEnumerator NewConnectionIntent_CancelsOldEndpointBeforeAttempt() => UnityTaskTest.Run(async () =>
         {
             int connectCalls = 0;
             using (var recovery = CreateRecovery(
@@ -47,10 +50,10 @@ namespace PulletFramework.NetClient.Tests
                 await Task.Delay(TimeSpan.FromSeconds(0.6));
                 Assert.That(connectCalls, Is.Zero);
             }
-        }
+        });
 
-        [Test]
-        public async Task NewConnectionIntent_CancelsInFlightConnect()
+        [UnityTest]
+        public IEnumerator NewConnectionIntent_CancelsInFlightConnect() => UnityTaskTest.Run(async () =>
         {
             var started = new TaskCompletionSource<bool>();
             var canceled = new TaskCompletionSource<bool>();
@@ -72,7 +75,7 @@ namespace PulletFramework.NetClient.Tests
                 Assert.That(await Task.WhenAny(canceled.Task, Task.Delay(TimeSpan.FromSeconds(2))),
                     Is.EqualTo(canceled.Task));
             }
-        }
+        });
 
         private static PulletActiveServerRecovery CreateRecovery(
             Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connect,

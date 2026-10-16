@@ -30,7 +30,7 @@ namespace PulletFramework.NetClient.Tests
         public void Defaults_AreValid()
         {
             Assert.That(_manager.ValidateConfiguration(out string error), Is.True, error);
-            Assert.That(_manager.connectionMode, Is.EqualTo(ConnectionMode.UdpWithTcpControl));
+            Assert.That(_manager.connectionMode, Is.EqualTo(ConnectionMode.UdpOnly));
             Assert.That(_manager.autoConnectMode, Is.EqualTo(AutoConnectMode.DirectThenDiscover));
             Assert.That(_manager.discoveryMaxAttempts, Is.GreaterThan(0));
             Assert.That(_manager.discoverySendIntervalSeconds, Is.GreaterThan(0f));
@@ -62,11 +62,58 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(manager, Is.Not.Null);
             Assert.That(manager.tcpPort, Is.EqualTo(7778));
             Assert.That(manager.udpPort, Is.EqualTo(7777));
+            Assert.That(manager.connectionMode, Is.EqualTo(ConnectionMode.UdpOnly));
             Assert.That(manager.autoConnectMode, Is.EqualTo(AutoConnectMode.DirectThenDiscover));
             Assert.That(manager.discoveryServiceType, Is.EqualTo("pulletnet"));
             Assert.That(manager.keepReconnectingActiveServer, Is.False,
                 "通用 Prefab 不应默认无限连接旧服务器，由具体项目明确开启。");
             Assert.That(manager.activeServerReconnectDelaySeconds, Is.EqualTo(3f));
+        }
+
+        [Test]
+        public void SendWithoutConnection_RejectsBothEntryPoints()
+        {
+            Assert.That(_manager.SendAsync(new byte[] { 1 }).GetAwaiter().GetResult().ErrorCode,
+                Is.EqualTo(SendErrorCode.NotConnected));
+            Assert.That(_manager.SendOnChannelAsync(new byte[] { 1 }, 7).GetAwaiter().GetResult().ErrorCode,
+                Is.EqualTo(SendErrorCode.NotConnected));
+        }
+
+        [TestCase(2)]
+        [TestCase(3)]
+        public void Validate_RejectsRetiredSerializedModesWithoutReinterpretingThem(int value)
+        {
+            _manager.connectionMode = (ConnectionMode)value;
+            Assert.That(_manager.ValidateConfiguration(out string error), Is.False);
+            StringAssert.Contains("retired", error);
+            StringAssert.Contains("separate clients", error);
+            Assert.That((byte)_manager.connectionMode, Is.EqualTo(value));
+        }
+
+        [TestCase(0)]
+        [TestCase(6)]
+        [TestCase(255)]
+        public void Validate_RejectsUnknownMode(int value)
+        {
+            _manager.connectionMode = (ConnectionMode)value;
+            Assert.That(_manager.ValidateConfiguration(out string error), Is.False);
+            StringAssert.Contains("Unsupported connection mode", error);
+        }
+
+        [TestCase(ConnectionMode.UdpOnly)]
+        [TestCase(ConnectionMode.TcpOnly)]
+        [TestCase(ConnectionMode.WebSocketOnly)]
+        public void ValidateAndClientOptions_UseExactlyTheSelectedTransport(ConnectionMode mode)
+        {
+            _manager.connectionMode = mode;
+            _manager.tcpPort = mode == ConnectionMode.TcpOnly ? 7778 : 0;
+            _manager.udpPort = mode == ConnectionMode.UdpOnly ? 7777 : 0;
+            _manager.webSocketPort = mode == ConnectionMode.WebSocketOnly ? 7779 : 0;
+            Assert.That(_manager.ValidateConfiguration(out string error), Is.True, error);
+            MethodInfo create = typeof(PulletNetworkManager).GetMethod("CreateClientOptions", BindingFlags.Instance | BindingFlags.NonPublic);
+            var options = (NetClientOptions)create.Invoke(_manager, new object[] { "127.0.0.1", _manager.tcpPort, _manager.udpPort, _manager.webSocketPort });
+            Assert.That(options.Connection.ConnectionMode, Is.EqualTo(mode));
+            using (var client = (System.IDisposable)new PulletNet.ClientSDK.NetClient(options)) { }
         }
 
         [Test]
@@ -132,7 +179,7 @@ namespace PulletFramework.NetClient.Tests
             clientField.SetValue(_manager, oldClient);
 
             _manager.HandleClientConnected(oldClient, 0,
-                new ConnectedEvent(1, 1, ConnectionMode.UdpWithTcpControl));
+                new ConnectedEvent(1, 1, ConnectionMode.UdpOnly));
             _manager.HandleClientDisconnected(oldClient, new DisconnectedEvent("old session ended", false));
             clientField.SetValue(_manager, null);
             update.Invoke(_manager, null);
