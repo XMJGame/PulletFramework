@@ -70,4 +70,6 @@ MonoBehaviour:
   discoveryServiceType: pulletnet
   payloadQueueCapacity: 1024
   maxPayloadCallbacksPerFrame: 256
+  payloadQueueBytes: 4194304
+  maxPayloadBytesPerFrame: 1048576
   enableConnectionLogs: 1

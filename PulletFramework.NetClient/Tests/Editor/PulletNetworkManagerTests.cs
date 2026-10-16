@@ -163,33 +163,38 @@ namespace PulletFramework.NetClient.Tests
             StringAssert.Contains("Discovery", error);
         }
 
-        [Test]
-        public void QueuedDisconnect_RemainsVisibleAfterClientIsReplaced()
+        [UnityEngine.TestTools.UnityTest]
+        public System.Collections.IEnumerator LifecycleFactsAreOrderedUntilExplicitSourceRetirement() => UnityTaskTest.Run(async () =>
         {
-            var oldClient = new PulletNet.ClientSDK.NetClient(new NetClientOptions());
-            FieldInfo clientField = typeof(PulletNetworkManager).GetField("_client",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            MethodInfo update = typeof(PulletNetworkManager).GetMethod("Update",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(clientField, Is.Not.Null);
-            Assert.That(update, Is.Not.Null);
+            _manager.enableConnectionLogs = false;
+            typeof(PulletNetworkManager).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_manager, null);
+            var create = typeof(PulletNetworkManager).GetMethod("GetOrCreateClient", BindingFlags.Instance | BindingFlags.NonPublic);
+            create.Invoke(_manager, new object[] { "127.0.0.1", 7778, 7777, 7779, 0L });
+            var runtime = (PulletClientRuntime)typeof(PulletNetworkManager).GetField("_runtime", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_manager);
+            var sourceField = typeof(PulletNetworkManager).GetField("_source", BindingFlags.Instance | BindingFlags.NonPublic);
+            var old = (HostedClient)sourceField.GetValue(_manager);
             var events = new System.Collections.Generic.List<string>();
             _manager.Connected += _ => events.Add("connected");
             _manager.Disconnected += _ => events.Add("disconnected");
-            clientField.SetValue(_manager, oldClient);
-
-            _manager.HandleClientConnected(oldClient, 0,
-                new ConnectedEvent(1, 1, ConnectionMode.UdpOnly));
-            _manager.HandleClientDisconnected(oldClient, new DisconnectedEvent("old session ended", false));
-            clientField.SetValue(_manager, null);
-            update.Invoke(_manager, null);
-
-            Assert.That(events, Is.EqualTo(new[] { "connected", "disconnected" }));
-            _manager.HandleClientDisconnected(oldClient, new DisconnectedEvent("late old callback", false));
+            var update = typeof(PulletNetworkManager).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
+            runtime.Record(old, PulletClientLifecycleKind.Connected, new ConnectedEvent(1, 1, ConnectionMode.UdpOnly));
+            runtime.Record(old, PulletClientLifecycleKind.Disconnected, new DisconnectedEvent("old session ended", false));
             update.Invoke(_manager, null);
             Assert.That(events, Is.EqualTo(new[] { "connected", "disconnected" }));
-            ((System.IDisposable)oldClient).Dispose();
-        }
+            // Explicit retirement discards ordinary unconsumed facts. A delayed
+            // old handle cannot contribute facts to a new same-key source.
+            runtime.Record(old, PulletClientLifecycleKind.Disconnected, new DisconnectedEvent("unconsumed at retirement", false));
+            await (System.Threading.Tasks.Task)typeof(PulletNetworkManager).GetMethod("RemoveDefaultClientAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_manager, null);
+            create.Invoke(_manager, new object[] { "127.0.0.1", 7778, 7777, 7779, 0L });
+            var replacement = (HostedClient)sourceField.GetValue(_manager);
+            Assert.That(replacement, Is.Not.SameAs(old));
+            Assert.That(old.Client.State, Is.EqualTo(ConnectionState.Disposed));
+            runtime.Record(old, PulletClientLifecycleKind.Disconnected, new DisconnectedEvent("late old callback", false));
+            runtime.Record(replacement, PulletClientLifecycleKind.Connected, new ConnectedEvent(2, 2, ConnectionMode.UdpOnly));
+            update.Invoke(_manager, null);
+            Assert.That(events, Is.EqualTo(new[] { "connected", "disconnected", "connected" }));
+            await _manager.ShutdownAsync();
+        });
 
     }
 }

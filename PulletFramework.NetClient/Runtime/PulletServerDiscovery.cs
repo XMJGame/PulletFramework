@@ -152,59 +152,78 @@ namespace PulletFramework.NetClient
                 int attempt = 0;
                 Task<UdpReceiveResult> pendingReceive = null;
 
-                while (stopwatch.Elapsed < timeout && !cancellationToken.IsCancellationRequested)
+                try
                 {
-                    if (attempt < maxAttempts && stopwatch.Elapsed >= nextSendAt)
+                    while (stopwatch.Elapsed < timeout && !cancellationToken.IsCancellationRequested)
                     {
-                        await client.SendAsync(bytes, bytes.Length, destination);
-                        attempt++;
-                        PublishSafely(onAttempt, attempt, maxAttempts);
-                        nextSendAt = stopwatch.Elapsed + interval;
-                    }
+                        if (attempt < maxAttempts && stopwatch.Elapsed >= nextSendAt)
+                        {
+                            await client.SendAsync(bytes, bytes.Length, destination);
+                            attempt++;
+                            PublishSafely(onAttempt, attempt, maxAttempts);
+                            nextSendAt = stopwatch.Elapsed + interval;
+                        }
 
-                    TimeSpan remaining = timeout - stopwatch.Elapsed;
-                    if (remaining <= TimeSpan.Zero) break;
-                    try
-                    {
-                        if (pendingReceive == null)
-                            pendingReceive = client.ReceiveAsync();
-
-                        TimeSpan slice = remaining < TimeSpan.FromMilliseconds(100)
-                            ? remaining
-                            : TimeSpan.FromMilliseconds(100);
-                        Task completed = await Task.WhenAny(
-                            pendingReceive,
-                            Task.Delay(slice, cancellationToken));
-                        if (completed != pendingReceive) continue;
-
-                        UdpReceiveResult packet = pendingReceive.Result;
-                        pendingReceive = null;
-                        PulletServerInfo info;
+                        TimeSpan remaining = timeout - stopwatch.Elapsed;
+                        if (remaining <= TimeSpan.Zero) break;
                         try
                         {
-                            info = JsonConvert.DeserializeObject<PulletServerInfo>(
-                                Encoding.UTF8.GetString(packet.Buffer));
-                        }
-                        catch (JsonException)
-                        {
-                            continue;
-                        }
+                            if (pendingReceive == null)
+                                pendingReceive = client.ReceiveAsync();
 
-                        if (info == null || info.magic != Magic || info.version != 1 || info.requestId != requestId)
-                            continue;
-                        if (!string.IsNullOrEmpty(serviceType) &&
-                            !string.Equals(info.serviceType, serviceType, StringComparison.OrdinalIgnoreCase))
-                            continue;
+                            TimeSpan slice = remaining < TimeSpan.FromMilliseconds(100)
+                                ? remaining
+                                : TimeSpan.FromMilliseconds(100);
+                            Task completed = await Task.WhenAny(
+                                pendingReceive,
+                                Task.Delay(slice, cancellationToken));
+                            if (completed != pendingReceive) continue;
 
-                        if (IsUnusableAdvertisedHost(info.host))
-                            info.host = packet.RemoteEndPoint.Address.ToString();
-                        string key = string.IsNullOrWhiteSpace(info.instanceId)
-                            ? $"{info.serverId}@{info.host}"
-                            : info.instanceId;
-                        found[key] = info;
+                            UdpReceiveResult packet = await pendingReceive;
+                            pendingReceive = null;
+                            PulletServerInfo info;
+                            try
+                            {
+                                info = JsonConvert.DeserializeObject<PulletServerInfo>(
+                                    Encoding.UTF8.GetString(packet.Buffer));
+                            }
+                            catch (JsonException)
+                            {
+                                continue;
+                            }
+
+                            if (info == null || info.magic != Magic || info.version != 1 || info.requestId != requestId)
+                                continue;
+                            if (!string.IsNullOrEmpty(serviceType) &&
+                                !string.Equals(info.serviceType, serviceType, StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            if (IsUnusableAdvertisedHost(info.host))
+                                info.host = packet.RemoteEndPoint.Address.ToString();
+                            string key = string.IsNullOrWhiteSpace(info.instanceId)
+                                ? $"{info.serverId}@{info.host}"
+                                : info.instanceId;
+                            found[key] = info;
+                        }
+                        catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested) { break; }
+                        catch (SocketException) when (cancellationToken.IsCancellationRequested) { break; }
                     }
-                    catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested) { break; }
-                    catch (SocketException) when (cancellationToken.IsCancellationRequested) { break; }
+                }
+                catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+                { throw new OperationCanceledException(cancellationToken); }
+                catch (SocketException) when (cancellationToken.IsCancellationRequested)
+                { throw new OperationCanceledException(cancellationToken); }
+                finally
+                {
+                    // A round's completion includes its outstanding receive, not
+                    // merely the timeout/cancel request or the socket close call.
+                    client.Close();
+                    if (pendingReceive != null)
+                    {
+                        try { await pendingReceive; }
+                        catch (ObjectDisposedException) { }
+                        catch (SocketException) { }
+                    }
                 }
             }
 

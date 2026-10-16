@@ -12,6 +12,20 @@ namespace PulletFramework.NetClient.Tests
 {
     public sealed class PulletServerDiscoveryTests
     {
+        [UnityEngine.TestTools.UnityTest]
+        public System.Collections.IEnumerator CancellationAfterBroadcastSettlesReceiveAsOwnedCancellation() => UnityTaskTest.Run(async () =>
+        {
+            using var passive = CreateResponder(); using var cancellation = new CancellationTokenSource();
+            var sent = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var run = PulletServerDiscovery.DiscoverCoreAsync(LocalEndpoint(passive), 30, 1, .1f, "test",
+                (attempt, maximum) => sent.TrySetResult(true), cancellation.Token);
+            await sent.Task;
+            cancellation.Cancel();
+            try { await run; Assert.Fail("The canceled owner must not report a successful round."); }
+            catch (OperationCanceledException error) { Assert.That(error.CancellationToken, Is.EqualTo(cancellation.Token)); }
+            Assert.That(run.IsCompleted, Is.True);
+        });
+
         [Test]
         public void DiscoverCore_ReturnsMatchingServerAndUsesReplyAddressForWildcardHost() => Run(async () =>
         {

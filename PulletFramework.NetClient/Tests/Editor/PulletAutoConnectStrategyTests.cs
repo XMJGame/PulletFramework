@@ -11,6 +11,22 @@ namespace PulletFramework.NetClient.Tests
 {
     public sealed class PulletAutoConnectStrategyTests
     {
+        [UnityTest]
+        public IEnumerator DiscoveryWaitsForRealFailedAttemptRelease() => UnityTaskTest.Run(async () =>
+        {
+            var released = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            int discoveryCalls = 0;
+            var strategy = new PulletAutoConnectStrategy(token => Task.FromResult(Failed()),
+                token => { discoveryCalls++; return Task.FromResult<IReadOnlyList<PulletServerInfo>>(new[] { Server("selected") }); },
+                (server, token) => Task.FromResult(ConnectionResult.Ok()),
+                () => { entered.TrySetResult(true); return released.Task; }, () => true, _ => { }, _ => { });
+            var run = strategy.RunAsync(Options(AutoConnectMode.DirectThenDiscover), default); await entered.Task;
+            try { Assert.That(run.IsCompleted, Is.False); Assert.That(discoveryCalls, Is.Zero); }
+            finally { released.TrySetResult(true); await run; }
+            Assert.That((await run).IsSuccess, Is.True); Assert.That(discoveryCalls, Is.EqualTo(1));
+        });
+
         [Test]
         public void SelectPreferredServer_UsesStableName()
         {
@@ -61,7 +77,7 @@ namespace PulletFramework.NetClient.Tests
                 token => Task.FromResult(Failed()),
                 token => Task.FromResult<IReadOnlyList<PulletServerInfo>>(new[] { Server("BUS-01") }),
                 (server, token) => Task.FromResult(ConnectionResult.Ok()),
-                () => releaseCalls++,
+                () => { releaseCalls++; return Task.CompletedTask; },
                 () => true,
                 _ => { },
                 _ => { });
@@ -134,7 +150,7 @@ namespace PulletFramework.NetClient.Tests
                 connectFixed,
                 discover,
                 connectDiscovered,
-                () => { },
+                () => Task.CompletedTask,
                 () => true,
                 _ => { },
                 _ => { });

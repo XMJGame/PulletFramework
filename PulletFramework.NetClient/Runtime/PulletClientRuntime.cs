@@ -206,6 +206,14 @@ namespace PulletFramework.NetClient
                     _payloads.ReadGeneration(entry.Payloads), kind, detail), null));
         }
 
+        // The optional facade may invoke Messaging before raw subscribers. An
+        // application callback can invalidate the session during that delivery.
+        internal bool IsCurrentPayload(HostedClient source, long generation)
+        {
+            lock (_gate) return TryActive(source, out var entry) &&
+                _payloads.ReadGeneration(entry.Payloads) == generation;
+        }
+
         private void RecordError(HostedClient source, Exception error)
         {
             lock (_gate) if (TryActive(source, out var entry)) EnqueueControl(entry, new Control(null, error));
@@ -459,7 +467,7 @@ namespace PulletFramework.NetClient
             internal Control(PulletClientLifecycleEvent value, Exception error) { Event = value; Error = error; }
         }
         // Copy on subscription, not once per payload callback.
-        private sealed class Subscribers<T>
+        internal sealed class Subscribers<T>
         {
             private readonly object _gate = new object();
             private Action<T> _handlers;

@@ -82,18 +82,36 @@ namespace PulletFramework.NetClient
         public int payloadQueueCapacity = 1024;
         [Min(1), Tooltip("每帧最多在 Unity 主线程执行的 Payload 回调数量。数值过小会增加延迟，过大会造成单帧卡顿。")]
         public int maxPayloadCallbacksPerFrame = 256;
+        [Min(1), Tooltip("准备、排队及执行回调的 Payload 有效字节总上限，不等同于进程内存。")]
+        public int payloadQueueBytes = 4 * 1024 * 1024;
+        [Min(1), Tooltip("单帧 Payload 有效字节预算。超过完整单帧预算的单条消息在复制前拒收；可靠交付因此失败时关闭默认来源。")]
+        public int maxPayloadBytesPerFrame = 1024 * 1024;
 
         [Header("日志")]
         [Tooltip("输出连接模式、服务器发现、连接结果及重连状态等关键日志。不会输出每个数据包。")]
         public bool enableConnectionLogs = true;
 
-        private readonly PulletMainThreadEventPump _eventPump = new PulletMainThreadEventPump();
         private readonly object _clientGate = new object();
         private readonly PulletConnectionCoordinator _connectionCoordinator = new PulletConnectionCoordinator();
-        private PulletClient _client;
+        // The Runtime/SDK host is the only client owner. These are borrowed handles.
+        private PulletClientRuntime _runtime;
+        private int _unityThread;
+        private readonly PulletClientRuntime.Subscribers<ReceivedPayload> _payloadHandlers = new PulletClientRuntime.Subscribers<ReceivedPayload>();
+        private HostedClient _source;
+        private PulletClient _client => _source?.Client;
+        private Action<ConnectionStateChangedEvent> _sessionObserver;
+        private const int MaximumOperations = 32, MaximumApplicationEvents = 128, ApplicationEventsPerFrame = 64;
+        private readonly Queue<Action> _applicationEvents = new Queue<Action>();
+        private TaskCompletionSource<bool> _operationsExited = CompletedSignal();
+        private int _operations, _applicationCallbacks;
+        private Task _shutdown;
+        private Operation _discovery;
+        private Exception _applicationQueueFailure;
+        private long _reliableOverflows;
         private PulletMessageClient _messages;
         private CancellationTokenSource _lifetimeCts;
         private bool _resumeShouldReconnect;
+        private int _applicationPauseReasons;
         private volatile bool _isShuttingDown;
         private int _autoConnectRunning;
         private PulletActiveServerRecovery _activeServerRecovery;
@@ -109,8 +127,8 @@ namespace PulletFramework.NetClient
         /// <summary>最近一次成功连接或明确选择的服务器。</summary>
         public PulletServerInfo ActiveServer { get; private set; }
         public IReadOnlyList<PulletServerInfo> LastDiscoveredServers { get; private set; } = Array.Empty<PulletServerInfo>();
-        public long DroppedPayloadCount => _eventPump.DroppedPayloadCount;
-        public long ReliablePayloadOverflowCount => _eventPump.ReliablePayloadOverflowCount;
+        public long DroppedPayloadCount => _runtime?.GetSnapshot().DroppedPayloads ?? 0;
+        public long ReliablePayloadOverflowCount => Interlocked.Read(ref _reliableOverflows);
         public bool IsMessagingConfigured => _messages != null;
         /// <summary>是否正在持续恢复最后一次选择的服务器。</summary>
         public bool IsRecoveringActiveServer => _activeServerRecovery != null && _activeServerRecovery.IsRunning;
@@ -122,7 +140,7 @@ namespace PulletFramework.NetClient
         /// <summary>现有连接已断开。</summary>
         public event Action<DisconnectedEvent> Disconnected;
         /// <summary>原始应用 Payload。强类型业务优先使用 <see cref="Subscribe{T}"/>。</summary>
-        public event Action<ReceivedPayload> PayloadReceived;
+        public event Action<ReceivedPayload> PayloadReceived { add => _payloadHandlers.Add(value); remove => _payloadHandlers.Remove(value); }
         /// <summary>主线程 Payload 队列丢失了可靠消息，应用数据可能不完整。</summary>
         public event Action<string> PayloadQueueFaulted;
         /// <summary>PulletNet 内部快速重连正在进行。</summary>
@@ -158,21 +176,25 @@ namespace PulletFramework.NetClient
             PulletMessageProtocolOptions protocol,
             IMessageSerializer serializer = null)
         {
-            if (protocol == null) throw new ArgumentNullException(nameof(protocol));
-            PulletMessageClient replacement = new PulletMessageClient(
-                protocol,
-                serializer ?? new JsonMessageSerializer(),
-                (payload, channel, cancellationToken) => SendAsync(payload, channel, cancellationToken));
-            replacement.UnhandledMessage += ForwardUnhandledBusinessMessage;
-            replacement.ProtocolError += ForwardMessageProtocolError;
-
-            PulletMessageClient previous = _messages;
-            _messages = replacement;
-            if (previous != null)
+            lock (_clientGate)
             {
-                previous.UnhandledMessage -= ForwardUnhandledBusinessMessage;
-                previous.ProtocolError -= ForwardMessageProtocolError;
-                previous.Dispose();
+                if (_isShuttingDown) throw new ObjectDisposedException(nameof(PulletNetworkManager));
+                if (protocol == null) throw new ArgumentNullException(nameof(protocol));
+                PulletMessageClient replacement = new PulletMessageClient(
+                    protocol,
+                    serializer ?? new JsonMessageSerializer(),
+                    (payload, channel, cancellationToken) => SendAsync(payload, channel, cancellationToken));
+                replacement.UnhandledMessage += ForwardUnhandledBusinessMessage;
+                replacement.ProtocolError += ForwardMessageProtocolError;
+
+                PulletMessageClient previous = _messages;
+                _messages = replacement;
+                if (previous != null)
+                {
+                    previous.UnhandledMessage -= ForwardUnhandledBusinessMessage;
+                    previous.ProtocolError -= ForwardMessageProtocolError;
+                    previous.Dispose();
+                }
             }
         }
 
@@ -228,6 +250,7 @@ namespace PulletFramework.NetClient
 
         private void Awake()
         {
+            if (_lifetimeCts != null || _isShuttingDown) return;
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -235,6 +258,7 @@ namespace PulletFramework.NetClient
             }
 
             Instance = this;
+            _unityThread = Thread.CurrentThread.ManagedThreadId;
             if (dontDestroyOnLoad) DontDestroyOnLoad(gameObject);
             _lifetimeCts = new CancellationTokenSource();
             _activeServerRecovery = new PulletActiveServerRecovery(
@@ -242,40 +266,36 @@ namespace PulletFramework.NetClient
                 (target, token) => ConnectEndpointAsync(
                     target.host, target.tcpPort, target.udpPort, target.webPort, target,
                     token, _connectionCoordinator.Version),
-                ReleaseDisconnectedClient,
+                ReleaseDisconnectedClientAsync,
                 () => !_isShuttingDown,
-                attempt => ActiveServerReconnectAttempt?.Invoke(attempt),
+                attempt => Enqueue(() => InvokeEach(ActiveServerReconnectAttempt, attempt)),
                 LogInfo,
                 LogWarning);
-            _eventPump.Reset(payloadQueueCapacity);
-            BindDiscoveryEvents();
+            // Configuration is frozen when the first connection is created, so
+            // scripts may still set Inspector-equivalent values before connecting.
         }
 
-        private async void Start()
+        private void Start()
         {
             if (connectOnStart)
-                await AutoConnectAndReportAsync();
+                ObserveRequest(AutoConnectAndReportAsync());
         }
 
         private void Update()
         {
-            _eventPump.DrainActions(!_isShuttingDown, ex => Debug.LogException(ex));
-            _eventPump.DrainPayloads(
-                maxPayloadCallbacksPerFrame,
-                context => !_isShuttingDown && ReferenceEquals(context, _client),
-                payload => _messages?.HandlePayload(payload, out _),
-                payload => PayloadReceived?.Invoke(payload),
-                ex => Debug.LogException(ex));
-            int reliableOverflows = _eventPump.TakeReliableOverflowCount();
-            if (reliableOverflows <= 0) return;
-
-            string error = $"Reliable payload queue overflowed {reliableOverflows} time(s); application delivery is no longer complete.";
-            Debug.LogError($"[PulletNet] {error}");
-            try
+            for (int i = 0; i < ApplicationEventsPerFrame; i++)
             {
-                PayloadQueueFaulted?.Invoke(error);
+                Action action;
+                lock (_clientGate)
+                {
+                    if (_isShuttingDown || _applicationEvents.Count == 0) break;
+                    action = _applicationEvents.Dequeue(); _applicationCallbacks++;
+                    BeginOperationCount();
+                }
+                try { action(); } catch (Exception error) { ReportCallbackError(error); }
+                finally { lock (_clientGate) { _applicationCallbacks--; EndOperationCount(); } }
             }
-            catch (Exception ex) { Debug.LogException(ex); }
+            _runtime?.Update();
         }
 
         /// <summary>连接 Inspector 中配置的固定端点。</summary>
@@ -309,6 +329,8 @@ namespace PulletFramework.NetClient
             string targetHost, int targetTcpPort, int targetUdpPort, int targetWebSocketPort,
             PulletServerInfo server, string description)
         {
+            using var operation = EnterOperation();
+            if (operation == null) return ShuttingDown();
             if (_isShuttingDown || _lifetimeCts == null || _lifetimeCts.IsCancellationRequested)
                 return ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is shutting down.");
             if (IsConnected)
@@ -337,6 +359,8 @@ namespace PulletFramework.NetClient
         /// <summary>按照 AutoConnectMode 执行固定端点连接与局域网发现策略。</summary>
         public async Task<ConnectionResult> AutoConnectAsync(CancellationToken cancellationToken = default)
         {
+            using var operation = EnterOperation(cancellationToken);
+            if (operation == null) return ShuttingDown();
             if (IsConnected) return ConnectionResult.Ok();
             if (Interlocked.Exchange(ref _autoConnectRunning, 1) != 0)
             {
@@ -348,7 +372,7 @@ namespace PulletFramework.NetClient
             {
                 if (_isShuttingDown || _lifetimeCts == null || _lifetimeCts.IsCancellationRequested)
                     return ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is shutting down.");
-                PulletConnectionCoordinator.ConnectionIntent intent = BeginConnectionIntent(cancellationToken);
+                PulletConnectionCoordinator.ConnectionIntent intent = BeginConnectionIntent(operation.Token);
                 try
                 {
                     var strategy = new PulletAutoConnectStrategy(
@@ -361,7 +385,7 @@ namespace PulletFramework.NetClient
                             server.udpPort > 0 ? server.udpPort : udpPort,
                             server.webPort > 0 ? server.webPort : webSocketPort,
                             server, token, intent.Version),
-                        ReleaseDisconnectedClient,
+                        ReleaseDisconnectedClientAsync,
                         () => !_isShuttingDown,
                         LogInfo,
                         LogWarning);
@@ -395,15 +419,21 @@ namespace PulletFramework.NetClient
         /// <summary>执行一轮可等待的局域网发现，返回这一轮的完整服务器快照。</summary>
         public async Task<IReadOnlyList<PulletServerInfo>> DiscoverAsync(CancellationToken cancellationToken = default)
         {
+            using var operation = EnterOperation(cancellationToken);
+            if (operation == null) return Array.Empty<PulletServerInfo>();
             if (!enableDiscovery)
                 return Array.Empty<PulletServerInfo>();
             if (!IsValidPort(discoveryPort))
                 throw new InvalidOperationException("Discovery port must be between 1 and 65535.");
 
-            IsDiscovering = true;
+            lock (_clientGate)
+            {
+                if (_discovery != null) throw new InvalidOperationException("A discovery round is already running.");
+                _discovery = operation; IsDiscovering = true;
+            }
             try
             {
-                PublishDiscoveryStarted();
+                Enqueue(PublishDiscoveryStarted);
                 IReadOnlyList<PulletServerInfo> servers = await PulletServerDiscovery.DiscoverAsync(
                     discoveryPort,
                     discoveryTimeoutSeconds,
@@ -411,7 +441,7 @@ namespace PulletFramework.NetClient
                     discoverySendIntervalSeconds,
                     discoveryServiceType,
                     (attempt, maximum) => Enqueue(() => PublishDiscoveryAttempt(attempt, maximum)),
-                    cancellationToken);
+                    operation.Token);
                 LastDiscoveredServers = servers;
                 if (servers.Count > 0)
                     Enqueue(() => PublishDiscoverySuccess(servers));
@@ -432,51 +462,39 @@ namespace PulletFramework.NetClient
             }
             finally
             {
-                IsDiscovering = false;
+                lock (_clientGate) { _discovery = null; IsDiscovering = false; }
                 Enqueue(PublishDiscoveryStopped);
             }
         }
 
-        /// <summary>开始一次可由 StopDiscovery 停止的有限次数发现。</summary>
         /// <summary>启动事件驱动的局域网发现；已有发现运行时返回 false。</summary>
         public bool StartDiscovery()
         {
-            if (!enableDiscovery)
+            lock (_clientGate)
             {
-                PublishDiscoveryFailure("服务器发现已禁用。");
-                return false;
+                if (_isShuttingDown || _lifetimeCts == null || _discovery != null || !enableDiscovery) return false;
             }
-
-            try
-            {
-                bool started = PulletServerDiscovery.StartDiscovery(
-                    discoveryPort,
-                    discoveryTimeoutSeconds,
-                    discoveryMaxAttempts,
-                    discoverySendIntervalSeconds,
-                    discoveryServiceType);
-                if (started) IsDiscovering = true;
-                else LogWarning("服务器发现请求被忽略：已有发现流程正在运行。");
-                return started;
-            }
-            catch (Exception ex)
-            {
-                PublishDiscoveryFailure(ex.Message);
-                return false;
-            }
+            ObserveRequest(DiscoverAsync());
+            return IsDiscovering;
         }
 
         /// <summary>停止事件驱动的局域网发现。停止属于正常取消。</summary>
-        public void StopDiscovery() => PulletServerDiscovery.StopDiscovery();
+        public void StopDiscovery()
+        {
+            Operation round; lock (_clientGate) round = _discovery;
+            round?.Cancel();
+        }
 
         /// <summary>主动断开当前连接，同时终止旧端点的持续恢复。</summary>
         public async Task<ConnectionResult> DisconnectAsync()
         {
+            using var operation = EnterOperation();
+            if (operation == null) return ShuttingDown();
             long intentVersion = BeginDisconnectIntent();
             bool acquired = false;
             try
             {
-                await _connectionCoordinator.OperationGate.WaitAsync();
+                await _connectionCoordinator.OperationGate.WaitAsync(operation.Token);
                 acquired = true;
                 if (!_connectionCoordinator.IsCurrent(intentVersion))
                     return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Disconnect was superseded.");
@@ -494,27 +512,37 @@ namespace PulletFramework.NetClient
         /// <summary>应用暂停时挂起底层网络会话。</summary>
         public async Task<ConnectionResult> SuspendAsync()
         {
+            using var operation = EnterOperation();
+            if (operation == null) return ShuttingDown();
+            bool acquired = false;
             try
             {
+                await _connectionCoordinator.OperationGate.WaitAsync(operation.Token); acquired = true;
                 PulletClient client = _client;
                 return client == null
                     ? ConnectionResult.Fail(ConnectionErrorCode.InvalidState, "PulletNet client has not started.")
                     : await client.SuspendAsync();
             }
             catch (Exception ex) { return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message); }
+            finally { if (acquired) _connectionCoordinator.OperationGate.Release(); }
         }
 
         /// <summary>恢复此前挂起的底层网络会话。</summary>
         public async Task<ConnectionResult> ResumeAsync()
         {
+            using var operation = EnterOperation();
+            if (operation == null) return ShuttingDown();
+            bool acquired = false;
             try
             {
+                await _connectionCoordinator.OperationGate.WaitAsync(operation.Token); acquired = true;
                 PulletClient client = _client;
                 return client == null
                     ? ConnectionResult.Fail(ConnectionErrorCode.InvalidState, "PulletNet client has not started.")
                     : await client.ResumeAsync();
             }
             catch (Exception ex) { return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message); }
+            finally { if (acquired) _connectionCoordinator.OperationGate.Release(); }
         }
 
         /// <summary>按标准投递模式发送原始 Payload；成功仅代表本地接纳，不代表远端接收或业务完成。</summary>
@@ -524,7 +552,7 @@ namespace PulletFramework.NetClient
             CancellationToken cancellationToken = default)
         {
             PulletClient client = _client;
-            if (client == null || client.State != ConnectionState.Connected)
+            if (_isShuttingDown || client == null || client.State != ConnectionState.Connected)
                 return new ValueTask<SendResult>(SendResult.Rejected(SendErrorCode.NotConnected, "PulletNet client is not connected."));
             // 3.0 SendAsync 的第二个参数是 ChannelId，不可将旧模式枚举强转为 ID。
             return client.SendDefaultAsync(payload, channelType, cancellationToken);
@@ -537,7 +565,7 @@ namespace PulletFramework.NetClient
             CancellationToken cancellationToken = default)
         {
             PulletClient client = _client;
-            if (client == null || client.State != ConnectionState.Connected)
+            if (_isShuttingDown || client == null || client.State != ConnectionState.Connected)
                 return new ValueTask<SendResult>(SendResult.Rejected(SendErrorCode.NotConnected, "PulletNet client is not connected."));
             return client.SendAsync(payload, channelId, cancellationToken);
         }
@@ -597,7 +625,8 @@ namespace PulletFramework.NetClient
                 error = "Discovery timeout, attempt count and send interval must be greater than zero.";
                 return false;
             }
-            if (payloadQueueCapacity <= 0 || maxPayloadCallbacksPerFrame <= 0)
+            if (payloadQueueCapacity <= 0 || maxPayloadCallbacksPerFrame <= 0 ||
+                payloadQueueBytes <= 0 || maxPayloadBytesPerFrame <= 0)
             {
                 error = "Payload queue capacity and callbacks per frame must be greater than zero.";
                 return false;
@@ -622,7 +651,7 @@ namespace PulletFramework.NetClient
                 acquired = true;
                 if (!IsCurrentIntent(intentVersion) || cancellationToken.IsCancellationRequested)
                     return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Connection was superseded.");
-                ReleaseDisconnectedClient();
+                await ReleaseDisconnectedClientAsync();
                 PulletClient client = GetOrCreateClient(
                     targetHost, targetTcpPort, targetUdpPort, targetWebSocketPort, intentVersion);
                 ConnectionResult result = await client.ConnectAsync(cancellationToken);
@@ -634,7 +663,7 @@ namespace PulletFramework.NetClient
                             await client.DisconnectAsync();
                     }
                     catch (Exception ex) { LogWarning("清理过期连接失败：" + ex.Message); }
-                    finally { DisposeClient(); }
+                    finally { await RemoveDefaultClientAsync(); }
                     return ConnectionResult.Fail(ConnectionErrorCode.Canceled, "Connection was superseded.");
                 }
                 if (result.IsSuccess)
@@ -645,7 +674,8 @@ namespace PulletFramework.NetClient
                     udpPort = targetUdpPort;
                     webSocketPort = targetWebSocketPort;
                 }
-                else ReleaseDisconnectedClient();
+                // Keep a failed source until the next explicit attempt or policy
+                // cleanup, so Update can deliver its already-recorded failure.
                 return result;
             }
             catch (OperationCanceledException)
@@ -666,6 +696,8 @@ namespace PulletFramework.NetClient
         private PulletClient GetOrCreateClient(
             string targetHost, int targetTcpPort, int targetUdpPort, int targetWebSocketPort, long intentVersion)
         {
+            if (Thread.CurrentThread.ManagedThreadId != _unityThread)
+                throw new InvalidOperationException("Create the Manager's default client on its Unity thread.");
             lock (_clientGate)
             {
                 if (_isShuttingDown) throw new ObjectDisposedException(nameof(PulletNetworkManager));
@@ -676,12 +708,37 @@ namespace PulletFramework.NetClient
                 if (_client != null) throw new InvalidOperationException("Disconnect the current client before changing endpoint.");
 
                 var options = CreateClientOptions(targetHost, targetTcpPort, targetUdpPort, targetWebSocketPort);
-                _client = new PulletClient(options);
+                if (_runtime == null)
+                {
+                    _runtime = new PulletClientRuntime(new PulletClientRuntimeOptions
+                    {
+                        MaximumClients = 1, MaximumPayloads = payloadQueueCapacity,
+                        PayloadsPerClient = payloadQueueCapacity, MaximumPayloadBytes = payloadQueueBytes,
+                        PayloadBytesPerClient = payloadQueueBytes, PayloadCallbacksPerFrame = maxPayloadCallbacksPerFrame,
+                        PayloadBytesPerFrame = maxPayloadBytesPerFrame
+                    });
+                    _runtime.LifecycleChanged += ForwardLifecycle;
+                    _runtime.PayloadReceived += ForwardPayload;
+                    _runtime.DeliveryFaulted += ForwardDeliveryFault;
+                    _runtime.CallbackError += error => ReportCallbackError(error.Error);
+                }
+                _source = _runtime.Create("default", options);
                 _activeHost = targetHost;
                 _activeTcpPort = targetTcpPort;
                 _activeUdpPort = targetUdpPort;
                 _activeWebSocketPort = targetWebSocketPort;
-                BindClientEvents(_client, intentVersion);
+                // Messaging is optional application state, not another network
+                // lifecycle owner. Cancel pending calls at the actual SDK boundary,
+                // before the deferred Unity event, without touching delivery queues.
+                var source = _source;
+                _sessionObserver = value =>
+                {
+                    if (!ReferenceEquals(source, _source)) return;
+                    if (value.Current == ConnectionState.Handshaking || value.Current == ConnectionState.Disconnecting ||
+                        value.Current == ConnectionState.Disconnected || value.Current == ConnectionState.Disposed)
+                        _messages?.CancelPending("PulletNet session changed: " + value.Current);
+                };
+                source.Client.ConnectionStateChanged += _sessionObserver;
                 return _client;
             }
         }
@@ -709,108 +766,81 @@ namespace PulletFramework.NetClient
             };
         }
 
-        private void BindClientEvents(PulletClient client, long intentVersion)
+        private void ForwardLifecycle(PulletClientLifecycleEvent value)
         {
-            client.CallbackError += error => Enqueue(() =>
+            if (_isShuttingDown || !ReferenceEquals(value.Source, _source)) return;
+            switch (value.Kind)
             {
-                if (IsCurrentClient(client, intentVersion)) Debug.LogException(error);
-            });
-            client.Connected += value => HandleClientConnected(client, intentVersion, value);
-            client.Disconnected += value => HandleClientDisconnected(client, value);
-            client.ReconnectAttempt += value => Enqueue(() =>
-            {
-                if (!IsCurrentClient(client, intentVersion)) return;
-                LogInfo($"正在重连服务器：第 {value.Attempt}/{value.MaxAttempts} 次，延迟 {value.DelayMs}ms；原因：{value.Reason}");
-                ReconnectAttempt?.Invoke(value);
-            });
-            client.Reconnected += () => HandleClientReconnected(client, intentVersion);
-            client.ReconnectFailed += value => Enqueue(() =>
-            {
-                if (!IsCurrentClient(client, intentVersion)) return;
-                LogWarning($"服务器重连失败：已尝试 {value.Attempts} 次；原因：{value.Reason}");
-                ReconnectFailed?.Invoke(value);
-                if (IsCurrentClient(client, intentVersion))
-                    BeginPersistentActiveServerReconnect(value.Reason);
-            });
-            client.PayloadReceived += value =>
-            {
-                if (!IsCurrentClient(client, intentVersion)) return;
-                _eventPump.EnqueuePayload(value, client);
-            };
+                case PulletClientLifecycleKind.Connected:
+                    LogInfo("服务器连接成功。"); InvokeEach(Connected, (ConnectedEvent)value.Detail); break;
+                case PulletClientLifecycleKind.ConnectFailed:
+                    // Explicit/auto requests report their returned result exactly once.
+                    break;
+                case PulletClientLifecycleKind.Disconnected:
+                    InvokeEach(Disconnected, (DisconnectedEvent)value.Detail); break;
+                case PulletClientLifecycleKind.ReconnectAttempt:
+                    InvokeEach(ReconnectAttempt, (ReconnectAttemptEvent)value.Detail); break;
+                case PulletClientLifecycleKind.Reconnected:
+                    InvokeEach(Reconnected); break;
+                case PulletClientLifecycleKind.ReconnectFailed:
+                    var failure = (ReconnectFailedEvent)value.Detail;
+                    InvokeEach(ReconnectFailed, failure);
+                    if (!_isShuttingDown && ReferenceEquals(value.Source, _source))
+                        BeginPersistentActiveServerReconnect(failure.Reason);
+                    break;
+            }
         }
 
-        private void BindDiscoveryEvents()
+        private void ForwardPayload(PulletClientPayloadEvent value)
         {
-            PulletServerDiscovery.OnStarted += HandleDiscoveryStarted;
-            PulletServerDiscovery.OnAttempt += HandleDiscoveryAttempt;
-            PulletServerDiscovery.OnSuccess += HandleDiscoverySuccess;
-            PulletServerDiscovery.OnFailure += HandleDiscoveryFailure;
-            PulletServerDiscovery.OnStopped += HandleDiscoveryStopped;
-        }
-
-        // 生命周期事件只在接收时确认归属。确认后即使切换 Client，也按入队顺序交付。
-        internal void HandleClientConnected(PulletClient client, long intentVersion, ConnectedEvent value)
-        {
-            if (!IsCurrentClient(client, intentVersion)) return;
-            string endpoint = FormatEndpoint(_activeHost, _activeTcpPort, _activeUdpPort);
-            Enqueue(() =>
+            if (_isShuttingDown || !ReferenceEquals(value.Source, _source)) return;
+            // The Messaging envelope still requires byte[]. Raw consumers borrow
+            // Runtime's memory directly; they do not pay for an extra array/queue.
+            var messages = _messages;
+            if (messages != null)
             {
-                LogInfo($"服务器连接成功：{endpoint}，SessionId={value.SessionId}。");
-                Connected?.Invoke(value);
-            });
-        }
-
-        internal void HandleClientDisconnected(PulletClient client, DisconnectedEvent value)
-        {
-            if (!IsCurrentClient(client)) return;
-            InvalidateSession("PulletNet transport disconnected: " + value.Reason);
-            Enqueue(() =>
+                try { messages.HandlePayload(value.Payload.Memory.ToArray(), out _); }
+                catch (Exception error) { ReportCallbackError(error); }
+            }
+            foreach (var handler in _payloadHandlers.Snapshot)
             {
-                LogWarning($"服务器连接已断开：Reason={value.ReasonCode}，{value.Reason}");
-                Disconnected?.Invoke(value);
-            });
+                if (_isShuttingDown || !ReferenceEquals(value.Source, _source) ||
+                    !_runtime.IsCurrentPayload(value.Source, value.DispatchGeneration)) break;
+                try { handler(value.Payload); } catch (Exception error) { ReportCallbackError(error); }
+            }
         }
 
-        internal void HandleClientReconnected(PulletClient client, long intentVersion)
+        private void ForwardDeliveryFault(PulletClientDeliveryFailure value)
         {
-            if (!IsCurrentClient(client, intentVersion)) return;
-            string endpoint = FormatEndpoint(_activeHost, _activeTcpPort, _activeUdpPort);
-            Enqueue(() =>
+            if (_isShuttingDown || !ReferenceEquals(value.Source, _source)) return;
+            if (value.Reason == PulletClientDeliveryFailureReason.ReliableOverflow)
+                Interlocked.Increment(ref _reliableOverflows);
+            try
             {
-                LogInfo($"服务器重连成功：{endpoint}。");
-                Reconnected?.Invoke();
-            });
+                _messages?.CancelPending("Unity delivery failed: " + value.Reason);
+                InvokeEach(PayloadQueueFaulted, "Unity delivery failed: " + value.Reason);
+            }
+            finally
+            {
+                // This facade has only one source. Incomplete reliable delivery
+                // must not silently reconnect and continue application state.
+                // Request close while the terminal Runtime fact is still owned.
+                ObserveRequest(ShutdownAsync());
+            }
         }
-
-        private void UnbindDiscoveryEvents()
-        {
-            PulletServerDiscovery.OnStarted -= HandleDiscoveryStarted;
-            PulletServerDiscovery.OnAttempt -= HandleDiscoveryAttempt;
-            PulletServerDiscovery.OnSuccess -= HandleDiscoverySuccess;
-            PulletServerDiscovery.OnFailure -= HandleDiscoveryFailure;
-            PulletServerDiscovery.OnStopped -= HandleDiscoveryStopped;
-        }
-
-        private void HandleDiscoveryStarted() => Enqueue(PublishDiscoveryStarted);
-        private void HandleDiscoveryAttempt(int attempt, int maximum)
-            => Enqueue(() => PublishDiscoveryAttempt(attempt, maximum));
-        private void HandleDiscoverySuccess(IReadOnlyList<PulletServerInfo> servers)
-            => Enqueue(() => PublishDiscoverySuccess(servers));
-        private void HandleDiscoveryFailure(string error)
-            => Enqueue(() => PublishDiscoveryFailure(error));
-        private void HandleDiscoveryStopped() => Enqueue(PublishDiscoveryStopped);
 
         private void PublishDiscoveryStarted()
         {
-            IsDiscovering = true;
             LogInfo($"服务器发现开始：UDP {discoveryPort}，最多广播 {discoveryMaxAttempts} 次，" +
                     $"间隔 {discoverySendIntervalSeconds:0.##} 秒，接收窗口 {discoveryTimeoutSeconds:0.##} 秒。");
-            DiscoveryStarted?.Invoke();
+            InvokeEach(DiscoveryStarted);
         }
 
         private void PublishDiscoveryAttempt(int attempt, int maximum)
         {
-            DiscoveryAttempted?.Invoke(attempt, maximum);
+            if (DiscoveryAttempted == null) return;
+            foreach (Action<int, int> handler in DiscoveryAttempted.GetInvocationList())
+            { if (_isShuttingDown) break; try { handler(attempt, maximum); } catch (Exception error) { ReportCallbackError(error); } }
         }
 
         private void PublishDiscoverySuccess(IReadOnlyList<PulletServerInfo> servers)
@@ -818,22 +848,21 @@ namespace PulletFramework.NetClient
             PulletServerInfo[] snapshot = servers == null ? Array.Empty<PulletServerInfo>() : servers.ToArray();
             LogInfo($"服务器发现成功：共找到 {snapshot.Length} 个匹配服务器。");
             LastDiscoveredServers = snapshot;
-            ServersDiscovered?.Invoke(snapshot);
-            DiscoverySucceeded?.Invoke(snapshot);
+            InvokeEach(ServersDiscovered, (IReadOnlyList<PulletServerInfo>)snapshot);
+            InvokeEach(DiscoverySucceeded, (IReadOnlyList<PulletServerInfo>)snapshot);
         }
 
         private void PublishDiscoveryFailure(string error)
         {
             string message = string.IsNullOrWhiteSpace(error) ? "Server discovery failed." : error;
             LogWarning("服务器发现失败：" + message);
-            DiscoveryFailed?.Invoke(message);
+            InvokeEach(DiscoveryFailed, message);
         }
 
         private void PublishDiscoveryStopped()
         {
-            IsDiscovering = false;
             LogInfo("服务器发现结束。");
-            DiscoveryStopped?.Invoke();
+            InvokeEach(DiscoveryStopped);
         }
 
         private void ReportConnectFailure(ConnectionResult result)
@@ -842,17 +871,19 @@ namespace PulletFramework.NetClient
             string message = result.Message ?? "PulletNet connection failed.";
             LogWarning("服务器连接失败：" + message);
             var value = new ConnectFailedEvent(message);
-            ConnectFailed?.Invoke(value);
+            InvokeEach(ConnectFailed, value);
         }
 
         private void LogInfo(string message)
         {
-            if (enableConnectionLogs) Debug.Log("[PulletNet] " + message, this);
+            if (!enableConnectionLogs || _isShuttingDown) return;
+            try { Debug.Log("[PulletNet] " + message, this); } catch (Exception error) { ReportCallbackError(error); }
         }
 
         private void LogWarning(string message)
         {
-            if (enableConnectionLogs) Debug.LogWarning("[PulletNet] " + message, this);
+            if (!enableConnectionLogs || _isShuttingDown) return;
+            try { Debug.LogWarning("[PulletNet] " + message, this); } catch (Exception error) { ReportCallbackError(error); }
         }
 
         private static string FormatEndpoint(string targetHost, int targetTcpPort, int targetUdpPort)
@@ -870,10 +901,24 @@ namespace PulletFramework.NetClient
         private static string FormatResultError(ConnectionResult result)
             => string.IsNullOrWhiteSpace(result.Message) ? result.ErrorCode.ToString() : result.Message;
 
-        private bool IsCurrentClient(PulletClient client) => !_isShuttingDown && ReferenceEquals(client, _client);
-        private bool IsCurrentClient(PulletClient client, long intentVersion)
-            => IsCurrentClient(client) && IsCurrentIntent(intentVersion);
-        private void Enqueue(Action action) { if (!_isShuttingDown) _eventPump.Enqueue(action); }
+        // Only application/discovery facts use this bounded queue. SDK lifecycle
+        // and payloads go straight through Runtime's one delivery pipeline.
+        private void Enqueue(Action action)
+        {
+            bool overflow = false;
+            lock (_clientGate)
+            {
+                if (_isShuttingDown) return;
+                if (_applicationEvents.Count + _applicationCallbacks >= MaximumApplicationEvents)
+                {
+                    _applicationQueueFailure = _applicationQueueFailure ?? new InvalidOperationException("Manager application event capacity reached.");
+                    overflow = true;
+                }
+                else _applicationEvents.Enqueue(action);
+            }
+            // A full queue cannot hide its own terminal condition in that queue.
+            if (overflow) ObserveRequest(ShutdownAsync());
+        }
 
         private PulletMessageClient GetMessages()
         {
@@ -914,7 +959,6 @@ namespace PulletFramework.NetClient
 
         private void InvalidateSession(string reason)
         {
-            _eventPump.InvalidateSession();
             _messages?.CancelPending(reason);
         }
 
@@ -960,72 +1004,245 @@ namespace PulletFramework.NetClient
                 Enqueue(() => ReportConnectFailure(result));
         }
 
-        private async void OnApplicationPause(bool pauseStatus)
+        private void OnApplicationPause(bool pauseStatus) => SetApplicationPauseReason(1, pauseStatus);
+        private void OnApplicationFocus(bool hasFocus) => SetApplicationPauseReason(2, !hasFocus);
+
+        private void SetApplicationPauseReason(int reason, bool paused)
         {
+            lock (_clientGate)
+            {
+                if (_isShuttingDown || !reconnectOnApplicationResume) return;
+                bool wasPaused = _applicationPauseReasons != 0;
+                _applicationPauseReasons = paused ? _applicationPauseReasons | reason : _applicationPauseReasons & ~reason;
+                if (wasPaused == (_applicationPauseReasons != 0)) return;
+            }
+            ObserveRequest(ApplyPauseAsync());
+        }
+
+        private async Task ApplyPauseAsync()
+        {
+            using var operation = EnterOperation();
+            if (operation == null) return;
             if (_isShuttingDown || !reconnectOnApplicationResume) return;
+            bool acquired = false;
             try
             {
-                if (pauseStatus)
+                await _connectionCoordinator.OperationGate.WaitAsync(operation.Token); acquired = true;
+                bool paused; lock (_clientGate) paused = _applicationPauseReasons != 0;
+                var client = _client;
+                if (client == null) return;
+                // Evaluate the latest combined application intent after entering
+                // the same endpoint-operation gate. Pause/focus are not competing
+                // SDK state machines and cannot resume before suspend exits.
+                if (paused)
                 {
-                    _resumeShouldReconnect = IsConnected;
-                    if (_resumeShouldReconnect) await SuspendAsync();
+                    _resumeShouldReconnect |= IsConnected;
+                    if (IsConnected) await client.SuspendAsync();
                 }
                 else if (_resumeShouldReconnect)
                 {
                     _resumeShouldReconnect = false;
-                    ConnectionResult result = await ResumeAsync();
+                    ConnectionResult result = await client.ResumeAsync();
                     if (!result.IsSuccess) Enqueue(() => LogWarning(result.Message ?? "PulletNet resume failed."));
                 }
             }
+            catch (OperationCanceledException) when (operation.Token.IsCancellationRequested) { }
             catch (Exception ex) { Enqueue(() => LogWarning(ex.Message)); }
+            finally { if (acquired) _connectionCoordinator.OperationGate.Release(); }
         }
 
-        private async void OnDestroy()
+        /// <summary>
+        /// Irreversibly close this facade. Joins accepted application operations,
+        /// recovery, discovery and Runtime (including entered callbacks). Call and
+        /// await before destroying the object when an exit receipt is required.
+        /// Never synchronously wait from a Unity/network callback. A caller token
+        /// cancels only that caller's wait, not shared cleanup.
+        /// </summary>
+        public Task ShutdownAsync(CancellationToken cancellationToken = default)
         {
-            if (Instance != this) return;
-            Instance = null;
-            _isShuttingDown = true;
-            UnbindDiscoveryEvents();
-            PulletServerDiscovery.StopDiscovery();
-            _lifetimeCts.Cancel();
-            try { await DisconnectAsync(); DisposeClient(); }
-            catch (Exception ex) { Debug.LogWarning($"[PulletNet] Disconnect during destroy failed: {ex.Message}"); }
-            finally
-            {
-                _activeServerRecovery?.Dispose();
-                _activeServerRecovery = null;
-                if (_messages != null)
-                {
-                    _messages.UnhandledMessage -= ForwardUnhandledBusinessMessage;
-                    _messages.ProtocolError -= ForwardMessageProtocolError;
-                    _messages.Dispose();
-                    _messages = null;
-                }
-                _eventPump.Dispose();
-                _lifetimeCts.Dispose();
-            }
-        }
-
-        private void ReleaseDisconnectedClient()
-        {
-            if (_client == null || (_client.State != ConnectionState.Disconnected &&
-                                    _client.State != ConnectionState.Disposed)) return;
-            DisposeClient();
-        }
-
-        private void DisposeClient()
-        {
-            PulletClient client;
+            if (cancellationToken.IsCancellationRequested) return Task.FromCanceled(cancellationToken);
+            TaskCompletionSource<bool> owner = null; Task operations = null;
             lock (_clientGate)
             {
-                client = _client;
-                _client = null;
+                if (_shutdown == null)
+                {
+                    _isShuttingDown = true;
+                    owner = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _shutdown = owner.Task; operations = _operationsExited.Task;
+                    _applicationEvents.Clear();
+                }
+            }
+            if (owner != null) _ = ShutdownCoreAsync(owner, operations);
+            return cancellationToken.CanBeCanceled ? WaitForCaller(_shutdown, cancellationToken) : _shutdown;
+        }
+
+        private async Task ShutdownCoreAsync(TaskCompletionSource<bool> owner, Task operations)
+        {
+            var failures = new List<Exception>();
+            Task recovery = Task.CompletedTask;
+            Task<PulletClientRuntimeCloseResult> runtime = null;
+            // Start every stop request before joining any owner. A blocked connect
+            // may require Runtime close to unblock; holding OperationGate here
+            // would deadlock that accepted operation.
+            try { recovery = _activeServerRecovery?.StopAsync() ?? Task.CompletedTask; } catch (Exception e) { failures.Add(e); }
+            try { _lifetimeCts?.Cancel(); } catch (Exception e) { failures.Add(e); }
+            try { runtime = _runtime?.CloseAsync(); } catch (Exception e) { failures.Add(e); }
+            try { await recovery; } catch (Exception e) { failures.Add(e); }
+            try { await operations; } catch (Exception e) { failures.Add(e); }
+            try
+            {
+                if (runtime != null)
+                {
+                    var result = await runtime;
+                    if (result.HostCleanupError != null) failures.Add(result.HostCleanupError);
+                    foreach (var client in result.Clients)
+                    {
+                        if (client.CleanupError != null) failures.Add(client.CleanupError);
+                        if (client.DeliveryFailure != null) failures.Add(client.DeliveryFailure.Error ??
+                            new InvalidOperationException("Unity delivery failed: " + client.DeliveryFailure.Reason));
+                    }
+                }
+            }
+            catch (Exception e) { failures.Add(e); }
+            try
+            {
+                if (_source != null && _sessionObserver != null) _source.Client.ConnectionStateChanged -= _sessionObserver;
+                _source = null; _sessionObserver = null;
+            }
+            catch (Exception e) { failures.Add(e); }
+            try
+            {
+                var messages = _messages; _messages = null;
+                if (messages != null)
+                {
+                    messages.UnhandledMessage -= ForwardUnhandledBusinessMessage;
+                    messages.ProtocolError -= ForwardMessageProtocolError;
+                    messages.Dispose();
+                }
+            }
+            catch (Exception e) { failures.Add(e); }
+            try { _lifetimeCts?.Dispose(); } catch (Exception e) { failures.Add(e); }
+            if (_applicationQueueFailure != null) failures.Insert(0, _applicationQueueFailure);
+            if (failures.Count == 0) owner.TrySetResult(true);
+            else owner.TrySetException(new AggregateException("PulletNetworkManager shutdown failed.", failures));
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            if (_shutdown == null) ObserveRequest(ShutdownAsync());
+        }
+
+        private void OnApplicationQuit() { if (_shutdown == null) ObserveRequest(ShutdownAsync()); }
+
+        private Task ReleaseDisconnectedClientAsync()
+        {
+            var client = _client;
+            return client != null && (client.State == ConnectionState.Disconnected || client.State == ConnectionState.Disposed)
+                ? RemoveDefaultClientAsync() : Task.CompletedTask;
+        }
+
+        private async Task RemoveDefaultClientAsync()
+        {
+            HostedClient source; Action<ConnectionStateChangedEvent> observer;
+            Task<PulletClientCloseResult> removal;
+            lock (_clientGate)
+            {
+                source = _source;
+                if (source == null || _isShuttingDown) return; // shared Shutdown owns the same source now
+                observer = _sessionObserver;
+                removal = _runtime.RemoveAsync(source);
+                _source = null; _sessionObserver = null;
                 _activeHost = null;
                 _activeTcpPort = _activeUdpPort = _activeWebSocketPort = 0;
             }
-            if (client == null) return;
+            if (observer != null) source.Client.ConnectionStateChanged -= observer;
             InvalidateSession("PulletNet client was replaced or disposed.");
-            ((IDisposable)client).Dispose();
+            var result = await removal;
+            if (!result.IsSuccess) throw result.CleanupError ?? result.DeliveryFailure?.Error ??
+                new InvalidOperationException("Default source was retired after delivery failure.");
+        }
+
+        // Application operation accounting, not an SDK connection state machine.
+        // Published under the same admission lock as Shutdown so no accepted
+        // strategy/discovery/pause operation can disappear from the final join.
+        private Operation EnterOperation(CancellationToken token = default)
+        {
+            lock (_clientGate)
+            {
+                if (_isShuttingDown || _lifetimeCts == null) return null;
+                if (_operations >= MaximumOperations) throw new InvalidOperationException("Manager application operation capacity reached.");
+                var operation = new Operation(this, CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCts.Token, token));
+                BeginOperationCount(); return operation;
+            }
+        }
+
+        private void BeginOperationCount()
+        {
+            if (_operations++ == 0) _operationsExited = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        private void EndOperationCount()
+        {
+            if (--_operations == 0) _operationsExited.TrySetResult(true);
+        }
+
+        private sealed class Operation : IDisposable
+        {
+            private readonly object _gate = new object();
+            private readonly PulletNetworkManager _owner;
+            private readonly CancellationTokenSource _cancellation;
+            private bool _disposed;
+            internal CancellationToken Token { get; }
+            internal Operation(PulletNetworkManager owner, CancellationTokenSource cancellation)
+            { _owner = owner; _cancellation = cancellation; Token = cancellation.Token; }
+            internal void Cancel() { lock (_gate) if (!_disposed) _cancellation.Cancel(); }
+            public void Dispose()
+            {
+                lock (_gate) { if (_disposed) return; _disposed = true; _cancellation.Dispose(); }
+                lock (_owner._clientGate) _owner.EndOperationCount();
+            }
+        }
+
+        private static TaskCompletionSource<bool> CompletedSignal()
+        { var signal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); signal.SetResult(true); return signal; }
+
+        private static ConnectionResult ShuttingDown()
+            => ConnectionResult.Fail(ConnectionErrorCode.Disposed, "PulletNet client is not initialized or is shutting down.");
+
+        private static async Task WaitForCaller(Task shared, CancellationToken token)
+        {
+            if (!token.CanBeCanceled) { await shared; return; }
+            var canceled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (token.Register(() => canceled.TrySetCanceled(token)))
+            {
+                var completed = await Task.WhenAny(shared, canceled.Task);
+                await completed;
+            }
+        }
+
+        private static void ObserveRequest(Task request)
+        {
+            // Diagnostic continuation owns no resources or additional operation.
+            _ = request.ContinueWith(task => ReportCallbackError(task.Exception), CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+        }
+
+        private static void ReportCallbackError(Exception error)
+        { try { Debug.LogException(error); } catch { /* diagnostics must not interrupt owner settlement */ } }
+
+        private void InvokeEach(Action handlers)
+        {
+            if (handlers == null) return;
+            foreach (Action handler in handlers.GetInvocationList())
+            { if (_isShuttingDown) break; try { handler(); } catch (Exception error) { ReportCallbackError(error); } }
+        }
+
+        private void InvokeEach<T>(Action<T> handlers, T value)
+        {
+            if (handlers == null) return;
+            foreach (Action<T> handler in handlers.GetInvocationList())
+            { if (_isShuttingDown) break; try { handler(value); } catch (Exception error) { ReportCallbackError(error); } }
         }
 
         private static bool IsValidPort(int port) => port > 0 && port <= 65535;

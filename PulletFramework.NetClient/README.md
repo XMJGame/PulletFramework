@@ -8,13 +8,13 @@
 模块组合使用。服务端及跨平台 C# 网络内核仍使用 `PulletNet` 名称。
 
 当前为 `3.0.0-pre.1` 开发检查点，不是正式发布或完整Unity3.0验收。U2单连接、U3/U4内部派发和薄 `PulletClientRuntime` 已完整接入；
-旧Manager尚未迁移，不能宣称它已有新的多来源/字节预算保证。多连接请显式创建Runtime、订阅事件并由Unity帧owner调用Update，Create不自动连接。
+Manager现为同一Runtime的单默认来源门面，具有字节/条数预算及可等待Shutdown；多连接仍应显式创建Runtime、订阅事件并由Unity帧owner调用Update，Create不自动连接。
 本目录 `NativeInput.json` 与DLL现锁定到准确 `2b046d5` RC1 / Windows CI38887773146 attempt1，包含SDK UDP退出修复。
 该准确包的隔离Unity2022.3.62f3检查点121/121通过（含Runtime25项与真实连接11项），真实服务20次回显且Stop/Dispose exit0。
 旧dac3c64 RC2的12关键场景20独立进程240/240按相同Runtime源码及SDK/Protocol有序实现零差异复用为行为证据，不冒充相同二进制。
 当前接入合同和新输入证据见仓库Documentation中的 `NetClient-U3-Runtime-Contract.zh-CN.md` 与 `NetClient-U3-CI-Input-Checkpoint.zh-CN.md`；原本地检查点和失败记录仍保留。
-此前Editor测试前启动AV原件仍保留、未追溯结案；Player/IL2CPP/PICO和U5/U6整体生命周期尚未验收。
-U5-A持续恢复策略已有可观察Completion/可等待永久Stop，130项包检查点与9项20轮通过；旧Manager尚未接入整体Shutdown，不把该内部能力冒称MonoBehaviour退出已收口。详见Documentation/NetClient-U5-Recovery-Owner.zh-CN.md。
+此前Editor测试前启动AV原件仍保留、未追溯结案；Player/IL2CPP/PICO尚未验收。
+U5-A持续恢复策略的原130项包检查点与9项20轮保留为历史证据；当前Manager合同见PulletNet仓库 `Docs/Unity/NetClient-U5-Manager-Contract.zh-CN.md`，安装仓库Documentation保存同步副本。本轮不把显式Shutdown接入等同于所有目标平台的生命周期验收。
 2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
 
 ## 平台范围
@@ -37,9 +37,12 @@ U5-A持续恢复策略已有可观察Completion/可等待永久Stop，130项包�
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 ```
 
-本地 3.0 适配以本仓库 `PulletFramework.NetClient` 为源码 owner。先在隔离 Unity 工程中通过本地
-`package.json` 接入，不覆盖已有业务工程；不要再用 Native 仓库的旧 `UnityPackages` 镜像或旧同步脚本
-直接覆盖 DLL。更换输入时必须同时验证准确的 Protocol/ClientSDK 包、版本及哈希，并使用新的验证目录。
+Unity 适配以 PulletNet 仓库 `UnityPackages/PulletFramework.NetClient` 为唯一开发源；
+验证通过后同步到 PulletFramework 同名目录作为可安装副本。业务工程使用自己 `Packages` 内的
+嵌入式副本，不通过工程外开发路径、软链接或自动同步追随源码变化。
+本轮在 PulletNet 隔离工作区开发和验证，未更新妈祖工程的 2.x 安装。更换输入时必须同时验证
+准确的 Protocol/ClientSDK 包、版本及哈希，并使用新的验证目录。源码、DLL、NativeInput 和 meta
+作为同一受控输入，不使用旧脚本直接覆盖新适配层的 DLL。
 
 ## 使用
 
@@ -72,13 +75,15 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 一次新的显式连接或断开会取消仍在进行的旧连接请求。旧请求迟到的结果不会覆盖新的目标服务器。
 断线时 Manager 会立即取消旧会话的待完成 RPC，并清空尚未交付给主线程的旧会话消息；
 业务层收到重连成功后，仍应按自身协议重新注册和同步状态。
-已经确认属于当前连接的连接/断开事件会按入队顺序交付，即使主线程派发前 Client 已被替换；
-旧 Client 在替换后才到达的回调仍会被忽略。
+当前来源的生命周期事实按顺序交付。显式移除来源会丢弃该来源尚未消费的普通记录；
+新来源不继承旧句柄的排队/迟到事件。需要保留已交付历史的业务应在自己的回调中记录。
 
-主线程 Payload 队列默认上限为 1024，每帧最多派发 256 条，可直接在 `PulletNetworkManager`
-中调整。`Unreliable`/`Sequenced` 满队列时丢弃较旧的非可靠数据；可靠通道满队列时不会
-静默丢弃，而是累加 `ReliablePayloadOverflowCount` 并触发 `PayloadQueueFaulted` 与连接错误事件。
-运行时可通过 `DroppedPayloadCount` 观察被替换或丢弃的非可靠 Payload 数量。
+主线程Payload默认1024条/4MiB，每帧256条/1MiB，在首次创建默认来源时冻结配置。
+准备/排队/回调消费中的有效字节都计费；超过完整帧预算的单条消息在复制前拒收。
+`Unreliable`/`Sequenced` 过载丢弃本次入站，不驱逐旧数据。可靠溢出、复制失败或生命周期队列
+满载使默认来源交付不完整，Runtime先停止它，Manager收到终态后请求整体Shutdown，不自动重连。
+主线程已交付的可靠溢出事实累加到 `ReliablePayloadOverflowCount`，通过 `PayloadQueueFaulted`
+报告；不再Update也可从失败的 `ShutdownAsync` 观察未交付终态。`DroppedPayloadCount`读取Runtime丢弃统计。
 `PulletNetworkManager.IsConnected` 直接读取 ClientSDK 的 `ConnectionState`，Unity 层不再维护另一份
 可能漂移的连接布尔值。
 
@@ -102,6 +107,10 @@ manager.DiscoverySucceeded += servers => ShowVehicleList(servers);
 manager.DiscoveryFailed += error => ShowDiscoveryError(error);
 manager.StartDiscovery();
 // manager.StopDiscovery();
+
+// 在销毁组件/切场景前，由回调外的应用退出流程等待。不可在Unity主线程同步阻塞。
+await manager.ShutdownAsync();
+// OnDestroy/OnApplicationQuit只能请求关闭，不会替Unity提供可等待的退出屏障。
 ```
 
 单连接真实回显的可复用测试入口见 `Validation~/README.md`。U2 不暴露保留 Session 的 UDP 重绑入口；
