@@ -25,3 +25,11 @@ Unity2022.3.62f3，Windows x64 Mono，Development Player，Low裁剪；完整包
 使用可重复入口`Tools/Test-PulletNetUnityPlayer.ps1`，新输出目录、禁止覆盖既有证据；服务器必须与NativeInput准确对应。详情与hash见[机器记录](Evidence/netclient-u7-player.json)。
 
 Windows本地Player批次到此停止。Android IL2CPP/PICO、OS真实后台/设备休眠和Release/其他版本组合待协作，不以本结果追溯关闭历史启动AV。仍3.0.0-pre.1开发包；未推送、发布或升级妈祖/XR。后续选择设备验收或单独业务迁移，不自动展开拆包/KCP/新核心重构。
+
+## 后续只读核验：唯一构建警告已归属
+
+同日用户继续授权后，用独立Unity Editor通过序列化接口读取**原始**LastBuild.buildreport，而不是重新构建求零警告。报告确认成功、0错误、唯一一条Warning，发生在Building scene Assets/PlayerAcceptance.unity：无GfxDevice renderer，SkyManager无法更新Ambient Probe/Reflection Probes；它建议不使用-nographics或为场景生成光照。此为无图形验证环境的场景光照/探针警告，不是PulletNet收发、线程或资源释放异常；也不代表真实业务场景的光照已验证。网络回显验证不需要这些探针，本批不为消除报告数字改动验证场景或网络代码。
+
+原报告SHA256读取前后同为7ff52a2602096409ccc1d2c70a5cb9065fc29cf389feea4659f4ab915d273a44，读取进程exit0。**仍是1条已解释警告，不回写为0条**；上文和原U7机器记录保留当时“详情未归属”的事实。最新[核验收据](Evidence/netclient-u7-warning-and-device-readiness.json)，原件artifacts/unity-u7-warning-20261016。
+
+Android前置只核查安装文件：2022.3.62f3的Android/IL2CPP、NDK23.1、JDK11（java命令成功）、Gradle7.5.1和SDK文件存在；adb命令成功但设备列表为空。未运行Android Gradle/IL2CPP构建、安装或设备测试，不能把文件存在说成可用平台通过。下一阶段需选择Android手机/PICO并连接、允许USB调试，或另行明确妈祖迁移范围；本轮未安装软件、改系统设置或升级业务。
