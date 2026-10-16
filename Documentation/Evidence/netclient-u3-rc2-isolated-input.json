@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "purpose": "Validated isolated development input proposal, not the installed package NativeInput",
+  "rawRoot": "G:/XuMingJun/2026/PICO GPS XR/PulletNet/artifacts/udp-exit-candidate-dac3c64",
+  "nativeInput": {
+    "schema": 1,
+    "purpose": "U3/U4 isolated RC2 local validation only; remote CI pending; not a published or installed consumer input",
+    "source": "dac3c64e3a75a0c1094973965b4667ccd0ad2e9d",
+    "ciRun": null,
+    "ciAttempt": null,
+    "ciPlatform": null,
+    "nativePackageVersion": "3.0.0-rc.2",
+    "wireVersion": 3,
+    "libraries": [
+      {
+        "assembly": "PulletNet.Protocol",
+        "framework": "netstandard2.0",
+        "packageSha256": "f70047fc876381fe7b4b44829f5c7435ee7f91a3a4957e428b9eb11d1ce9c477",
+        "librarySha256": "8fd02b7a07ba80e23fa9448746e0edce849600673d5b2179c42c584ea02cc9ab"
+      },
+      {
+        "assembly": "PulletNet.ClientSDK",
+        "framework": "netstandard2.1",
+        "packageSha256": "bc4ab7988c3430507c8cf17ee1d1b72a6e2e2559c92ed1ba75df7ea71e658002",
+        "librarySha256": "6ce913ac7c69f238c7a475e6dcc57c5d5ba3c263405e9e7f2475ba9548eab7bf"
+      }
+    ]
+  },
+  "source": "dac3c64e3a75a0c1094973965b4667ccd0ad2e9d",
+  "frameworkBase": "328d79f46e5b36cdf8d5411f0d7156cd7b30949c",
+  "packageSteps": 15,
+  "packageStepsPassed": true,
+  "unityCheckpoint": {
+    "total": 118,
+    "passed": 118,
+    "failed": 0,
+    "skipped": 0,
+    "xmlSha256": "277f74cc4cb2eecb41c69b1c8d167cae1152f864a12c5efb1509eaa676d943e8"
+  },
+  "udpScenarioActualProcesses": 20,
+  "udpScenarioPasses": 160,
+  "editorStartupAttempts": 21,
+  "unresolvedStartupFailureRound": 11,
+  "formalNativeInputChanged": false,
+  "formalDllsChanged": false,
+  "adapterComplete": false,
+  "remoteCiVerified": false,
+  "pushed": false,
+  "published": false
+}
