@@ -7,12 +7,12 @@
 本包不依赖 `PulletFramework` 主模块：既可以单独安装，也可以与其他 Pullet Framework
 模块组合使用。服务端及跨平台 C# 网络内核仍使用 `PulletNet` 名称。
 
-当前为 `3.0.0-pre.1` 开发检查点，不是正式发布或完整Unity3.0验收。已提交U2单连接及U3/U4-A内部派发内核；
-旧Manager尚未迁移，不能宣称它已有新的多来源/字节预算保证。
-薄Runtime及有界生命周期接入仍在工作区：定向25/25、12关键场景20独立进程240/240、含真实连接的包检查点121/121通过。
-这些结果来自准确dac3c64 RC2的隔离副本，不是本目录已经完成安装升级。
-本目录 `NativeInput.json` 与DLL仍锁定到fa0145c RC1；SDK UDP退出修复尚待对应远端门槛，之后才切开发输入并提交完整Runtime。
-当前接入合同与证据见仓库Documentation中的 `NetClient-U3-Runtime-Contract.zh-CN.md` 和 `NetClient-U3-Runtime-Local-Checkpoint.zh-CN.md`。
+当前为 `3.0.0-pre.1` 开发检查点，不是正式发布或完整Unity3.0验收。U2单连接、U3/U4内部派发和薄 `PulletClientRuntime` 已完整接入；
+旧Manager尚未迁移，不能宣称它已有新的多来源/字节预算保证。多连接请显式创建Runtime、订阅事件并由Unity帧owner调用Update，Create不自动连接。
+本目录 `NativeInput.json` 与DLL现锁定到准确 `2b046d5` RC1 / Windows CI38887773146 attempt1，包含SDK UDP退出修复。
+该准确包的隔离Unity2022.3.62f3检查点121/121通过（含Runtime25项与真实连接11项），真实服务20次回显且Stop/Dispose exit0。
+旧dac3c64 RC2的12关键场景20独立进程240/240按相同Runtime源码及SDK/Protocol有序实现零差异复用为行为证据，不冒充相同二进制。
+当前接入合同和新输入证据见仓库Documentation中的 `NetClient-U3-Runtime-Contract.zh-CN.md` 与 `NetClient-U3-CI-Input-Checkpoint.zh-CN.md`；原本地检查点和失败记录仍保留。
 此前Editor测试前启动AV原件仍保留、未追溯结案；Player/IL2CPP/PICO和U5/U6整体生命周期尚未验收。
 2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
 
