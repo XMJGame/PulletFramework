@@ -1,6 +1,6 @@
 # U3/U4：Unity多连接Runtime合同与接入
 
-2026-10-16。本文件描述薄的 `PulletClientRuntime`，不改变Native网络协议或连接状态权威。当前源码仍是开发候选；验证使用准确dac3c64本地RC2，正式目录的NativeInput/DLL尚未切换。必须先满足新SDK输入的远端门槛，再把这一职责作为可用包提交；不要直接拿旧RC1退出行为冒充已修复。
+2026-10-16。本文件描述薄的 `PulletClientRuntime`，不改变Native网络协议或连接状态权威。当前仍是3.0.0-pre.1开发候选；NativeInput/DLL已切换为准确2b046d5 RC1、Windows CI38887773146 attempt1，并通过同组准确DLL的隔离Unity121项检查点。完整Runtime/合同/测试作为同一职责交付，不混入缺少UDP退出修复的fa0145c旧输入。旧RC2重复证据按源码/有序实现一致性明确复用，不冒充相同包。当前状态见[准确输入检查点](NetClient-U3-CI-Input-Checkpoint.zh-CN.md)。
 
 本地实现与测试状态见[Runtime检查点](NetClient-U3-Runtime-Local-Checkpoint.zh-CN.md)，不是第三套执行计划。
 
@@ -30,7 +30,7 @@ CloseAsync不可逆，拒绝新Create/Remove；已接纳移除继续完成。重
 
 尚未交付故障保留一个来源槽及名称；Update消费故障且清理完成后才回收。若不再Update，Close直接聚合未交付故障并收口，不能永远依赖下一帧。代码可以在Payload/生命周期/故障回调中**请求**Remove/Close，但不可同步等待需要自己退出的任务，也不可将await任务解释成回调内同步完成。清理任务脱离SDK回调的执行上下文标记，由稳定完成任务跟踪，没有自动超时成功或无主重试。
 
-## 最小使用示意（输入切换后）
+## 最小使用示意（当前开发候选）
 
 ```csharp
 var runtime = new PulletClientRuntime(); // Unity主线程

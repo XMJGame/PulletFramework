@@ -58,7 +58,7 @@ namespace PulletFramework.NetClient
             internal readonly TaskCompletionSource<bool> Exited = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             internal long Generation, Bytes;
             internal int Payloads;
-            internal bool Accepting, Retired;
+            internal bool Accepting, Retired, DeliveryReady = true;
             internal ClientDispatchFailure Failure;
             internal Exception Error;
             internal Source(ClientDispatchQueue owner, HostedClient client) { Owner = owner; Client = client; }
@@ -129,6 +129,26 @@ namespace PulletFramework.NetClient
                 ClearQueued(source);
             }
         }
+
+        // Reconnecting can preserve a UDP Session. Pause admission without
+        // rewriting its delivery epoch; Handshaking explicitly invalidates it.
+        internal void Pause(Source source)
+        { lock (_gate) { RequireOwner(source); source.Accepting = false; } }
+
+        internal void Resume(Source source)
+        {
+            lock (_gate)
+            {
+                RequireOwner(source);
+                if (!_closing && !source.Retired && source.Failure == ClientDispatchFailure.None) source.Accepting = true;
+            }
+        }
+
+        internal long ReadGeneration(Source source)
+        { lock (_gate) { RequireOwner(source); return source.Generation; } }
+
+        internal void SetDeliveryReady(Source source, bool ready)
+        { lock (_gate) { RequireOwner(source); source.DeliveryReady = ready; } }
 
         internal ClientPayloadAdmission Enqueue(Source source, ReceivedPayload payload)
         {
@@ -213,7 +233,7 @@ namespace PulletFramework.NetClient
                         {
                             Source candidate = _sources[_nextSource];
                             _nextSource = (_nextSource + 1) % _sources.Count;
-                            if (candidate.Queue.Count == 0 || candidate.Queue.Peek().Length > remaining) continue;
+                            if (!candidate.DeliveryReady || candidate.Queue.Count == 0 || candidate.Queue.Peek().Length > remaining) continue;
                             item = candidate.Queue.Dequeue();
                             _consuming++;
                             break;

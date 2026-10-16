@@ -28,3 +28,7 @@
 因此本批只提交文档和证据；Runtime/Contracts/测试和ClientDispatchQueue接入保留工作区，明确是**本地功能检查点，不是已安装U3/U4产物**。下一步需要单独授权推送Native本地main的UDP修复及证据文档，执行一次Windows专项CI；通过后更新Framework开发输入锁/DLL并提交完整Runtime职责。若远端失败按准确输入保留和定位，不无限重跑。
 
 之后才是U5/U6旧门面与应用生命周期迁移；U7 Player/IL2CPP/PICO继续按平台独立验收。妈祖/XR正式升级、发布及全平台稳定声明仍不在自动执行范围内。
+
+## 后续状态（不改写以上历史输入）
+
+Native两批测试修正随2b046d5推送后，Windows CI38887773146 attempt1已通过3004项/四包15步/7项20轮。随后开发输入选择这次准确RC1产物，在新隔离Unity完成121/121及同输入服务20次回显/真实退出，再更新Framework NativeInput/DLL并交付完整Runtime职责。详见[准确输入检查点](NetClient-U3-CI-Input-Checkpoint.zh-CN.md)；以上旧RC2收据、当时未提交状态和旧AV不回写，当前不再等待已经完成的Native门槛。
