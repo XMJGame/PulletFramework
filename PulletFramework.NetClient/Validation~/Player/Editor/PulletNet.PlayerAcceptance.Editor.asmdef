@@ -1,0 +1,5 @@
+{
+  "name": "PulletNet.PlayerAcceptance.Editor",
+  "references": ["PulletNet.PlayerAcceptance"],
+  "includePlatforms": ["Editor"]
+}

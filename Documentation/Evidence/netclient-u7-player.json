@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "recordedOn": "2026-10-16",
+  "base": "d054db26dc3340e4faadee8538c872257ba283f4",
+  "nativeInput": {
+    "schema": 1,
+    "purpose": "U3/U4 development input from exact Windows native CI; not release, latest-source dual-platform or Player acceptance",
+    "source": "2b046d5e55efb04c768d4b7127c3a6fdbc548c22",
+    "ciRun": 38887773146,
+    "ciAttempt": 1,
+    "ciPlatform": "windows-only",
+    "nativePackageVersion": "3.0.0-rc.1",
+    "wireVersion": 3,
+    "libraries": [
+      {
+        "assembly": "PulletNet.Protocol",
+        "framework": "netstandard2.0",
+        "packageSha256": "326528e44915edc52b65b33595189494616019b9ce82cb0659e230d3e985a75c",
+        "librarySha256": "58745e4bf3454ac4067beed904f46c24cce5ee376c4a6fcfded72239ec6c09b2"
+      },
+      {
+        "assembly": "PulletNet.ClientSDK",
+        "framework": "netstandard2.1",
+        "packageSha256": "f20d462f7eb28b4544c53f0390769e2d823b544ec83f3c49ba7017b9949e59ca",
+        "librarySha256": "0d48d46ac4864b4208db4af35c0d83c226a139583331d42c5bce8bf6d01cb75a"
+      }
+    ]
+  },
+  "productionNetworkCodeChanged": false,
+  "nativeDllsChanged": false,
+  "player": {
+    "backend": "Mono",
+    "architecture": "x64",
+    "androidOrIl2CppValidated": false,
+    "echoes": 10,
+    "scenarios": 7,
+    "stripping": "Low",
+    "osBackgroundValidated": false,
+    "passed": true,
+    "playerExit": 0,
+    "embeddedInputFilesVerified": 90,
+    "serverExit": 0,
+    "platform": "WindowsPlayer",
+    "unity": "2022.3.62f3"
+  },
+  "build": {
+    "result": "Succeeded",
+    "unity": "2022.3.62f3",
+    "backend": "Mono",
+    "architecture": "x64",
+    "stripping": "Low",
+    "errors": 0,
+    "warnings": 1
+  },
+  "optionalTestDependency": {
+    "withFramework": "1.1.33; 124/124; zero failed/skipped; exit0",
+    "withoutFramework": "Player snapshot minimal embedded project built and ran",
+    "changed": "Test asmdef version define; no removed tests or runtime dependency"
+  },
+  "rawRoots": [
+    "artifacts/unity-u7-player-20261016-01",
+    "artifacts/unity-u7-player-20261016-02",
+    "artifacts/unity-u7-editor-20261016"
+  ],
+  "initialFailure": "Preserved: embedded test assembly compiled without Test Framework; new build receipt int/uint mismatch. No Player/server was started.",
+  "sourceHashes": [
+    {
+      "path": "UnityPackages/PulletFramework.NetClient/Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef",
+      "sha256": "cda5b1ac6ed7b7780ea8226e5a3fd02dab796cf080a5bdee07b331f621d394a8"
+    },
+    {
+      "path": "UnityPackages/PulletFramework.NetClient/Validation~/Player/NetClientPlayerAcceptance.cs",
+      "sha256": "96331d91da7d138fa6cb6ea953f89efe74e7ca4be1f6d3d8bc2f5e6d9296cdc6"
+    },
+    {
+      "path": "UnityPackages/PulletFramework.NetClient/Validation~/Player/Editor/BuildNetClientPlayerAcceptance.cs",
+      "sha256": "eae2836d405a885bb27c2c9629dfc561bc526e9b43e67607d1e0e854eb49f4a7"
+    },
+    {
+      "path": "Tools/Test-PulletNetUnityPlayer.ps1",
+      "sha256": "0a647ba70f2ca3118a569e0571296f7825a790747426587df2d4f9bf1467aa8f"
+    }
+  ],
+  "unverified": [
+    "Windows OS background/sleep",
+    "IL2CPP, Android/PICO",
+    "Release Player and other versions/platforms",
+    "New remote CI, publication, Mazu/XR upgrade",
+    "BuildReport warning detail not attributable from current text log"
+  ],
+  "postValidationDocsOnly": [
+    "README.md",
+    "Validation~/README.md"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "PulletFramework.NetClient.Samples",
+  "rootNamespace": "PulletFramework.NetClient.Samples",
+  "references": ["PulletFramework.NetClient"],
+  "includePlatforms": [],
+  "excludePlatforms": ["WebGL"],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["PulletNet.ClientSDK.dll", "PulletNet.Protocol.dll"],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

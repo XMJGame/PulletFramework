@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "recordedOn": "2026-10-16",
+  "purpose": "U6 Windows Editor real PlayMode application integration and read-only package export; not Player or release certification",
+  "base": "c0d8fe8adf4515b065cc94b9d532f3fdcb025284",
+  "branch": "codex/unity-runtime-manager",
+  "rawRoot": "G:/XuMingJun/2026/PICO GPS XR/PulletNet-Unity/artifacts/unity-u6-application-20261016",
+  "nativeInput": {
+    "schema": 1,
+    "purpose": "U3/U4 development input from exact Windows native CI; not release, latest-source dual-platform or Player acceptance",
+    "source": "2b046d5e55efb04c768d4b7127c3a6fdbc548c22",
+    "ciRun": 38887773146,
+    "ciAttempt": 1,
+    "ciPlatform": "windows-only",
+    "nativePackageVersion": "3.0.0-rc.1",
+    "wireVersion": 3,
+    "libraries": [
+      {
+        "assembly": "PulletNet.Protocol",
+        "framework": "netstandard2.0",
+        "packageSha256": "326528e44915edc52b65b33595189494616019b9ce82cb0659e230d3e985a75c",
+        "librarySha256": "58745e4bf3454ac4067beed904f46c24cce5ee376c4a6fcfded72239ec6c09b2"
+      },
+      {
+        "assembly": "PulletNet.ClientSDK",
+        "framework": "netstandard2.1",
+        "packageSha256": "f20d462f7eb28b4544c53f0390769e2d823b544ec83f3c49ba7017b9949e59ca",
+        "librarySha256": "0d48d46ac4864b4208db4af35c0d83c226a139583331d42c5bce8bf6d01cb75a"
+      }
+    ]
+  },
+  "managerAndRuntimeChanged": false,
+  "nativeCoreOrWireChanged": false,
+  "nativeDllsChanged": false,
+  "playMode": {
+    "unity": "2022.3.62f3",
+    "testFramework": "1.1.33",
+    "acceptedDirectory": "playmode-checkpoint-02",
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "unityExitCode": 0,
+    "completionReceipts": [
+      {
+        "scenario": "DuplicateManagerDestroyDoesNotCloseTheOriginalConnection",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 1089
+      },
+      {
+        "scenario": "ExplicitShutdownCompletesBeforeTheOwnerSceneIsUnloaded",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 2266
+      },
+      {
+        "scenario": "ImportedSampleCompilesAsAnExternalConsumerAndUsesAwaitablePublicApi",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 1926
+      },
+      {
+        "scenario": "InjectedPauseFocusNotificationsSuspendAndResumeThroughRealFrames",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 3097
+      },
+      {
+        "scenario": "InspectorRelayDisableReenableAndDestroyDoNotDuplicateOrRetainCallbacks",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 3277
+      },
+      {
+        "scenario": "PersistentManagerSurvivesOriginalSceneUnloadUntilExplicitShutdown",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 2879
+      },
+      {
+        "scenario": "RealDestroyCancelsAndJoinsAnOutstandingUdpHandshake",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 264
+      },
+      {
+        "scenario": "SceneUnloadInvokesRealDestroyAndJoinsOwnedDiscoveryAndConnection",
+        "completed": true,
+        "playing": true,
+        "firstFrame": 9,
+        "lastFrame": 1558
+      }
+    ],
+    "fixture": {
+      "failures": [],
+      "echoes": 12,
+      "sendFailures": []
+    },
+    "fixtureExitCode": 0,
+    "requiredNativeEchoes": 12,
+    "earlierRun": {
+      "directory": "playmode-checkpoint-01",
+      "runnerReportedPassed": 8,
+      "unityExitCode": 0,
+      "nativeEchoes": 1,
+      "accepted": false,
+      "reason": "Runner report did not corroborate completion of all actual scenario bodies across PlayMode/domain reload fixture structure. Original harness retained; changed validation driver to top-level task joins and per-scenario completion plus native-echo gate. Exact Unity internal cause not certified."
+    },
+    "pauseFocusScope": "Unity SendMessage injection during actual PlayMode with real frames and network IO; not OS background or device sleep",
+    "scenarioRepetitionCount": 1,
+    "unchangedU5Evidence": "Same Manager/Runtime implementation as U5 135-case checkpoint and 16 cases x 20 independent Unity processes (320); not a new execution of those repetitions."
+  },
+  "export": {
+    "script": "Tools/Export-PulletNetUnityPackage.ps1",
+    "scope": "New-directory byte snapshot only; checks NativeInput/DLL/file fingerprints, no rebuild or installation",
+    "powerShell7": {
+      "version": "7.6.5",
+      "directory": "export-guards-pwsh-native",
+      "cases": 5,
+      "passed": 5,
+      "nativeProcessExitCode": 0
+    },
+    "windowsPowerShell": {
+      "version": "5.1.19041.3031",
+      "directory": "export-guards-windows-powershell",
+      "cases": 5,
+      "passed": 5,
+      "nativeProcessExitCode": 0
+    },
+    "guards": [
+      {
+        "name": "ExactSnapshot",
+        "result": "passed",
+        "files": 86
+      },
+      {
+        "name": "ExistingOutputIsPreserved",
+        "result": "passed"
+      },
+      {
+        "name": "OutputInsideSourceIsRejected",
+        "result": "passed"
+      },
+      {
+        "name": "InvalidDllLockCreatesNoOutput",
+        "result": "passed"
+      },
+      {
+        "name": "LegacyBuildCannotOverwriteLockedInput",
+        "result": "passed"
+      }
+    ],
+    "retainedDriverError": {
+      "directory": "export-guards-final",
+      "internalCasesPassed": 5,
+      "outerCommandExitCode": 1,
+      "reason": "Outer driver used LASTEXITCODE after an in-process PowerShell script, not a native process. Later native pwsh.exe/powershell.exe exits verified. No product code altered to mask it."
+    }
+  },
+  "sourceHashes": [
+    {
+      "path": "UnityPackages/PulletFramework.NetClient/Samples~/ConnectionSample/PulletNetConnectionSample.cs",
+      "sha256": "922d9137c40b575634ef50ca751e36bb1fd7a1ce999b557ced237ab2c6b571e7"
+    },
+    {
+      "path": "UnityPackages/PulletFramework.NetClient/Samples~/ConnectionSample/PulletFramework.NetClient.Samples.asmdef",
+      "sha256": "00f838cba65a484c8174bd5a42f4ade480b0fb1a787184c2f1c3e88302fad784"
+    },
+    {
+      "path": "UnityPackages/PulletFramework.NetClient/Validation~/UnityApplicationPlayModeTests.cs",
+      "sha256": "8902d996da9aa6ba37db8a929a6713c640cd6372d39f7e6f760ebe66f0464af9"
+    },
+    {
+      "path": "Tools/Build-PulletNetUnityPackage.ps1",
+      "sha256": "762a8d5deebd418dde076d68597de96b6305fa50a9d8f30f9de59b0f806dc40d"
+    },
+    {
+      "path": "Tools/Export-PulletNetUnityPackage.ps1",
+      "sha256": "1c5f1e819fa1e50edd8074e0afca93a1a15890f4a77d3fe21da1fc27b4182aa0"
+    },
+    {
+      "path": "Tools/Test-PulletNetUnityExport.ps1",
+      "sha256": "73e62a26eab8dadde001d695848e705ca4dc8f12a51aa931cc6ac8574fbe822e"
+    }
+  ],
+  "notExecuted": [
+    "New Native full suite or remote CI",
+    "Long load test",
+    "Standalone Player build/run",
+    "Android IL2CPP/PICO OS lifecycle",
+    "Automatic MazuWorld or XRVehicle upgrade",
+    "Publication or push"
+  ]
+}

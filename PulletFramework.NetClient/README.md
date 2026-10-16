@@ -13,14 +13,19 @@ Manager现为同一Runtime的单默认来源门面，具有字节/条数预算�
 该准确包的隔离Unity2022.3.62f3检查点121/121通过（含Runtime25项与真实连接11项），真实服务20次回显且Stop/Dispose exit0。
 旧dac3c64 RC2的12关键场景20独立进程240/240按相同Runtime源码及SDK/Protocol有序实现零差异复用为行为证据，不冒充相同二进制。
 当前接入合同和新输入证据见仓库Documentation中的 `NetClient-U3-Runtime-Contract.zh-CN.md` 与 `NetClient-U3-CI-Input-Checkpoint.zh-CN.md`；原本地检查点和失败记录仍保留。
-此前Editor测试前启动AV原件仍保留、未追溯结案；Player/IL2CPP/PICO尚未验收。
+此前Editor测试前启动AV原件仍保留、未追溯结案；Android IL2CPP/PICO尚未验收。
 U5-A持续恢复策略的原130项包检查点与9项20轮保留为历史证据；当前Manager合同见PulletNet仓库 `Docs/Unity/NetClient-U5-Manager-Contract.zh-CN.md`，安装仓库Documentation保存同步副本。本轮不把显式Shutdown接入等同于所有目标平台的生命周期验收。
 2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
+
+U6已在真实PlayMode完成8场景、8份完成收据、12次Native回显/真实退出和独立示例程序集公开API验收；首轮Runner绿但执行不完整的结果不采纳，详见开发仓库Docs/Unity的U6检查点。该证据不认证OS真实后台或Player。交付使用Tools/Export-PulletNetUnityPackage的只读新目录导出，不用旧构建脚本原地覆盖NativeInput锁定的DLL；安装/回退及Player协作清单同见Docs/Unity。
+
+U7已完成Unity 2022.3.62f3 Windows x64 Mono开发Player（Low裁剪）的有限验收：三传输、重连、场景退出与显式Shutdown等7场景/10次回显，客户端和服务端exit0。构建0错误、报告1条警告，不称零警告；OS真实后台、IL2CPP和其他平台未验。详情见开发仓库 `Docs/Unity/NetClient-U7-Player-Checkpoint.zh-CN.md`。
+包可嵌入未安装Unity Test Framework的工程；Editor测试程序集仅在安装该测试框架且启用测试时编译。安装Test Framework 1.1.33的隔离工程已执行现有124项包测试，零失败/跳过；不是删除或屏蔽测试求绿。
 
 ## 平台范围
 
 - Windows、macOS、Linux、Android 和 iOS 是 ClientSDK 的 TCP、UDP、WebSocket 目标平台；
-  这些平台的 Unity Player 实际连接测试尚未完成。
+  目前仅上述Windows Mono Player组合完成有限实际验收，其他组合不能由此推定通过。
 - 当前不支持 WebGL、微信小游戏和抖音小游戏。这些平台需要另行实现基于 JavaScript 或平台 SDK
   的 WebSocket 传输，不能直接使用本包现有的 `System.Net.Sockets` 实现。
 - 局域网发现依赖 UDP 广播，因此也不适用于 WebGL 和小游戏。

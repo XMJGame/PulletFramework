@@ -1,0 +1,404 @@
+{
+  "schema": 1,
+  "sourceRepository": "PulletNet",
+  "sourceCommit": "40bf84fb2bfe3d1a699ef099325f505aca362b2d",
+  "sourcePath": "UnityPackages/PulletFramework.NetClient",
+  "destination": "PulletFramework.NetClient",
+  "packageVersion": "3.0.0-pre.1",
+  "files": [
+    {
+      "path": "NativeInput.json",
+      "sha256": "2614a7cb5490ae85781ce58731e3d99e734426b051db24fae5c725c586313f52"
+    },
+    {
+      "path": "NativeInput.json.meta",
+      "sha256": "6a9a2166af1036651ffb84533639674db0a7206831e46055e1637240bfdc4637"
+    },
+    {
+      "path": "package.json",
+      "sha256": "7b08b97b891330cdc9783f816ec33fb0ab21f6af84cc0672fcde76b1d386844b"
+    },
+    {
+      "path": "package.json.meta",
+      "sha256": "6a886bbc4dca252bd6cc98bc6cfdc5b5cb2c3db51e9af9b95f2044dc4f29c2a9"
+    },
+    {
+      "path": "README.md",
+      "sha256": "eaa70f12c26bf59927328107e26991f5aac91bd74ae716991f177bf07252b9be"
+    },
+    {
+      "path": "README.md.meta",
+      "sha256": "d3b813e5d771bd9b3f27d018b562784f5b3118c93e23fe06b4e404fcd6f2d1e4"
+    },
+    {
+      "path": "Runtime.meta",
+      "sha256": "e22749cdfb4da74ebec051c31a3c906322a04943472df886f879275bb3db8a52"
+    },
+    {
+      "path": "Runtime/AssemblyInfo.cs",
+      "sha256": "c834d492891bde086039347ed78b3f0773475e5d578767f9aea3804bae60fee7"
+    },
+    {
+      "path": "Runtime/AssemblyInfo.cs.meta",
+      "sha256": "2388dd08a757405bba452b1ce9c03abbc21abc49f67e637a6e2fc6582728115d"
+    },
+    {
+      "path": "Runtime/ClientDispatchQueue.cs",
+      "sha256": "1c7cd1e599e9e67ea2fd01acee2cba52ecb26283c068cd066eacb64a32bbb2ee"
+    },
+    {
+      "path": "Runtime/ClientDispatchQueue.cs.meta",
+      "sha256": "0f97c4a8c93cc3b210a1d12f6d27d27e9b1a25a5bfa9207d383aa0165d35629e"
+    },
+    {
+      "path": "Runtime/Messaging.meta",
+      "sha256": "3df4a48ffd504c6bc1a605a58bf0d1936fb90900e8ebdfcd1b89813a35c3b34f"
+    },
+    {
+      "path": "Runtime/Messaging/MessageSubscriptions.cs",
+      "sha256": "9dc0548d8cc21d2ffdac52ff1c6d03eca22e277b3e7ad6c7196a66f2a729d6e0"
+    },
+    {
+      "path": "Runtime/Messaging/MessageSubscriptions.cs.meta",
+      "sha256": "4dffcfde503019f64c79beda3859a5c32a1b2bf7ceb84f4a075458cd11f7cd86"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageClient.cs",
+      "sha256": "02f28e3e99fe37b5397ea13b879b05146038150566374c4289ae1d0d38c4614c"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageClient.cs.meta",
+      "sha256": "4bad1204b398e125198d527691dcb163b8c2f52355a299590a4baef29f401bec"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageProtocol.cs",
+      "sha256": "5cb3d429690ea11ff78531ee2290ca2f73b9810a6078cd1bd6d26d5437e6c61e"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageProtocol.cs.meta",
+      "sha256": "9563a028ff97f49ca5462f0fb5415b694cca8f39f278915422fa45898b7e6acf"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageRouter.cs",
+      "sha256": "d36456178cbd8de9322243ab7e5effbb6831cd403df1683946fec335f14a9b9b"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageRouter.cs.meta",
+      "sha256": "d7266b3baacd89f01508d094d5d34565f2cce99b54e70d511f587b7afb13cd36"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageSerialization.cs",
+      "sha256": "5845611ad7a7255c47f9cf10f9a922032eb64f21dc318ed420542c0a24da4858"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageSerialization.cs.meta",
+      "sha256": "0ef7f261bf30e7579cec9b93ccac53a9d619a0c6cbc65e5842b2d8d04515c5bd"
+    },
+    {
+      "path": "Runtime/Plugins.meta",
+      "sha256": "a18bc9497a8d2d98f78cb1e999ec8097536e7931ab0d30ee4483d46a08504a56"
+    },
+    {
+      "path": "Runtime/Plugins/PulletNet.ClientSDK.dll",
+      "sha256": "0d48d46ac4864b4208db4af35c0d83c226a139583331d42c5bce8bf6d01cb75a"
+    },
+    {
+      "path": "Runtime/Plugins/PulletNet.ClientSDK.dll.meta",
+      "sha256": "11276060ec38334dd634b6f4f07936622a2183955cf139675e9772a2921c1ce8"
+    },
+    {
+      "path": "Runtime/Plugins/PulletNet.Protocol.dll",
+      "sha256": "58745e4bf3454ac4067beed904f46c24cce5ee376c4a6fcfded72239ec6c09b2"
+    },
+    {
+      "path": "Runtime/Plugins/PulletNet.Protocol.dll.meta",
+      "sha256": "6ac1fce92bc6825a6599ff1244ce4a76440c1df31ecbb265aa6d3ba0da5ae7e7"
+    },
+    {
+      "path": "Runtime/Prefabs.meta",
+      "sha256": "942a9c33edff2a714107ecc41e10318d506a260e6fbecbc40a6e89b9c787692d"
+    },
+    {
+      "path": "Runtime/Prefabs/PulletNetworkManager.prefab",
+      "sha256": "68c50e40abf2a29ebb917de536d2403704a5e269a6a2e10ce4579a7cedf1d63a"
+    },
+    {
+      "path": "Runtime/Prefabs/PulletNetworkManager.prefab.meta",
+      "sha256": "84ee72d64a95953b03dfde461ef627a66217178566d27ebd6a23454ddb1e9a6f"
+    },
+    {
+      "path": "Runtime/PulletActiveServerRecovery.cs",
+      "sha256": "ffa49dd0f2671e89fc89b0fc34c135122fd393d36e66c4733963afae1c346b1f"
+    },
+    {
+      "path": "Runtime/PulletActiveServerRecovery.cs.meta",
+      "sha256": "9130467611981708f26c79b46b408c3e68c0eb5e2081a3e6bc31b574cc25de83"
+    },
+    {
+      "path": "Runtime/PulletAutoConnectStrategy.cs",
+      "sha256": "430ab776433e9031e1d63d549d8f7544ac35a89a1fc927c351c7b3a8f199a07f"
+    },
+    {
+      "path": "Runtime/PulletAutoConnectStrategy.cs.meta",
+      "sha256": "2dde368b4602de2112008be3f7f2fdcf334d82c2d01b7c01aca8ffc5a2a21998"
+    },
+    {
+      "path": "Runtime/PulletClientRuntime.cs",
+      "sha256": "9944192ea8dee427a621f9aee6eb12325c0f646f10613cc05c9a8519eaa60b24"
+    },
+    {
+      "path": "Runtime/PulletClientRuntime.cs.meta",
+      "sha256": "34dbdf52b228c4964df61535269083d613537cc67df54e8b19acdae649c331ff"
+    },
+    {
+      "path": "Runtime/PulletClientRuntimeContracts.cs",
+      "sha256": "ee08b9ff72fa38be1b7dbf517839f693556aa0fce7a81ffbda6d75e6509a40b7"
+    },
+    {
+      "path": "Runtime/PulletClientRuntimeContracts.cs.meta",
+      "sha256": "5c25b48c3b6f11d00562a82a8405d7148363f266c8c4c059979f1e2ef1729d6a"
+    },
+    {
+      "path": "Runtime/PulletConnectionCoordinator.cs",
+      "sha256": "8a2e906c6da15204e457ce8066852d0fd458723da5021d0f7834b163445e5f61"
+    },
+    {
+      "path": "Runtime/PulletConnectionCoordinator.cs.meta",
+      "sha256": "45cc7bc23e4f74aa021cc7e4e554ae8a6e31d5299b07b2e5a970300fad25fd03"
+    },
+    {
+      "path": "Runtime/PulletFramework.NetClient.asmdef",
+      "sha256": "992a6c4be06424fb423916d85c402f911e722ac1b88e9cfef8f6f93c736c5203"
+    },
+    {
+      "path": "Runtime/PulletFramework.NetClient.asmdef.meta",
+      "sha256": "ab94c9bc88a68f06d22aa15b6cc7022ef27fa241fd6d77637d2df729c904cd97"
+    },
+    {
+      "path": "Runtime/PulletNetworkEventRelay.cs",
+      "sha256": "bd68df2d187dda40718f0a08fb0d0763f1de9c46b2b829e7b24e078af7b4a598"
+    },
+    {
+      "path": "Runtime/PulletNetworkEventRelay.cs.meta",
+      "sha256": "e144370e445fa8b6f64c4ea624b3a950b2b3341df527a0c762848c34d11485ae"
+    },
+    {
+      "path": "Runtime/PulletNetworkManager.cs",
+      "sha256": "ab18cf7eedc27b64b0c4b73e431c7bf423936ca6b8e20e42f63de5b47a941218"
+    },
+    {
+      "path": "Runtime/PulletNetworkManager.cs.meta",
+      "sha256": "79346dcb203e3c5d5b167272cc1e936890af60b58173e72eca43138d95af346c"
+    },
+    {
+      "path": "Runtime/PulletServerDiscovery.cs",
+      "sha256": "08dd25fb4f990ac9633a90a427617e0ca80c2bcf5de6993e125b4149031a4533"
+    },
+    {
+      "path": "Runtime/PulletServerDiscovery.cs.meta",
+      "sha256": "58542e2cbcdce70ae17a5f333080a4a165022c61fdd16e04797e1ebea8d0bc6d"
+    },
+    {
+      "path": "Samples~/ConnectionSample/PulletFramework.NetClient.Samples.asmdef",
+      "sha256": "00f838cba65a484c8174bd5a42f4ade480b0fb1a787184c2f1c3e88302fad784"
+    },
+    {
+      "path": "Samples~/ConnectionSample/PulletFramework.NetClient.Samples.asmdef.meta",
+      "sha256": "3126518c508a6e79d5dc11cce452456d03cdda6b1a627c97198aa380a56ac4db"
+    },
+    {
+      "path": "Samples~/ConnectionSample/PulletNetConnectionSample.cs",
+      "sha256": "56670ad89fbb9140773a2b02555608de5b02429b704a969c949d3239ff00b302"
+    },
+    {
+      "path": "Samples~/ConnectionSample/PulletNetConnectionSample.cs.meta",
+      "sha256": "b687290fdf53301416e97c3f738874bf54bacd4d89ee0c8829133627b916b7f2"
+    },
+    {
+      "path": "Samples~/ConnectionSample/README.md",
+      "sha256": "b0947309ee43c82c512329d3c46058ae73150f812794c15361d2c83f80c6f327"
+    },
+    {
+      "path": "Samples~/ConnectionSample/README.md.meta",
+      "sha256": "5cad28f91607ff86a023293a7971de42e0505bc3f9ccd780129ddfec92abb4f2"
+    },
+    {
+      "path": "Tests.meta",
+      "sha256": "ffdc224ce0029658a64e71bd04aa16e0f593f895a4a763305eee36c46ce1d3e7"
+    },
+    {
+      "path": "Tests/Editor.meta",
+      "sha256": "37e53af68f229f9b8bb39f99888aa7f93a859b7ca7d39968d738e1a252e55845"
+    },
+    {
+      "path": "Tests/Editor/ClientDispatchQueueTests.cs",
+      "sha256": "a1b25e089222dd286843dd7282d673bf0de111217ec366ff315048e70f68a1c4"
+    },
+    {
+      "path": "Tests/Editor/ClientDispatchQueueTests.cs.meta",
+      "sha256": "a8390179520bcc5e17bf89a105a77965391b48567926fd84c97ea25b9c6e38f7"
+    },
+    {
+      "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs",
+      "sha256": "2c487522ad1f80403a4a0ca02346d8811d5409c7a5361b42f9e55d012d1c79c9"
+    },
+    {
+      "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs.meta",
+      "sha256": "da3675aea8609b856ec162b67a7f7c4a109f55eca06229dd8dddba08653427cd"
+    },
+    {
+      "path": "Tests/Editor/PulletAutoConnectStrategyTests.cs",
+      "sha256": "6d0552dd2a1b642ce399ac35412b521055e402085143579d2f9e1fe1bf05b45f"
+    },
+    {
+      "path": "Tests/Editor/PulletAutoConnectStrategyTests.cs.meta",
+      "sha256": "12ee85b06b786deb8f169d97a249088a6ed8774815def56fcd76e55418df7818"
+    },
+    {
+      "path": "Tests/Editor/PulletClientRuntimeTests.cs",
+      "sha256": "339c362b9161b61ef1b8b32b74dffc06d7ca571a756e6e6df6f4f7d0f88e1e3e"
+    },
+    {
+      "path": "Tests/Editor/PulletClientRuntimeTests.cs.meta",
+      "sha256": "9a6e74dca25155c40761abe620ec37094a5d0561e5101339b3ef596e945dc2f7"
+    },
+    {
+      "path": "Tests/Editor/PulletConnectionCoordinatorTests.cs",
+      "sha256": "ff20242c9800046b44d4e5c9cec7edaa7f8d207542d80e1eda34947dbbb25bd5"
+    },
+    {
+      "path": "Tests/Editor/PulletConnectionCoordinatorTests.cs.meta",
+      "sha256": "cd750c023a0cf8112600d370726530b28f9de37e917a6bc75e94c80d795ab70e"
+    },
+    {
+      "path": "Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef",
+      "sha256": "cda5b1ac6ed7b7780ea8226e5a3fd02dab796cf080a5bdee07b331f621d394a8"
+    },
+    {
+      "path": "Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef.meta",
+      "sha256": "266d161e9cf1b7188986deeffd9690c1bfe071933cd5a9b88384b5061a6685bd"
+    },
+    {
+      "path": "Tests/Editor/PulletMessagingTests.cs",
+      "sha256": "b864ea568b4ef8d05f6659cf0ffdf35e9b92ae9142035d748f9892d6d557312a"
+    },
+    {
+      "path": "Tests/Editor/PulletMessagingTests.cs.meta",
+      "sha256": "0c70282a581da583fe6921f7610d71bdc70b1227d8076ada7dbecf034bf2beb3"
+    },
+    {
+      "path": "Tests/Editor/PulletNetworkManagerLifecycleTests.cs",
+      "sha256": "866016cd43b6c3b29c7f10fd63d4eb963e5182bedf2df190dc7e821ca8978b00"
+    },
+    {
+      "path": "Tests/Editor/PulletNetworkManagerLifecycleTests.cs.meta",
+      "sha256": "b5dfd879778b2b53c263878af36080cf38f88a087f95bd7d530d67923154f8f9"
+    },
+    {
+      "path": "Tests/Editor/PulletNetworkManagerTests.cs",
+      "sha256": "068ba7b5f562743d9ddc0f7e6edd19b2160aaa6cfd0d8be7ffbe7355b1b944c2"
+    },
+    {
+      "path": "Tests/Editor/PulletNetworkManagerTests.cs.meta",
+      "sha256": "b8b6c92a9529ba844e73f78b6e09ea6dc07c8e93762069f000594039680e60bd"
+    },
+    {
+      "path": "Tests/Editor/PulletServerDiscoveryTests.cs",
+      "sha256": "42d5f8006b5a0698196e72365437651c75a6d4bed5b1d6a60086409448469664"
+    },
+    {
+      "path": "Tests/Editor/PulletServerDiscoveryTests.cs.meta",
+      "sha256": "adc5774f6af042530ae4555f78292e1affbe1e1eeccbcb4264d61270e9261847"
+    },
+    {
+      "path": "Tests/Editor/UnityTaskTest.cs",
+      "sha256": "2a630b9b8989a8444a404cc77e640917bca320193221002c13fc6add834f270b"
+    },
+    {
+      "path": "Tests/Editor/UnityTaskTest.cs.meta",
+      "sha256": "8285f435a5d558e5dcbb31acac468c5ec5ad7547449fe78154b471afede54af0"
+    },
+    {
+      "path": "Validation~/MultiConnectionEchoTests.cs",
+      "sha256": "5b4821d2e55a99127420766270a2c73908b8b3a249ac3ab32fcac545e1ebd8fb"
+    },
+    {
+      "path": "Validation~/Player/Editor/BuildNetClientPlayerAcceptance.cs",
+      "sha256": "eae2836d405a885bb27c2c9629dfc561bc526e9b43e67607d1e0e854eb49f4a7"
+    },
+    {
+      "path": "Validation~/Player/Editor/PulletNet.PlayerAcceptance.Editor.asmdef",
+      "sha256": "31862a0f4f14a538eb773928b989066d3ba59185139b83cd9c140ce91086d636"
+    },
+    {
+      "path": "Validation~/Player/NetClientPlayerAcceptance.cs",
+      "sha256": "96331d91da7d138fa6cb6ea953f89efe74e7ca4be1f6d3d8bc2f5e6d9296cdc6"
+    },
+    {
+      "path": "Validation~/Player/PulletNet.PlayerAcceptance.asmdef",
+      "sha256": "ee3fd6d754bb5ff1365e8c5eef2ae765ee9faa95cb10483acaa1b37e6ec2be89"
+    },
+    {
+      "path": "Validation~/README.md",
+      "sha256": "0bf7a188c325c606c1abfaf429c8d839c7a82c5ec6d1de3211c5914c7814ef5b"
+    },
+    {
+      "path": "Validation~/SdkHostUnityCleanupTests.cs",
+      "sha256": "7efef2c852cb2b434195edf12c7d5ba1ebfae1a943c612a9de76964e11e0b423"
+    },
+    {
+      "path": "Validation~/Server/EchoServer.csproj",
+      "sha256": "4b5793783728e91de208da3500e36086461b19731d5723e464d37a975017e8bc"
+    },
+    {
+      "path": "Validation~/Server/Program.cs",
+      "sha256": "768506f797fe2353af07df7e5949ea717c05376b44e7d2208857af94543b6a15"
+    },
+    {
+      "path": "Validation~/SingleConnectionEchoTests.cs",
+      "sha256": "3e91e61ebd33abc1bda03a3efe05abf3a2e9e1c865224dfa8118d142837e7467"
+    },
+    {
+      "path": "Validation~/UdpHandshakeCancellationTests.cs",
+      "sha256": "3e6d6dc7e840ada46f94fec2740c9e02e41e0547b03422d2ca1be9c800274c23"
+    },
+    {
+      "path": "Validation~/UnityApplicationPlayModeTests.cs",
+      "sha256": "8902d996da9aa6ba37db8a929a6713c640cd6372d39f7e6f760ebe66f0464af9"
+    }
+  ],
+  "allFilesByteIdentical": true,
+  "nativeInput": {
+    "schema": 1,
+    "purpose": "U3/U4 development input from exact Windows native CI; not release, latest-source dual-platform or Player acceptance",
+    "source": "2b046d5e55efb04c768d4b7127c3a6fdbc548c22",
+    "ciRun": 38887773146,
+    "ciAttempt": 1,
+    "ciPlatform": "windows-only",
+    "nativePackageVersion": "3.0.0-rc.1",
+    "wireVersion": 3,
+    "libraries": [
+      {
+        "assembly": "PulletNet.Protocol",
+        "framework": "netstandard2.0",
+        "packageSha256": "326528e44915edc52b65b33595189494616019b9ce82cb0659e230d3e985a75c",
+        "librarySha256": "58745e4bf3454ac4067beed904f46c24cce5ee376c4a6fcfded72239ec6c09b2"
+      },
+      {
+        "assembly": "PulletNet.ClientSDK",
+        "framework": "netstandard2.1",
+        "packageSha256": "f20d462f7eb28b4544c53f0390769e2d823b544ec83f3c49ba7017b9949e59ca",
+        "librarySha256": "0d48d46ac4864b4208db4af35c0d83c226a139583331d42c5bce8bf6d01cb75a"
+      }
+    ]
+  },
+  "validatedCheckpoints": [
+    "U5 135/135;16x20=320 reused unchanged implementation",
+    "U6 real PlayMode 8/8;12 echoes",
+    "U7 Windows x64 Mono Development Low:7 scenarios;10 echoes;exit0;build0errors/1warning",
+    "U7 optional Test Framework positive guard:124/124"
+  ],
+  "exportReceipt": "PulletNet/artifacts/unity-u7-sync-20261016/receipt.json",
+  "businessInstalled": false,
+  "publishedOrPushed": false
+}

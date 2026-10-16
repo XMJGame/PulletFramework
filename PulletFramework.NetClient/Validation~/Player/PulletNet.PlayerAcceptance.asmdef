@@ -1,0 +1,7 @@
+{
+  "name": "PulletNet.PlayerAcceptance",
+  "references": ["PulletFramework.NetClient"],
+  "includePlatforms": ["Editor", "WindowsStandalone64"],
+  "overrideReferences": true,
+  "precompiledReferences": ["PulletNet.Protocol.dll", "PulletNet.ClientSDK.dll"]
+}
