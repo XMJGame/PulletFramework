@@ -12,6 +12,8 @@
 
 此前c0d8fe8的83文件同步和U5的135项/16场景20进程320次/20回显仍作为历史检查点，不冒称本批重新跑过所有竞态。
 
+后续只读原始BuildReport已查明上述唯一警告：-nographics下无图形设备，无法生成场景环境光/反射探针；不是PulletNet网络代码故障，仍保留原1条警告，不重编求零。最新U7说明及Evidence/netclient-u7-warning-and-device-readiness.json记录原报告未改的hash和Unity读取退出码；90文件包体未改，不重复同步或测试。Android工具文件存在但adb无连接设备，尚非构建/真机验收。
+
 当前合同见 [Manager/Shutdown](NetClient-U5-Manager-Contract.zh-CN.md)、[Runtime](NetClient-U3-Runtime-Contract.zh-CN.md)；完整验证和首轮失败见 [U5检查点](NetClient-U5-Manager-Checkpoint.zh-CN.md)及[机器记录](Evidence/netclient-u5-manager.json)。旧EventPump/BoundedPayloadQueue与12项测试随来源退役，保障映射保留在Manager合同，源码可从Git恢复。
 
 原在Framework先行实现的b4f319f/355556a及更早文档仍按历史事实保留；其中旧的“Framework是开发源”描述不是当前维护指令。今后只在PulletNet UnityPackages开发、验证，再明确同步本仓库，不在两处独立演进。

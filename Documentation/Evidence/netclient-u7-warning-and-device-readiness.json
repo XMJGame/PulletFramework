@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "recordedOn": "2026-10-16",
+  "base": "c07f0aaea4680d5b522c32ad67a65737be9be4ec",
+  "purpose": "Read-only inspection of original U7 BuildReport and Android toolchain inventory; no new platform certification",
+  "warning": {
+    "remainingWarnings": 1,
+    "originalSummary": {
+      "result": "Succeeded",
+      "unity": "2022.3.62f3",
+      "warnings": 1,
+      "errors": 0,
+      "messages": [
+        {
+          "step": "Building scene Assets/PlayerAcceptance.unity",
+          "type": "Warning",
+          "text": "GfxDevice renderer is null. Unity cannot update the Ambient Probe and Reflection Probes that the SkyManager generates. Run the Editor without the -nographics argument or generate lighting for your scene."
+        }
+      ],
+      "playerRebuilt": false
+    },
+    "playerRebuilt": false,
+    "inspection": {
+      "arguments": [
+        "-batchmode",
+        "-nographics",
+        "-quit",
+        "-projectPath",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u7-warning-20261016/Project\"",
+        "-executeMethod",
+        "InspectBuildReport.Inspect",
+        "-logFile",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u7-warning-20261016/unity.log\""
+      ],
+      "sha256After": "7FF52A2602096409CCC1D2C70A5CB9065FC29CF389FEEA4659F4AB915D273A44",
+      "exitCode": 0,
+      "reportPath": "G:/XuMingJun/2026/PICO GPS XR/PulletNet/artifacts/unity-u7-player-20261016-02/Project/Library/LastBuild.buildreport",
+      "originalReportUnchanged": true,
+      "sha256Before": "7FF52A2602096409CCC1D2C70A5CB9065FC29CF389FEEA4659F4AB915D273A44"
+    },
+    "classification": "Headless scene lighting/probe generation: graphics renderer absent with -nographics; not networking code"
+  },
+  "android": {
+    "ndk": "23.1.7779620",
+    "sdkPlatforms": [
+      "android-34",
+      "android-35",
+      "android-36"
+    ],
+    "androidModulePresent": true,
+    "adbExitCode": 0,
+    "scope": "Installed-file inventory is not Gradle/IL2CPP build success or target-device acceptance",
+    "jdk": "Temurin 11.0.14.1+1; java -version succeeded",
+    "connectedDevices": [],
+    "unity": "2022.3.62f3",
+    "gradle": "7.5.1 bundled launcher exists; not executed",
+    "deviceInstalledOrRun": false,
+    "apkBuilt": false,
+    "buildTools34Aapt2Present": true,
+    "il2CppExecutablePresent": true,
+    "ndkClangExecutablePresent": true
+  },
+  "productionCodeChanged": false,
+  "businessUpgrade": false,
+  "publishedOrPushed": false,
+  "rawRoot": "artifacts/unity-u7-warning-20261016"
+}
