@@ -84,6 +84,29 @@ namespace PulletFramework.NetClient.Tests
         }
 
         [Test]
+        public void PayloadDispatch_PreservesChannelIdentityAndMetadata()
+        {
+            using (var pump = new PulletMainThreadEventPump())
+            {
+                pump.Reset(1);
+                var client = new object();
+                var bytes = new byte[] { 7, 42 };
+                pump.EnqueuePayload(new ReceivedPayload(bytes, TransportKind.Udp, ChannelType.ReliableOrdered, 7), client);
+                bytes[1] = 99; // The queued owned copy must outlive and isolate the borrowed view.
+                int delivered = 0;
+                pump.DrainPayloads(1, context => ReferenceEquals(context, client), _ => { }, payload =>
+                {
+                    delivered++;
+                    Assert.That(payload.TransportType, Is.EqualTo(TransportKind.Udp));
+                    Assert.That(payload.ChannelType, Is.EqualTo(ChannelType.ReliableOrdered));
+                    Assert.That(payload.ChannelId, Is.EqualTo((byte)7));
+                    Assert.That(payload.Memory.ToArray(), Is.EqualTo(new byte[] { 7, 42 }));
+                }, ex => Assert.Fail(ex.ToString()));
+                Assert.That(delivered, Is.EqualTo(1));
+            }
+        }
+
+        [Test]
         public void LatePayloadAfterDispose_IsSafelyDiscarded()
         {
             var pump = new PulletMainThreadEventPump();

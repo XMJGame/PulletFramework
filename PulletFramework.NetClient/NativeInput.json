@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "purpose": "U2 isolated development input; not release or latest-source dual-platform acceptance",
+  "source": "fa0145c4e86b1e9c3d4ca509711b5bbbcc1f105d",
+  "ciRun": 38870857874,
+  "ciAttempt": 1,
+  "ciPlatform": "windows-only",
+  "nativePackageVersion": "3.0.0-rc.1",
+  "wireVersion": 3,
+  "libraries": [
+    {
+      "assembly": "PulletNet.Protocol",
+      "framework": "netstandard2.0",
+      "packageSha256": "e4e6b0e6ed740dc66a1910badad828cd195cf94f78e7ac512daaaee6059236de",
+      "librarySha256": "9a357522c31c549865c7c40e40d15334632fa02c0f6df44909d87394a3ac2a6c"
+    },
+    {
+      "assembly": "PulletNet.ClientSDK",
+      "framework": "netstandard2.1",
+      "packageSha256": "b19a993afdd0ef95dd9be676ca4308d77e515a6869425c00fdfbc8699842cd97",
+      "librarySha256": "528e5652db4d203d781ba4707048fe257315369745dfa42e360ccd8e3d461488"
+    }
+  ]
+}

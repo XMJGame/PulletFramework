@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using PulletNet.ClientSDK;
 
 namespace PulletFramework.NetClient.Tests
@@ -24,8 +26,8 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(selected.serverName, Is.EqualTo("A"));
         }
 
-        [Test]
-        public async Task DiscoverFirst_DoesNotTryFixedEndpoint()
+        [UnityTest]
+        public IEnumerator DiscoverFirst_DoesNotTryFixedEndpoint() => UnityTaskTest.Run(async () =>
         {
             int fixedCalls = 0;
             int discoveryCalls = 0;
@@ -49,10 +51,10 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(fixedCalls, Is.Zero);
             Assert.That(discoveryCalls, Is.EqualTo(1));
             Assert.That(discoveredConnectCalls, Is.EqualTo(1));
-        }
+        });
 
-        [Test]
-        public async Task DirectThenDiscover_ReleasesFailedFixedClientBeforeDiscovery()
+        [UnityTest]
+        public IEnumerator DirectThenDiscover_ReleasesFailedFixedClientBeforeDiscovery() => UnityTaskTest.Run(async () =>
         {
             int releaseCalls = 0;
             var strategy = new PulletAutoConnectStrategy(
@@ -69,10 +71,10 @@ namespace PulletFramework.NetClient.Tests
 
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(releaseCalls, Is.EqualTo(1));
-        }
+        });
 
-        [Test]
-        public async Task DiscoveryDisabled_AlwaysUsesFixedEndpoint()
+        [UnityTest]
+        public IEnumerator DiscoveryDisabled_AlwaysUsesFixedEndpoint() => UnityTaskTest.Run(async () =>
         {
             int fixedCalls = 0;
             int discoveryCalls = 0;
@@ -92,10 +94,10 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(fixedCalls, Is.EqualTo(1));
             Assert.That(discoveryCalls, Is.Zero);
-        }
+        });
 
-        [Test]
-        public async Task CanceledFixedConnection_DoesNotStartDiscovery()
+        [UnityTest]
+        public IEnumerator CanceledFixedConnection_DoesNotStartDiscovery() => UnityTaskTest.Run(async () =>
         {
             using var cancellation = new CancellationTokenSource();
             int discoveryCalls = 0;
@@ -121,7 +123,7 @@ namespace PulletFramework.NetClient.Tests
             catch (OperationCanceledException) { wasCanceled = true; }
             Assert.That(wasCanceled, Is.True);
             Assert.That(discoveryCalls, Is.Zero);
-        }
+        });
 
         private static PulletAutoConnectStrategy CreateStrategy(
             Func<CancellationToken, Task<ConnectionResult>> connectFixed,

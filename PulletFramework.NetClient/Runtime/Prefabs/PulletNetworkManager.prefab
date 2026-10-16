@@ -50,7 +50,7 @@ MonoBehaviour:
   webSocketPort: 7779
   webSocketPath: /ws
   webSocketUseTls: 0
-  connectionMode: 2
+  connectionMode: 1
   autoConnectMode: 2
   connectOnStart: 1
   dontDestroyOnLoad: 1

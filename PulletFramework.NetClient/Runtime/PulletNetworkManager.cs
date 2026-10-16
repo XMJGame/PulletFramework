@@ -26,11 +26,11 @@ namespace PulletFramework.NetClient
         [Header("服务器")]
         [Tooltip("固定连接使用的服务器 IP 地址或主机名。通过局域网发现选择服务器时，会使用发现结果覆盖本次连接目标。")]
         public string host = "127.0.0.1";
-        [Tooltip("TCP 数据或控制通道端口。仅 TcpOnly、UdpWithTcpControl 模式使用。")]
+        [Tooltip("TCP 端口。仅 TcpOnly 模式使用。")]
         public int tcpPort = 7778;
-        [Tooltip("UDP 数据通道端口。仅 UdpOnly、UdpWithTcpControl、UdpWithWebSocketControl 模式使用。")]
+        [Tooltip("UDP 端口。仅 UdpOnly 模式使用，握手与数据均走 UDP。")]
         public int udpPort = 7777;
-        [Tooltip("WebSocket 数据或控制通道端口。仅 WebSocketOnly、UdpWithWebSocketControl 模式使用。")]
+        [Tooltip("WebSocket 端口。仅 WebSocketOnly 模式使用。")]
         public int webSocketPort = 7779;
         [Tooltip("WebSocket 握手路径，必须以 / 开头。例如 /ws。")]
         public string webSocketPath = "/ws";
@@ -38,8 +38,8 @@ namespace PulletFramework.NetClient
         public bool webSocketUseTls;
 
         [Header("连接")]
-        [Tooltip("底层传输组合。XRVehicle 当前使用 UDP 传输实时数据、TCP 传输可靠控制消息。")]
-        public ConnectionMode connectionMode = ConnectionMode.UdpWithTcpControl;
+        [Tooltip("单连接传输：UdpOnly、TcpOnly 或 WebSocketOnly。旧组合模式值 2/3 必须显式迁移，不会自动降级。")]
+        public ConnectionMode connectionMode = ConnectionMode.UdpOnly;
         [Tooltip("自动连接策略：Direct=只连固定地址；DiscoverFirst=跳过固定地址并发现后自动择优连接；DirectThenDiscover=固定地址失败后再发现并自动连接。")]
         public AutoConnectMode autoConnectMode = AutoConnectMode.DirectThenDiscover;
         [Tooltip("组件启动时是否立即执行 Auto Connect Mode。关闭后由业务界面调用连接或发现。")]
@@ -517,7 +517,7 @@ namespace PulletFramework.NetClient
             catch (Exception ex) { return ConnectionResult.Fail(ConnectionErrorCode.InternalError, ex.Message); }
         }
 
-        /// <summary>发送原始 Payload。普通业务优先使用 SendMessageAsync 或 CallAsync。</summary>
+        /// <summary>按标准投递模式发送原始 Payload；成功仅代表本地接纳，不代表远端接收或业务完成。</summary>
         public ValueTask<SendResult> SendAsync(
             byte[] payload,
             ChannelType channelType = ChannelType.ReliableOrdered,
@@ -526,7 +526,20 @@ namespace PulletFramework.NetClient
             PulletClient client = _client;
             if (client == null || client.State != ConnectionState.Connected)
                 return new ValueTask<SendResult>(SendResult.Rejected(SendErrorCode.NotConnected, "PulletNet client is not connected."));
-            return client.SendAsync(payload, channelType, cancellationToken);
+            // 3.0 SendAsync 的第二个参数是 ChannelId，不可将旧模式枚举强转为 ID。
+            return client.SendDefaultAsync(payload, channelType, cancellationToken);
+        }
+
+        /// <summary>按当前协商的 ChannelId 发送；未协商的 ID 明确拒绝，不回退为其他通道。</summary>
+        public ValueTask<SendResult> SendOnChannelAsync(
+            byte[] payload,
+            byte channelId,
+            CancellationToken cancellationToken = default)
+        {
+            PulletClient client = _client;
+            if (client == null || client.State != ConnectionState.Connected)
+                return new ValueTask<SendResult>(SendResult.Rejected(SendErrorCode.NotConnected, "PulletNet client is not connected."));
+            return client.SendAsync(payload, channelId, cancellationToken);
         }
 
         /// <summary>验证当前连接、发现和队列配置是否可以启动。</summary>
@@ -540,15 +553,28 @@ namespace PulletFramework.NetClient
             int targetWebSocketPort,
             out string error)
         {
+            // Unity preserves numeric enum values in assets. Reject retired values
+            // before constructing the SDK; never silently reinterpret old scenes.
+            if ((byte)connectionMode == 2 || (byte)connectionMode == 3)
+            {
+                error = "Connection mode 2/3 is retired. Select UdpOnly, TcpOnly or WebSocketOnly explicitly; multiple transports require separate clients.";
+                return false;
+            }
+            if (connectionMode != ConnectionMode.UdpOnly && connectionMode != ConnectionMode.TcpOnly &&
+                connectionMode != ConnectionMode.WebSocketOnly)
+            {
+                error = "Unsupported connection mode. Select UdpOnly, TcpOnly or WebSocketOnly.";
+                return false;
+            }
             if (string.IsNullOrWhiteSpace(targetHost))
             {
                 error = "Host cannot be empty.";
                 return false;
             }
 
-            bool usesTcp = connectionMode == ConnectionMode.TcpOnly || connectionMode == ConnectionMode.UdpWithTcpControl;
-            bool usesUdp = connectionMode == ConnectionMode.UdpOnly || connectionMode == ConnectionMode.UdpWithTcpControl || connectionMode == ConnectionMode.UdpWithWebSocketControl;
-            bool usesWebSocket = connectionMode == ConnectionMode.WebSocketOnly || connectionMode == ConnectionMode.UdpWithWebSocketControl;
+            bool usesTcp = connectionMode == ConnectionMode.TcpOnly;
+            bool usesUdp = connectionMode == ConnectionMode.UdpOnly;
+            bool usesWebSocket = connectionMode == ConnectionMode.WebSocketOnly;
             if ((usesTcp && !IsValidPort(targetTcpPort)) || (usesUdp && !IsValidPort(targetUdpPort)) ||
                 (usesWebSocket && !IsValidPort(targetWebSocketPort)))
             {

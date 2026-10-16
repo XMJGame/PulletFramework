@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using PulletFramework.Messaging;
 using PulletNet.ClientSDK;
 
@@ -180,8 +182,8 @@ namespace PulletFramework.NetClient.Tests
             client.Dispose();
         }
 
-        [Test]
-        public void CancelPending_EndsOldSessionRpc()
+        [UnityTest]
+        public IEnumerator CancelPending_EndsOldSessionRpc() => UnityTaskTest.Run(async () =>
         {
             var client = CreateClient(new JsonMessageSerializer());
             Task<TestMessage> call = client.CallAsync<TestMessage, TestMessage>(
@@ -189,12 +191,19 @@ namespace PulletFramework.NetClient.Tests
 
             client.CancelPending("connection lost");
 
-            Assert.Throws<OperationCanceledException>(() => call.GetAwaiter().GetResult());
-            client.Dispose();
-        }
+            try
+            {
+                // Keep Unity's synchronization context pumping; the RPC completion
+                // may legitimately return to this main thread.
+                await call;
+                Assert.Fail("Disconnect must cancel the old Session RPC.");
+            }
+            catch (OperationCanceledException) { }
+            finally { client.Dispose(); }
+        });
 
-        [Test]
-        public void Rpc_TimeoutIncludesTimeSpentWaitingForSend()
+        [UnityTest]
+        public IEnumerator Rpc_TimeoutIncludesTimeSpentWaitingForSend() => UnityTaskTest.Run(async () =>
         {
             var send = new TaskCompletionSource<SendResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             var client = new PulletMessageClient(Protocol, new JsonMessageSerializer(),
@@ -203,13 +212,17 @@ namespace PulletFramework.NetClient.Tests
             Task<TestMessage> call = client.CallAsync<TestMessage, TestMessage>(
                 1001, 1002, new TestMessage(), TimeSpan.FromMilliseconds(40));
 
-            Assert.Throws<TimeoutException>(() => call.GetAwaiter().GetResult());
-            Assert.That(call.IsCompleted, Is.True);
-            client.Dispose();
-        }
+            try
+            {
+                await call;
+                Assert.Fail("The RPC deadline must include waiting for send.");
+            }
+            catch (TimeoutException) { Assert.That(call.IsCompleted, Is.True); }
+            finally { send.TrySetResult(SendResult.Accepted()); client.Dispose(); }
+        });
 
-        [Test]
-        public void Rpc_DisconnectCancellationDoesNotWaitForPendingSend()
+        [UnityTest]
+        public IEnumerator Rpc_DisconnectCancellationDoesNotWaitForPendingSend() => UnityTaskTest.Run(async () =>
         {
             var send = new TaskCompletionSource<SendResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             var client = new PulletMessageClient(Protocol, new JsonMessageSerializer(),
@@ -219,9 +232,14 @@ namespace PulletFramework.NetClient.Tests
 
             client.CancelPending("connection lost");
 
-            Assert.Throws<OperationCanceledException>(() => call.GetAwaiter().GetResult());
-            client.Dispose();
-        }
+            try
+            {
+                await call;
+                Assert.Fail("Disconnect cancellation must not wait for pending send.");
+            }
+            catch (OperationCanceledException) { }
+            finally { send.TrySetResult(SendResult.Accepted()); client.Dispose(); }
+        });
 
         [Test]
         public void UnknownRpcResponse_IsNotDeliveredToNormalSubscribers()
