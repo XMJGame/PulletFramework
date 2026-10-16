@@ -1,0 +1,460 @@
+{
+  "schema": 1,
+  "purpose": "U3/U4 runtime local implementation checkpoint; formal RC1 input unchanged, corresponding Native CI pending",
+  "rawRoot": "G:/XuMingJun/2026/PICO GPS XR/PulletNet/artifacts/unity-u3-runtime-closeout-20261016",
+  "unity": "2022.3.62f3",
+  "platform": "Windows Editor EditMode",
+  "newRuntimeTests": 25,
+  "criticalCasesPerProcess": 12,
+  "independentProcesses": 20,
+  "criticalPasses": 240,
+  "checkpointTotal": 121,
+  "checkpointPasses": 121,
+  "adapterImplementationCommitted": false,
+  "formalInputChanged": false,
+  "legacyManagerChanged": false,
+  "nativeCodeChangedThisBatch": false,
+  "downstreamChanged": false,
+  "remoteCiRun": false,
+  "nativeFullSuiteRun": false,
+  "longLoadRun": false,
+  "pushed": false,
+  "published": false,
+  "previousEditorAvResolved": false,
+  "recordedUtc": "2026-10-16T09:57:57.0304001+00:00",
+  "frameworkBase": "67e77077d5cd69d9ba13c6827c7f396997254a34",
+  "nativeProductionSource": "dac3c64e3a75a0c1094973965b4667ccd0ad2e9d",
+  "runs": [
+    {
+      "name": "targeted",
+      "total": 25,
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:51:05.2087728+08:00",
+      "finishedUtc": "2026-10-16T17:51:20.8262011+08:00",
+      "xmlSha256": "69d1ee05f619de7cca381ae7b8666b6ce890abf173e983e79e94acf425701d8f",
+      "logSha256": "fc7be38fd84eb0f46e31146a6cb4c6f0ed015522ec7bf341b4acf2e6baaab022",
+      "arguments": [
+        "-batchmode",
+        "-nographics",
+        "-projectPath",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016/Project\"",
+        "-runTests",
+        "-testPlatform",
+        "EditMode",
+        "-assemblyNames",
+        "PulletFramework.NetClient.Tests.Editor",
+        "-testResults",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016\\targeted/results.xml\"",
+        "-logFile",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016\\targeted/unity.log\"",
+        "-testFilter",
+        "PulletFramework.NetClient.Tests.PulletClientRuntimeTests"
+      ]
+    },
+    {
+      "name": "checkpoint",
+      "total": 121,
+      "passed": 121,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:56:06.788921+08:00",
+      "finishedUtc": "2026-10-16T17:56:24.5139564+08:00",
+      "xmlSha256": "006aedcac9d732f7dece22c1aebad9e4d386f1e463ea496693d3ac75ad4bd5f3",
+      "logSha256": "2e5cf282638ca9c8d3623730ddfe592ad6d3c3dacb555d485a74ae380a027c06",
+      "arguments": [
+        "-batchmode",
+        "-nographics",
+        "-projectPath",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016/Project\"",
+        "-runTests",
+        "-testPlatform",
+        "EditMode",
+        "-assemblyNames",
+        "PulletFramework.NetClient.Tests.Editor",
+        "-testResults",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016\\checkpoint/results.xml\"",
+        "-logFile",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016\\checkpoint/unity.log\""
+      ]
+    },
+    {
+      "name": "repeat-01",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:52:51.2555455+08:00",
+      "finishedUtc": "2026-10-16T17:53:00.5560449+08:00",
+      "xmlSha256": "a141b8c6181d745538a516dd60922e77b03c95ea354e07973c2326ef57a8c381",
+      "logSha256": "cbb4932742c76ddc421a756bda5c2d8601025ee5e63a36e8f2dbce53ce8bf2d5",
+      "arguments": [
+        "-batchmode",
+        "-nographics",
+        "-projectPath",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016/Project\"",
+        "-runTests",
+        "-testPlatform",
+        "EditMode",
+        "-assemblyNames",
+        "PulletFramework.NetClient.Tests.Editor",
+        "-testResults",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016\\repeat-01/results.xml\"",
+        "-logFile",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u3-runtime-closeout-20261016\\repeat-01/unity.log\"",
+        "-testFilter",
+        "PulletFramework.NetClient.Tests.PulletClientRuntimeTests.ReliableOverflowCleansOnlyItsSourceWithoutNeedingUpdate;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.LifecycleOverflowHasOneFixedTerminalFactAndDoesNotReopen;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.NameReuseAndLateOldFactsCannotTargetTheReplacement;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.CallbackReentrantCloseWaitsForPayloadBorrowAndIsShared;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.RemovingInsideLifecycleCallbackJoinsThatEnteredCallback;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.CancelingOneWaitCannotCancelSharedCleanupOrPermitEarlyNameReuse;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.CloseJoinsAcceptedRemovalAndRejectsNewOperations;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.CloseReturnsUndeliveredTerminalFailureWithoutAnotherFrame;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.FaultNotificationReservesItsSlotUntilDeliveredButNotForever;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.CloseJoinsTerminalNotificationAfterSdkRemovalAlreadyFinished;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.RemoveJoinsPreparingCopyAndRejectsItsLatePublication;PulletFramework.NetClient.Tests.PulletClientRuntimeTests.ConcurrentCreatesAndCloseSettleEveryAcceptedSdkOwner"
+      ]
+    },
+    {
+      "name": "repeat-02",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:53:00.5729734+08:00",
+      "finishedUtc": "2026-10-16T17:53:09.7702193+08:00",
+      "xmlSha256": "9a3fe1204b658367adf3e2fb14eb8e5b9ab3737e4e8765d5a4cc40f98e2723f2",
+      "logSha256": "6224c78ef71961e7199c457a9dd19e8fdcb944b732cddf2d9c25617702b7baa9",
+      "arguments": null
+    },
+    {
+      "name": "repeat-03",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:53:09.7740637+08:00",
+      "finishedUtc": "2026-10-16T17:53:19.0982669+08:00",
+      "xmlSha256": "af8c2575757d2de562d7ab9d36447fbf818121bde8a2bff6b020c6b336edb549",
+      "logSha256": "55c51f1aaaaf54714c0b5aaec3eb8d1f14464ebdc79d5c3afc3082541b7d613a",
+      "arguments": null
+    },
+    {
+      "name": "repeat-04",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:53:19.1011725+08:00",
+      "finishedUtc": "2026-10-16T17:53:28.2635348+08:00",
+      "xmlSha256": "9cb388406d6f2a23e95d3b5e7435dd43bac5785a9e1a35e70cc61fe4886664cf",
+      "logSha256": "7580fefb605112c5100a426b14f209a2e05f8189b07bc986eb2c14de14f8f098",
+      "arguments": null
+    },
+    {
+      "name": "repeat-05",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:53:28.2664308+08:00",
+      "finishedUtc": "2026-10-16T17:53:37.308431+08:00",
+      "xmlSha256": "de5f241d50f4464933063c890983de4a696c10024f1e51ee5a6bc8ac0ec1d704",
+      "logSha256": "80a013d018ca60be23f1d243b4510d4613f5b82e2becfd0d18097fee41dab07a",
+      "arguments": null
+    },
+    {
+      "name": "repeat-06",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:53:37.3113417+08:00",
+      "finishedUtc": "2026-10-16T17:53:46.6093501+08:00",
+      "xmlSha256": "a0bf281accafc4f1c67077d4c44a6d766a82d84505dec66aca5cbc46e831d3f4",
+      "logSha256": "05939cd0a263fdd9e82f02f01910b44f11ea991d7407722d29e9d23fa55f7284",
+      "arguments": null
+    },
+    {
+      "name": "repeat-07",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:53:46.6121136+08:00",
+      "finishedUtc": "2026-10-16T17:53:56.1243221+08:00",
+      "xmlSha256": "0b7a9bf122f3075b9872ef024fbf34cb77401bb938e4e74d8fafd530ef13a5ba",
+      "logSha256": "c3d9ac1898dccd0611e0882d20e5772e11914399ae6cf0b55219a6f74f2748da",
+      "arguments": null
+    },
+    {
+      "name": "repeat-08",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:53:56.127168+08:00",
+      "finishedUtc": "2026-10-16T17:54:05.4787091+08:00",
+      "xmlSha256": "d8810f403ed0dbe700704b8bed76159eec0197be68e324cb2ec3ac317bcfb02b",
+      "logSha256": "242e4f7196f7ee73c19261272f1f56b06f90383acf4aa8825a89e66cd463da76",
+      "arguments": null
+    },
+    {
+      "name": "repeat-09",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:54:05.4817059+08:00",
+      "finishedUtc": "2026-10-16T17:54:14.5729741+08:00",
+      "xmlSha256": "f5268e576268ffc1a3421864639f1f4729fe78a077e915b68297dd56d6d5236e",
+      "logSha256": "d2fda71ed72ec2eacddc75b2488e30e69bdb5d85b1b57473535fc20e3a8f775c",
+      "arguments": null
+    },
+    {
+      "name": "repeat-10",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:54:14.5755467+08:00",
+      "finishedUtc": "2026-10-16T17:54:23.6488571+08:00",
+      "xmlSha256": "b165a277491a273bd7f4815795494684912384a77eedf5b993cccfcebf29367e",
+      "logSha256": "3b95ea91c9ef54a17ac86039ea965c52ca05cc26cd12a9f76e9a30f9a2aea9e4",
+      "arguments": null
+    },
+    {
+      "name": "repeat-11",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:54:23.6515271+08:00",
+      "finishedUtc": "2026-10-16T17:54:32.8918164+08:00",
+      "xmlSha256": "1089309facfd7f78509de3183cb69a3c54322c59f3b4c303e65606229544f080",
+      "logSha256": "23dc9ed126eeecee7b2914baa084435fab4b271846162a783e7885485f9f8d01",
+      "arguments": null
+    },
+    {
+      "name": "repeat-12",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:54:32.8953015+08:00",
+      "finishedUtc": "2026-10-16T17:54:42.125042+08:00",
+      "xmlSha256": "2e95077324490b57799bf2c7c25c1415d04df558ae0dc838046092945e816d9c",
+      "logSha256": "4e5de81956f31375f1a2157c6d3387c3891d41e1574bbdce8b4e9e19bba64864",
+      "arguments": null
+    },
+    {
+      "name": "repeat-13",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:54:42.1277201+08:00",
+      "finishedUtc": "2026-10-16T17:54:51.3478959+08:00",
+      "xmlSha256": "7b7937cfbee43151b8cbcd3abfe57c163b84e80842f4e9027d20712c56d4bed5",
+      "logSha256": "ab77c2be9e2254ac64554b231002bdde1b988cf1bbcba73b381ea6d1f30dc6c3",
+      "arguments": null
+    },
+    {
+      "name": "repeat-14",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:54:51.3503612+08:00",
+      "finishedUtc": "2026-10-16T17:55:00.5604246+08:00",
+      "xmlSha256": "efe7801d2ceaedaa0f15245c693c3c0a5f9e9c4bbfd9b717e636d0b26cb6cfaa",
+      "logSha256": "97f3662f7278b64620718d71995c38e988ea552526743da110b25b2815140c89",
+      "arguments": null
+    },
+    {
+      "name": "repeat-15",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:55:00.5629812+08:00",
+      "finishedUtc": "2026-10-16T17:55:09.7369838+08:00",
+      "xmlSha256": "79cb3ec25600a6e628024b84180c11836067ffeed3f07b8cb40539334f7790a5",
+      "logSha256": "63e3a657c8f02d558d3878dc32f2c8c6964c22b9eb83abefac2de4294532904e",
+      "arguments": null
+    },
+    {
+      "name": "repeat-16",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:55:09.739638+08:00",
+      "finishedUtc": "2026-10-16T17:55:19.1085055+08:00",
+      "xmlSha256": "83aa91bfc52a76e985562561af4b56267017a0cf9e991f292dbe222e5e2b5ea1",
+      "logSha256": "75e90ecf9f4db59fcfbca6c84d44400dd895afb21457d06eb1e5aa552fd884aa",
+      "arguments": null
+    },
+    {
+      "name": "repeat-17",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:55:19.1117865+08:00",
+      "finishedUtc": "2026-10-16T17:55:28.6078889+08:00",
+      "xmlSha256": "ac5dc95325e3f3a4281885c9c229bd6a3c470e0ba3d0605b06e7c0cd8b497cbd",
+      "logSha256": "e3a96636589310e8464ced711ef075f41d8277d1fbc1b1407fa0d730e75278e7",
+      "arguments": null
+    },
+    {
+      "name": "repeat-18",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:55:28.6103552+08:00",
+      "finishedUtc": "2026-10-16T17:55:38.1045465+08:00",
+      "xmlSha256": "038be78d29fd244bee996640d02d77e5287c7c6f325f05f809f18c5a7e763778",
+      "logSha256": "e6f57ee3c79a79febd160960b7437a502797845347d4199efbc2e2156163c658",
+      "arguments": null
+    },
+    {
+      "name": "repeat-19",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:55:38.1070795+08:00",
+      "finishedUtc": "2026-10-16T17:55:47.2385383+08:00",
+      "xmlSha256": "60502436b87342aec36f15a4e0b8db8c18e2666afc2c15947e2b1dd664ec063a",
+      "logSha256": "895f0ac04a996c5f6a547eba33b4a6eb456ce606e5e65a08427a0fc919e9c809",
+      "arguments": null
+    },
+    {
+      "name": "repeat-20",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "startedUtc": "2026-10-16T17:55:47.2483494+08:00",
+      "finishedUtc": "2026-10-16T17:55:56.5078824+08:00",
+      "xmlSha256": "d92771450779f573552e5727f5d0332982e2b460b104bebd799119a780b86984",
+      "logSha256": "702608e71148416d534e2a0b611c3aebd477f54bcfce80caa070cf152f2acc58",
+      "arguments": null
+    }
+  ],
+  "sources": [
+    {
+      "path": "Runtime/ClientDispatchQueue.cs",
+      "worktreeSha256": "1c7cd1e599e9e67ea2fd01acee2cba52ecb26283c068cd066eacb64a32bbb2ee",
+      "isolatedSha256": "1c7cd1e599e9e67ea2fd01acee2cba52ecb26283c068cd066eacb64a32bbb2ee"
+    },
+    {
+      "path": "Runtime/PulletClientRuntime.cs",
+      "worktreeSha256": "c27ebbd390abc072f1f87f8798edda928d5661f77854d4f54c3fe888b62c78a5",
+      "isolatedSha256": "c27ebbd390abc072f1f87f8798edda928d5661f77854d4f54c3fe888b62c78a5"
+    },
+    {
+      "path": "Runtime/PulletClientRuntime.cs.meta",
+      "worktreeSha256": "34dbdf52b228c4964df61535269083d613537cc67df54e8b19acdae649c331ff",
+      "isolatedSha256": "34dbdf52b228c4964df61535269083d613537cc67df54e8b19acdae649c331ff"
+    },
+    {
+      "path": "Runtime/PulletClientRuntimeContracts.cs",
+      "worktreeSha256": "ee08b9ff72fa38be1b7dbf517839f693556aa0fce7a81ffbda6d75e6509a40b7",
+      "isolatedSha256": "ee08b9ff72fa38be1b7dbf517839f693556aa0fce7a81ffbda6d75e6509a40b7"
+    },
+    {
+      "path": "Runtime/PulletClientRuntimeContracts.cs.meta",
+      "worktreeSha256": "5c25b48c3b6f11d00562a82a8405d7148363f266c8c4c059979f1e2ef1729d6a",
+      "isolatedSha256": "5c25b48c3b6f11d00562a82a8405d7148363f266c8c4c059979f1e2ef1729d6a"
+    },
+    {
+      "path": "Tests/Editor/PulletClientRuntimeTests.cs",
+      "worktreeSha256": "339c362b9161b61ef1b8b32b74dffc06d7ca571a756e6e6df6f4f7d0f88e1e3e",
+      "isolatedSha256": "339c362b9161b61ef1b8b32b74dffc06d7ca571a756e6e6df6f4f7d0f88e1e3e"
+    },
+    {
+      "path": "Tests/Editor/PulletClientRuntimeTests.cs.meta",
+      "worktreeSha256": "9a6e74dca25155c40761abe620ec37094a5d0561e5101339b3ef596e945dc2f7",
+      "isolatedSha256": "9a6e74dca25155c40761abe620ec37094a5d0561e5101339b3ef596e945dc2f7"
+    }
+  ],
+  "isolatedNativeInput": {
+    "schema": 1,
+    "purpose": "U3/U4 isolated RC2 local validation only; remote CI pending; not a published or installed consumer input",
+    "source": "dac3c64e3a75a0c1094973965b4667ccd0ad2e9d",
+    "ciRun": null,
+    "ciAttempt": null,
+    "ciPlatform": null,
+    "nativePackageVersion": "3.0.0-rc.2",
+    "wireVersion": 3,
+    "libraries": [
+      {
+        "assembly": "PulletNet.Protocol",
+        "framework": "netstandard2.0",
+        "packageSha256": "f70047fc876381fe7b4b44829f5c7435ee7f91a3a4957e428b9eb11d1ce9c477",
+        "librarySha256": "8fd02b7a07ba80e23fa9448746e0edce849600673d5b2179c42c584ea02cc9ab"
+      },
+      {
+        "assembly": "PulletNet.ClientSDK",
+        "framework": "netstandard2.1",
+        "packageSha256": "bc4ab7988c3430507c8cf17ee1d1b72a6e2e2559c92ed1ba75df7ea71e658002",
+        "librarySha256": "6ce913ac7c69f238c7a475e6dcc57c5d5ba3c263405e9e7f2475ba9548eab7bf"
+      }
+    ]
+  },
+  "formalInputHashes": [
+    {
+      "path": "NativeInput.json",
+      "sha256": "a9534adeede15266d665b13ae05e92b673883233c31e4a0f395aaede22cf182a"
+    },
+    {
+      "path": "Runtime/Plugins/PulletNet.Protocol.dll",
+      "sha256": "9a357522c31c549865c7c40e40d15334632fa02c0f6df44909d87394a3ac2a6c"
+    },
+    {
+      "path": "Runtime/Plugins/PulletNet.ClientSDK.dll",
+      "sha256": "528e5652db4d203d781ba4707048fe257315369745dfa42e360ccd8e3d461488"
+    }
+  ],
+  "fixture": {
+    "failures": [],
+    "echoes": 20,
+    "sendFailures": []
+  },
+  "fixtureExit": {
+    "pid": 57732,
+    "exitCode": 0,
+    "finishUtc": "2026-10-16T17:56:24.5798601+08:00"
+  },
+  "runnerHashes": [
+    {
+      "path": "Run.ps1",
+      "sha256": "d4a3e560d5d8370c262a6b3a06f1df057dff4995ceab75553dbc3bc0e9547b5e"
+    },
+    {
+      "path": "Repeat.ps1",
+      "sha256": "e7fc136a6004b380143e8975d8e029457d854c57ae63f37331fe98364fe0ad96"
+    },
+    {
+      "path": "Run-Fixture.ps1",
+      "sha256": "a4249e102b60d921149e9848a589a890ff54916bf6d7469e09b95065295b0ff6"
+    }
+  ]
+}

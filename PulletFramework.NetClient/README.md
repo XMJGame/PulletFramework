@@ -7,19 +7,13 @@
 本包不依赖 `PulletFramework` 主模块：既可以单独安装，也可以与其他 Pullet Framework
 模块组合使用。服务端及跨平台 C# 网络内核仍使用 `PulletNet` 名称。
 
-当前为 `3.0.0-pre.1` 开发检查点，不是正式发布或完整 Unity 3.0 验收。仅完成单连接 U2：
-UDP/TCP/WebSocket 接入、标准模式发送、明确 ChannelId 发送和元数据传递。
-Native 输入由 `NativeInput.json` 锁定到准确源码/包哈希；Native 包仍为 `3.0.0-rc.1`，与本 Unity 包版本分别管理。
-多连接、队列字节预算、公平派发及完整生命周期整理仍按 U1 的 U3—U6 后续推进，不能据本检查点宣称已经实现。
-U3/U4-A 已新增内部多来源派发内核并单独验证；尚未接入公开 Runtime 或替换 Manager，
-所以现有 Manager 的主线程队列仍不具备这套多来源/字节预算保证。详情见仓库 Documentation 中的派发内核检查点。
-后续 U3/U4-B 薄 Runtime 实现仍在工作区：107项包测试通过，但真实UDP退出和独立SDK对照测试未通过，
-未签收或提交为可用入口；当前不迁旧Manager或业务工程。阻挡记录见
-`Documentation/NetClient-U3-Runtime-Blocked.zh-CN.md`，不能把包测试通过等同于真实连接验收。
-该阻挡后续已定位到SDK UDP取消回调，有限修复仅在新隔离DLL验证：118项通过，
-独立重复第11进程因Editor测试前访问冲突停止，平台门槛仍未完成。正式包尚未替换该DLL，详见同一阻挡记录的后续进展。
-经授权继续补验后已累计20次实际执行通过，第11次启动失败仍保留；隔离RC2包及其准确DLL的118项也通过。
-本目录仍是原RC1 DLL，不能把隔离候选结果当成本包已完成升级；薄Runtime自身竞态及整体U3/U4签收仍待完成。
+当前为 `3.0.0-pre.1` 开发检查点，不是正式发布或完整Unity3.0验收。已提交U2单连接及U3/U4-A内部派发内核；
+旧Manager尚未迁移，不能宣称它已有新的多来源/字节预算保证。
+薄Runtime及有界生命周期接入仍在工作区：定向25/25、12关键场景20独立进程240/240、含真实连接的包检查点121/121通过。
+这些结果来自准确dac3c64 RC2的隔离副本，不是本目录已经完成安装升级。
+本目录 `NativeInput.json` 与DLL仍锁定到fa0145c RC1；SDK UDP退出修复尚待对应远端门槛，之后才切开发输入并提交完整Runtime。
+当前接入合同与证据见仓库Documentation中的 `NetClient-U3-Runtime-Contract.zh-CN.md` 和 `NetClient-U3-Runtime-Local-Checkpoint.zh-CN.md`。
+此前Editor测试前启动AV原件仍保留、未追溯结案；Player/IL2CPP/PICO和U5/U6整体生命周期尚未验收。
 2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
 
 ## 平台范围
