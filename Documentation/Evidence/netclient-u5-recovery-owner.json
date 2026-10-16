@@ -1,0 +1,1047 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-10-16T11:05:22.3929044+00:00",
+  "frameworkBase": "b4f319f8f442fd3a2210959c71da6e01da3cf7c6",
+  "branch": "codex/unity-single-connection",
+  "purpose": "U5-A existing recovery strategy execution/exit owner; Manager facade and overall Shutdown remain unmigrated",
+  "rawRoot": "G:/XuMingJun/2026/PICO GPS XR/PulletNet/artifacts/unity-u5-recovery-owner-20261016",
+  "unity": "2022.3.62f3",
+  "platform": "Windows Editor EditMode",
+  "nativeInput": {
+    "schema": 1,
+    "purpose": "U3/U4 development input from exact Windows native CI; not release, latest-source dual-platform or Player acceptance",
+    "source": "2b046d5e55efb04c768d4b7127c3a6fdbc548c22",
+    "ciRun": 38887773146,
+    "ciAttempt": 1,
+    "ciPlatform": "windows-only",
+    "nativePackageVersion": "3.0.0-rc.1",
+    "wireVersion": 3,
+    "libraries": [
+      {
+        "assembly": "PulletNet.Protocol",
+        "framework": "netstandard2.0",
+        "packageSha256": "326528e44915edc52b65b33595189494616019b9ce82cb0659e230d3e985a75c",
+        "librarySha256": "58745e4bf3454ac4067beed904f46c24cce5ee376c4a6fcfded72239ec6c09b2"
+      },
+      {
+        "assembly": "PulletNet.ClientSDK",
+        "framework": "netstandard2.1",
+        "packageSha256": "f20d462f7eb28b4544c53f0390769e2d823b544ec83f3c49ba7017b9949e59ca",
+        "librarySha256": "0d48d46ac4864b4208db4af35c0d83c226a139583331d42c5bce8bf6d01cb75a"
+      }
+    ]
+  },
+  "nativeInputChanged": false,
+  "nativeCodeChanged": false,
+  "newNativeCiRun": false,
+  "downstreamChanged": false,
+  "legacyManagerChanged": false,
+  "newCoordinatorAdded": false,
+  "frameworkPushed": false,
+  "published": false,
+  "productionDelayMinimumSeconds": 0.5,
+  "testDelay": "Internal controlled delay seam; production default remains Task.Delay and existing caller scheduler",
+  "originalProbe": {
+    "productionUnmodified": true,
+    "total": 1,
+    "baselineSource": "b4f319f8f442fd3a2210959c71da6e01da3cf7c6",
+    "newControlledTest": true,
+    "failed": 1,
+    "retained": true,
+    "failure": "Start diagnostic throws before RunAsync; old IsRunning remains true.",
+    "exitCode": 2
+  },
+  "targeted": {
+    "newCases": 9,
+    "originalCases": 3,
+    "passed": 12,
+    "total": 12
+  },
+  "repetition": {
+    "passed": 180,
+    "failed": 0,
+    "casesPerProcess": 9,
+    "retryPerformed": false,
+    "independentUnityProcesses": 20,
+    "basis": "Unchanged recovery production/test source across all filtered runs; validation-only echo test copies were prepared during repetition, but never selected/executed by its fixed filter. Complete-package source identity belongs to the separate final checkpoint."
+  },
+  "checkpoint": {
+    "failed": 0,
+    "skipped": 0,
+    "passed": 130,
+    "total": 130,
+    "exitCode": 0
+  },
+  "sources": [
+    {
+      "path": "Runtime/PulletActiveServerRecovery.cs",
+      "sha256": "ca666577f992cb7a99f4ff1040a4ffe6272808bf415cd7ce8ad6ba3da69e1f95",
+      "isolatedMatch": true
+    },
+    {
+      "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs",
+      "sha256": "a92efb1ebbbe071307db094cdd9739839b1d7e9d0fe2ca9677b4843c77bc1bdf",
+      "isolatedMatch": true
+    }
+  ],
+  "compiledSourceFiles": [
+    {
+      "path": "Runtime/AssemblyInfo.cs",
+      "sha256": "c834d492891bde086039347ed78b3f0773475e5d578767f9aea3804bae60fee7"
+    },
+    {
+      "path": "Runtime/BoundedPayloadQueue.cs",
+      "sha256": "7dc6cc13f53b47c69718c5abbae7fcd0e6e528ae08d9519781cc569d4852440d"
+    },
+    {
+      "path": "Runtime/ClientDispatchQueue.cs",
+      "sha256": "1c7cd1e599e9e67ea2fd01acee2cba52ecb26283c068cd066eacb64a32bbb2ee"
+    },
+    {
+      "path": "Runtime/PulletActiveServerRecovery.cs",
+      "sha256": "ca666577f992cb7a99f4ff1040a4ffe6272808bf415cd7ce8ad6ba3da69e1f95"
+    },
+    {
+      "path": "Runtime/PulletAutoConnectStrategy.cs",
+      "sha256": "c1861a63dacf7dafb64215be433b0cf9973c701d8617939da3884f647bceb595"
+    },
+    {
+      "path": "Runtime/PulletClientRuntime.cs",
+      "sha256": "c27ebbd390abc072f1f87f8798edda928d5661f77854d4f54c3fe888b62c78a5"
+    },
+    {
+      "path": "Runtime/PulletClientRuntimeContracts.cs",
+      "sha256": "ee08b9ff72fa38be1b7dbf517839f693556aa0fce7a81ffbda6d75e6509a40b7"
+    },
+    {
+      "path": "Runtime/PulletConnectionCoordinator.cs",
+      "sha256": "8a2e906c6da15204e457ce8066852d0fd458723da5021d0f7834b163445e5f61"
+    },
+    {
+      "path": "Runtime/PulletFramework.NetClient.asmdef",
+      "sha256": "992a6c4be06424fb423916d85c402f911e722ac1b88e9cfef8f6f93c736c5203"
+    },
+    {
+      "path": "Runtime/PulletMainThreadEventPump.cs",
+      "sha256": "4a5db484ce9b7754d41f61b97f16e3e728be6f8c23b2d0ff92ab45e231996ed6"
+    },
+    {
+      "path": "Runtime/PulletNetworkEventRelay.cs",
+      "sha256": "bd68df2d187dda40718f0a08fb0d0763f1de9c46b2b829e7b24e078af7b4a598"
+    },
+    {
+      "path": "Runtime/PulletNetworkManager.cs",
+      "sha256": "28e82b0ed90a8942f738c1a694195f5d7c7718ebd53d5f0ac7a8e2c7a07820e2"
+    },
+    {
+      "path": "Runtime/PulletServerDiscovery.cs",
+      "sha256": "af9513f831836f810c63a4002467ae7a09e42bed7c6ae77cc45e9b91f5515d27"
+    },
+    {
+      "path": "Runtime/Messaging/MessageSubscriptions.cs",
+      "sha256": "9dc0548d8cc21d2ffdac52ff1c6d03eca22e277b3e7ad6c7196a66f2a729d6e0"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageClient.cs",
+      "sha256": "02f28e3e99fe37b5397ea13b879b05146038150566374c4289ae1d0d38c4614c"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageProtocol.cs",
+      "sha256": "5cb3d429690ea11ff78531ee2290ca2f73b9810a6078cd1bd6d26d5437e6c61e"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageRouter.cs",
+      "sha256": "d36456178cbd8de9322243ab7e5effbb6831cd403df1683946fec335f14a9b9b"
+    },
+    {
+      "path": "Runtime/Messaging/PulletMessageSerialization.cs",
+      "sha256": "5845611ad7a7255c47f9cf10f9a922032eb64f21dc318ed420542c0a24da4858"
+    },
+    {
+      "path": "Tests/Editor/BoundedPayloadQueueTests.cs",
+      "sha256": "de6657849b64818cb58a7f777a12993c9b3570005990156bb829f10ba5d88146"
+    },
+    {
+      "path": "Tests/Editor/ClientDispatchQueueTests.cs",
+      "sha256": "a1b25e089222dd286843dd7282d673bf0de111217ec366ff315048e70f68a1c4"
+    },
+    {
+      "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs",
+      "sha256": "a92efb1ebbbe071307db094cdd9739839b1d7e9d0fe2ca9677b4843c77bc1bdf"
+    },
+    {
+      "path": "Tests/Editor/PulletAutoConnectStrategyTests.cs",
+      "sha256": "bf11cca3e0a284707100ba8e4cbc448292dfee33becb0aa6f67e1ffea8292f88"
+    },
+    {
+      "path": "Tests/Editor/PulletClientRuntimeTests.cs",
+      "sha256": "339c362b9161b61ef1b8b32b74dffc06d7ca571a756e6e6df6f4f7d0f88e1e3e"
+    },
+    {
+      "path": "Tests/Editor/PulletConnectionCoordinatorTests.cs",
+      "sha256": "ff20242c9800046b44d4e5c9cec7edaa7f8d207542d80e1eda34947dbbb25bd5"
+    },
+    {
+      "path": "Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef",
+      "sha256": "cecdf7ee6dfe8e73c72f5a4a20ba3941613b6fbc3649ef829b3e1d902eae6558"
+    },
+    {
+      "path": "Tests/Editor/PulletMainThreadEventPumpTests.cs",
+      "sha256": "0c65df123882838ca983212264a0227ff7326f0f9ec022d275f54d6233c7f01e"
+    },
+    {
+      "path": "Tests/Editor/PulletMessagingTests.cs",
+      "sha256": "b864ea568b4ef8d05f6659cf0ffdf35e9b92ae9142035d748f9892d6d557312a"
+    },
+    {
+      "path": "Tests/Editor/PulletNetworkManagerTests.cs",
+      "sha256": "c116bd06989b882c0912d4efd85355b8aa9c3d161eb610c1b7b515e67085685c"
+    },
+    {
+      "path": "Tests/Editor/PulletServerDiscoveryTests.cs",
+      "sha256": "29130392cf16f7c853578be8c5dd80d84cadd7c3fc222b2a4453722da46af52c"
+    },
+    {
+      "path": "Tests/Editor/UnityTaskTest.cs",
+      "sha256": "2a630b9b8989a8444a404cc77e640917bca320193221002c13fc6add834f270b"
+    }
+  ],
+  "preservedMetaCount": 44,
+  "runs": [
+    {
+      "name": "original-owner-probe",
+      "result": "Failed(Child)",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "xmlSha256": "55fc5390c7571fbe6791c94d49e300d2c2dc4379e0b75d5d4a78b91830e6d53f",
+      "logSha256": "5db35e16cac2a4fbdfd4f3e11b12baac7bb5c4d9960f3ff038976ea203f6d720",
+      "execution": {
+        "name": "original-owner-probe",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\original-owner-probe/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\original-owner-probe/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning"
+        ],
+        "exitCode": 2,
+        "startedUtc": "2026-10-16T18:58:01.7157288+08:00",
+        "finishedUtc": "2026-10-16T18:58:15.8330211+08:00"
+      }
+    },
+    {
+      "name": "package-checkpoint",
+      "result": "Passed",
+      "total": 130,
+      "passed": 130,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "8cb19d959b982671d1f4a5a9eff08699f3919546beb02d64c853011513b086cc",
+      "logSha256": "a25908253f46e9c76efd6761cddbdd0860aaaaa6fd3e267e7a9e37dea5f3c3d1",
+      "execution": {
+        "name": "package-checkpoint",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\package-checkpoint/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\package-checkpoint/unity.log\""
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:04:10.5265329+08:00",
+        "finishedUtc": "2026-10-16T19:04:27.1545132+08:00"
+      }
+    },
+    {
+      "name": "recovery-final",
+      "result": "Passed",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "7955f0557170a5d14944c3c140a98623a0dbbf5432e9c12dbeb45b767825d5b7",
+      "logSha256": "482ea87e93907b054da765275288d507202dad8760c43274d60a3433617b2590",
+      "execution": {
+        "name": "recovery-final",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\recovery-final/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\recovery-final/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:00:35.7140097+08:00",
+        "finishedUtc": "2026-10-16T19:00:46.5758529+08:00"
+      }
+    },
+    {
+      "name": "recovery-targeted",
+      "result": "Passed",
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "b4b15c823253f486441cd7653849acd7e30be4adeca04208d892e2c31ae1a259",
+      "logSha256": "dfff76844f149bb1d060fafea8bcd67d3ce5345cd75ef6f6ead57e6331441d6b",
+      "execution": {
+        "name": "recovery-targeted",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\recovery-targeted/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\recovery-targeted/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T18:59:44.3106768+08:00",
+        "finishedUtc": "2026-10-16T18:59:55.4296716+08:00"
+      }
+    },
+    {
+      "name": "repeat-01",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "e5b6f719184a26352e09470a41ce394cb11b5e7d26c6ed081bf6b0f4f957443d",
+      "logSha256": "00ee0d01abbc6b779e4b5a9cec3acee07cc961aeb5b6c6a941d1bdf9d556dcbd",
+      "execution": {
+        "name": "repeat-01",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-01/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-01/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:01:13.0106387+08:00",
+        "finishedUtc": "2026-10-16T19:01:21.5688122+08:00"
+      }
+    },
+    {
+      "name": "repeat-02",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "18dbbc4d02b5c84f9c4641eebeeb321fe14ed6e7511040fab71a123dcbcf8ba2",
+      "logSha256": "d6ddd27f0e1e2adac016d2a461afa0121f218dafe301936ba58e651b531c7c34",
+      "execution": {
+        "name": "repeat-02",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-02/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-02/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:01:21.58994+08:00",
+        "finishedUtc": "2026-10-16T19:01:30.6719694+08:00"
+      }
+    },
+    {
+      "name": "repeat-03",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "8d6db35288a22c310d63ab826979a1715572cd9f861f295171e9bf9d04da3181",
+      "logSha256": "35737777915abf73de7b5bdd996b4e608df2d82b973d99727b3aba486044d8c3",
+      "execution": {
+        "name": "repeat-03",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-03/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-03/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:01:30.6769404+08:00",
+        "finishedUtc": "2026-10-16T19:01:39.6873866+08:00"
+      }
+    },
+    {
+      "name": "repeat-04",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "efce7ab1e71657558f8d7c9fab33e2915fcb1a9f551db3397150dbed43e6bd1a",
+      "logSha256": "81bd1493749428ee63a6312a74f4b719c1d72487ba9e5bf79ad1affe924a2de3",
+      "execution": {
+        "name": "repeat-04",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-04/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-04/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:01:39.6911872+08:00",
+        "finishedUtc": "2026-10-16T19:01:48.6551272+08:00"
+      }
+    },
+    {
+      "name": "repeat-05",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "6e31604f30443155e3f54cdd1f76afce64d570813dab308cb0bf8d9667adf887",
+      "logSha256": "853a56fb16d7ae02679037fce73c578c1d60eed1142253e2058de995c27dcebd",
+      "execution": {
+        "name": "repeat-05",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-05/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-05/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:01:48.6585675+08:00",
+        "finishedUtc": "2026-10-16T19:01:57.328842+08:00"
+      }
+    },
+    {
+      "name": "repeat-06",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "0515e10a86c219ba947ae53c96241cd2e3a9925395572ed0af15240f9f6e8a57",
+      "logSha256": "4d5ded2c7c2c106d5af2e3f29ae2aa9d9d7277d63cfcf1d50e49bea9f322fa4b",
+      "execution": {
+        "name": "repeat-06",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-06/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-06/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:01:57.3327787+08:00",
+        "finishedUtc": "2026-10-16T19:02:06.1714011+08:00"
+      }
+    },
+    {
+      "name": "repeat-07",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "253c53997848054dcbd0a9eb81fb673633a51d91bcba18cb5523b0e0376a1eb0",
+      "logSha256": "afc9b2e50341ee6fd795d9f56a9ec499b5734732f9e2761d46b74e5eb85db261",
+      "execution": {
+        "name": "repeat-07",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-07/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-07/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:02:06.1749912+08:00",
+        "finishedUtc": "2026-10-16T19:02:14.9425349+08:00"
+      }
+    },
+    {
+      "name": "repeat-08",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "4cc6e11e74269d132a2a1f7a2f3e461844e783a7289ace7cde371205696aec84",
+      "logSha256": "531b0eba088908d9713a1eb8b9f78bd5181f5ff50375b65befd808abc28bd067",
+      "execution": {
+        "name": "repeat-08",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-08/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-08/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:02:14.9457927+08:00",
+        "finishedUtc": "2026-10-16T19:02:23.7026485+08:00"
+      }
+    },
+    {
+      "name": "repeat-09",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "67cddcd82a6a2dab3f086f2716ca1710c5ed5ab0345645f6336d53cc93b2e01e",
+      "logSha256": "37ff7b87787dab3198e2606c19811254766333ae2afebd16f045dee982dafcab",
+      "execution": {
+        "name": "repeat-09",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-09/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-09/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:02:23.7059156+08:00",
+        "finishedUtc": "2026-10-16T19:02:31.9931946+08:00"
+      }
+    },
+    {
+      "name": "repeat-10",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "e261edd717ddf55bdfc56c9e41425298470415420423d037bcfa22f3eefaa3a4",
+      "logSha256": "3a036a2e890f6c039d433e821b399e55a6eacbe26a2158cc9d3685a6fd45b605",
+      "execution": {
+        "name": "repeat-10",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-10/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-10/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:02:31.9966034+08:00",
+        "finishedUtc": "2026-10-16T19:02:42.0643981+08:00"
+      }
+    },
+    {
+      "name": "repeat-11",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "9b6cfe50db7758927013c30c6011c9e4b22bf8a54441256cb494992f04391f28",
+      "logSha256": "9f8913429470460cf273054192a9cd2c9e6d257eb5ac0060eb2d880f0f97b90b",
+      "execution": {
+        "name": "repeat-11",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-11/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-11/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:02:42.0678924+08:00",
+        "finishedUtc": "2026-10-16T19:02:50.7852245+08:00"
+      }
+    },
+    {
+      "name": "repeat-12",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "160004775491b947e5af8c978152aa16675a04aa03250db5900c9c5371b35330",
+      "logSha256": "5a1d60a73a61c33bb230a7489b8093572075fdf8c49836cc22076a8b2e8c00f7",
+      "execution": {
+        "name": "repeat-12",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-12/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-12/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:02:50.7894611+08:00",
+        "finishedUtc": "2026-10-16T19:02:59.7477974+08:00"
+      }
+    },
+    {
+      "name": "repeat-13",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "5b5def4cf19ae52fdcd734529c6f23b5679f1ec9639e70183f3b0094df18e02c",
+      "logSha256": "578e2049e940ac77ada3c2e3311bc73f65384e0e1af3df4d1c57c7ab503fecb0",
+      "execution": {
+        "name": "repeat-13",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-13/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-13/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:02:59.7583328+08:00",
+        "finishedUtc": "2026-10-16T19:03:08.6535881+08:00"
+      }
+    },
+    {
+      "name": "repeat-14",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "a555c744918059f0c7611b8f1470f925b85e44ad320ab8198b2b45e68b205464",
+      "logSha256": "bc165af8e6b726cf760027edab1313c0b1e1bfa8c13c4b5ab858a13474461f5f",
+      "execution": {
+        "name": "repeat-14",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-14/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-14/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:03:08.6566346+08:00",
+        "finishedUtc": "2026-10-16T19:03:17.3033244+08:00"
+      }
+    },
+    {
+      "name": "repeat-15",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "744c12dff6d914a04f0a7b32c05db352277a17a9af24822055679fd2fce5c671",
+      "logSha256": "d6d8e47ba3005d38a390db17c32e16763cd52b64ea0bf6447ca66733c06bf053",
+      "execution": {
+        "name": "repeat-15",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-15/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-15/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:03:17.3064312+08:00",
+        "finishedUtc": "2026-10-16T19:03:25.9258877+08:00"
+      }
+    },
+    {
+      "name": "repeat-16",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "06d230c76d110e73dd3cda40323a84a736ffa1cb361508da7cdd916370571986",
+      "logSha256": "352c29c623add166c1069946e66fbe0d514c087e66e8b47b9b4e5f29132a98c0",
+      "execution": {
+        "name": "repeat-16",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-16/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-16/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:03:25.9290422+08:00",
+        "finishedUtc": "2026-10-16T19:03:34.8305533+08:00"
+      }
+    },
+    {
+      "name": "repeat-17",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "beac9ad78c1d911d7fb2012b769c0c3b5dde71650cb5469ab9db40e564450910",
+      "logSha256": "ce142d21150a30cdab6c23e0970c8d9c3a0b43f825ce12ee1bf028109ff30e23",
+      "execution": {
+        "name": "repeat-17",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-17/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-17/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:03:34.8335388+08:00",
+        "finishedUtc": "2026-10-16T19:03:43.7180176+08:00"
+      }
+    },
+    {
+      "name": "repeat-18",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "546bed9bf5d6076a7c731e4463090099b3cf61950c615477921071e88b6545d2",
+      "logSha256": "58aa563c1edb9d136b23f2e1f47477f66b4a08c2352e2b0bed283464e7160505",
+      "execution": {
+        "name": "repeat-18",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-18/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-18/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:03:43.7210245+08:00",
+        "finishedUtc": "2026-10-16T19:03:52.4816676+08:00"
+      }
+    },
+    {
+      "name": "repeat-19",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "06abcdc103d00fa286100b4f65947030be62eae567bbdaebe87065775996e41c",
+      "logSha256": "a6efedaef2d53827c3485253bf40b084de6bc5883ac4cc2c582ddbb68c0bee7f",
+      "execution": {
+        "name": "repeat-19",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-19/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-19/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:03:52.4848282+08:00",
+        "finishedUtc": "2026-10-16T19:04:01.2347216+08:00"
+      }
+    },
+    {
+      "name": "repeat-20",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "xmlSha256": "24d638150e822e62fd6035de31c1a9de3eb9ae893b0724fac393d79698d125e9",
+      "logSha256": "da11cb2e52c28c819d1c6c2fea41b58489cc6c62af5934f1c77229ea971390cd",
+      "execution": {
+        "name": "repeat-20",
+        "arguments": [
+          "-batchmode",
+          "-nographics",
+          "-projectPath",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016/Project\"",
+          "-runTests",
+          "-testPlatform",
+          "EditMode",
+          "-assemblyNames",
+          "PulletFramework.NetClient.Tests.Editor",
+          "-testResults",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-20/results.xml\"",
+          "-logFile",
+          "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u5-recovery-owner-20261016\\repeat-20/unity.log\"",
+          "-testFilter",
+          "PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StartDiagnosticFailureCannotLeaveRecoveryRunning;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopJoinsNonCooperativeConnectAndOnlyCancelsOneWaiter;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancelAllowsRestartOnlyAfterTheOriginalConnectExits;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ReentrantAttemptStopReturnsSharedJoinWithoutCallingConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.StopBeforeDelayExitStillJoinsTheDelayOwner;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ForeignCancellationCannotMasqueradeAsTheOwnersNormalStop;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.CancellationCallbackFailureCannotSkipJoiningConnect;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.PreCanceledStopDoesNotCloseAndDisposeIsPermanentButNotAnExitReceipt;PulletFramework.NetClient.Tests.PulletActiveServerRecoveryTests.ConcurrentStartAndStopCannotReplaceOrOrphanAnAcceptedRun"
+        ],
+        "exitCode": 0,
+        "startedUtc": "2026-10-16T19:04:01.2375878+08:00",
+        "finishedUtc": "2026-10-16T19:04:10.0115704+08:00"
+      }
+    }
+  ],
+  "fixture": {
+    "failures": [],
+    "echoes": 20,
+    "sendFailures": []
+  },
+  "fixtureExit": {
+    "pid": 32808,
+    "exitCode": 0,
+    "finishUtc": "2026-10-16T19:04:27.3407899+08:00"
+  },
+  "rawFiles": [
+    {
+      "path": "baseline-recovery-source.zip",
+      "sha256": "5646b75e608ab57d3b641adc06557d5f50285e87a54708b6dce1bf41803db9e6",
+      "bytes": 3923
+    },
+    {
+      "path": "recovery-source.patch",
+      "sha256": "a2f587a7bbc11e48f46c529e7573398837d277e40de26153cefe152fb6065a84",
+      "bytes": 25104
+    },
+    {
+      "path": "Repeat.ps1",
+      "sha256": "cb52fd92eb80cd11f98db53e40cfa43f048ec4c24e2e7cdb5b7e6ba1044a7e65",
+      "bytes": 1280
+    },
+    {
+      "path": "Run-Fixture.ps1",
+      "sha256": "228bdb7f970136f67d430b7a28471c64cc1b56454065a28559dad904ddbe2818",
+      "bytes": 1608
+    },
+    {
+      "path": "Run.ps1",
+      "sha256": "d4a3e560d5d8370c262a6b3a06f1df057dff4995ceab75553dbc3bc0e9547b5e",
+      "bytes": 1165
+    }
+  ],
+  "previousEditorAvResolved": false,
+  "historicalNativeSevenCausesClosed": false,
+  "remaining": [
+    "U5/U6 Manager default-source facade and real composite Shutdown, bounded optional strategy events",
+    "Manager must actually observe and join strategy tasks; new StopAsync alone does not complete that integration",
+    "Unity caller scheduler must remain able to advance; no callback synchronous join",
+    "Player/IL2CPP/PICO separately pending"
+  ]
+}

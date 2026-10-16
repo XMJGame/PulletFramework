@@ -14,6 +14,7 @@
 旧dac3c64 RC2的12关键场景20独立进程240/240按相同Runtime源码及SDK/Protocol有序实现零差异复用为行为证据，不冒充相同二进制。
 当前接入合同和新输入证据见仓库Documentation中的 `NetClient-U3-Runtime-Contract.zh-CN.md` 与 `NetClient-U3-CI-Input-Checkpoint.zh-CN.md`；原本地检查点和失败记录仍保留。
 此前Editor测试前启动AV原件仍保留、未追溯结案；Player/IL2CPP/PICO和U5/U6整体生命周期尚未验收。
+U5-A持续恢复策略已有可观察Completion/可等待永久Stop，130项包检查点与9项20轮通过；旧Manager尚未接入整体Shutdown，不把该内部能力冒称MonoBehaviour退出已收口。详见Documentation/NetClient-U5-Recovery-Owner.zh-CN.md。
 2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
 
 ## 平台范围
