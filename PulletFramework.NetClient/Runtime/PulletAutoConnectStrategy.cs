@@ -26,7 +26,7 @@ namespace PulletFramework.NetClient
         private readonly Func<CancellationToken, Task<ConnectionResult>> _connectFixed;
         private readonly Func<CancellationToken, Task<IReadOnlyList<PulletServerInfo>>> _discover;
         private readonly Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> _connectDiscovered;
-        private readonly Action _releaseFailedConnection;
+        private readonly Func<Task> _releaseFailedConnection;
         private readonly Func<bool> _canContinue;
         private readonly Action<string> _logInfo;
         private readonly Action<string> _logWarning;
@@ -35,7 +35,7 @@ namespace PulletFramework.NetClient
             Func<CancellationToken, Task<ConnectionResult>> connectFixed,
             Func<CancellationToken, Task<IReadOnlyList<PulletServerInfo>>> discover,
             Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connectDiscovered,
-            Action releaseFailedConnection,
+            Func<Task> releaseFailedConnection,
             Func<bool> canContinue,
             Action<string> logInfo,
             Action<string> logWarning)
@@ -81,7 +81,7 @@ namespace PulletFramework.NetClient
                 }
 
                 _logWarning($"DirectThenDiscover：固定服务器连接失败，切换到局域网发现。原因：{FormatError(direct)}");
-                _releaseFailedConnection();
+                await _releaseFailedConnection();
             }
             else
             {
@@ -111,7 +111,7 @@ namespace PulletFramework.NetClient
                         return last;
                     }
                     _logWarning($"已发现服务器但连接失败：{selected}；原因：{FormatError(last)}");
-                    _releaseFailedConnection();
+                    await _releaseFailedConnection();
                 }
                 else
                 {

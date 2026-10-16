@@ -17,11 +17,11 @@ namespace PulletFramework.NetClient.Tests
     // No NetCore DLL or external server dependency is added to the shipped Unity assembly.
     public sealed class SingleConnectionEchoTests
     {
-        [UnityTest] public IEnumerator Udp_ConnectSendReconnectAndDisconnect() => Exchange(ConnectionMode.UdpOnly);
-        [UnityTest] public IEnumerator Tcp_ConnectSendReconnectAndDisconnect() => Exchange(ConnectionMode.TcpOnly);
-        [UnityTest] public IEnumerator WebSocket_ConnectSendReconnectAndDisconnect() => Exchange(ConnectionMode.WebSocketOnly);
+        [UnityTest] public IEnumerator Udp_ConnectSendReconnectAndDisconnect() => UnityTaskTest.Run(() => Exchange(ConnectionMode.UdpOnly));
+        [UnityTest] public IEnumerator Tcp_ConnectSendReconnectAndDisconnect() => UnityTaskTest.Run(() => Exchange(ConnectionMode.TcpOnly));
+        [UnityTest] public IEnumerator WebSocket_ConnectSendReconnectAndDisconnect() => UnityTaskTest.Run(() => Exchange(ConnectionMode.WebSocketOnly));
 
-        private static IEnumerator Exchange(ConnectionMode mode)
+        private static async Task Exchange(ConnectionMode mode)
         {
             string config = Environment.GetEnvironmentVariable("PULLETNET_U2_PORTS");
             Assert.That(string.IsNullOrEmpty(config), Is.False, "Set PULLETNET_U2_PORTS to the controlled echo server's ports.json.");
@@ -48,16 +48,16 @@ namespace PulletFramework.NetClient.Tests
             try
             {
                 Task<ConnectionResult> connect = manager.ConnectAsync();
-                yield return Wait(connect, manager);
+                await Wait(connect, manager);
                 Assert.That(connect.Result.IsSuccess, Is.True, connect.Result.Message);
                 Assert.That(manager.IsConnected, Is.True);
                 Invoke(manager, "Update");
                 Assert.That(sessions.Count, Is.EqualTo(1));
 
                 Task<SendResult> send = manager.SendAsync(new byte[] { 11, 42 }).AsTask();
-                yield return Wait(send, manager);
+                await Wait(send, manager);
                 Assert.That(send.Result.IsSuccess, Is.True, send.Result.Message);
-                yield return WaitForPayload(received, 1, manager);
+                await WaitForPayload(received, 1, manager);
                 Assert.That(received[0].Id, Is.EqualTo((byte)0));
                 Assert.That(received[0].Bytes, Is.EqualTo(new byte[] { 11, 42 }));
                 Assert.That(received[0].Mode, Is.EqualTo(ChannelType.ReliableOrdered));
@@ -65,71 +65,71 @@ namespace PulletFramework.NetClient.Tests
 
                 byte explicitId = mode == ConnectionMode.UdpOnly ? (byte)1 : (byte)0;
                 send = manager.SendOnChannelAsync(new byte[] { 12, explicitId }, explicitId).AsTask();
-                yield return Wait(send, manager);
+                await Wait(send, manager);
                 Assert.That(send.Result.IsSuccess, Is.True, send.Result.Message);
-                yield return WaitForPayload(received, 2, manager);
+                await WaitForPayload(received, 2, manager);
                 Assert.That(received[1].Id, Is.EqualTo(explicitId));
                 Assert.That(received[1].Bytes, Is.EqualTo(new byte[] { 12, explicitId }));
                 Assert.That(received[1].Mode, Is.EqualTo(mode == ConnectionMode.UdpOnly ? ChannelType.ReliableUnordered : ChannelType.ReliableOrdered));
                 send = manager.SendOnChannelAsync(new byte[] { 13 }, 31).AsTask();
-                yield return Wait(send, manager);
+                await Wait(send, manager);
                 Assert.That(send.Result.IsSuccess, Is.False, "Unnegotiated ID must not silently fall back.");
                 if (mode != ConnectionMode.UdpOnly)
                 {
                     send = manager.SendAsync(new byte[] { 13 }, ChannelType.Unreliable).AsTask();
-                    yield return Wait(send, manager);
+                    await Wait(send, manager);
                     Assert.That(send.Result.IsSuccess, Is.False, "TCP/WS must not silently change delivery semantics.");
                 }
 
                 Task<ConnectionResult> disconnect = manager.DisconnectAsync();
-                yield return Wait(disconnect, manager);
+                await Wait(disconnect, manager);
                 Assert.That(disconnect.Result.IsSuccess, Is.True, disconnect.Result.Message);
                 Assert.That(manager.IsConnected, Is.False);
                 connect = manager.ConnectAsync();
-                yield return Wait(connect, manager);
+                await Wait(connect, manager);
                 Assert.That(connect.Result.IsSuccess, Is.True, connect.Result.Message);
                 Invoke(manager, "Update");
                 Assert.That(sessions.Count, Is.EqualTo(2));
                 Assert.That(sessions[1], Is.Not.EqualTo(sessions[0]), "Fresh connect creates a new Session.");
                 send = manager.SendAsync(new byte[] { 14 }).AsTask();
-                yield return Wait(send, manager);
+                await Wait(send, manager);
                 Assert.That(send.Result.IsSuccess, Is.True);
-                yield return WaitForPayload(received, 3, manager);
+                await WaitForPayload(received, 3, manager);
                 Assert.That(received[2].Bytes, Is.EqualTo(new byte[] { 14 }));
                 disconnect = manager.DisconnectAsync();
-                yield return Wait(disconnect, manager);
+                await Wait(disconnect, manager);
                 Assert.That(disconnect.Result.IsSuccess, Is.True);
                 Assert.That(manager.SendAsync(new byte[] { 15 }).GetAwaiter().GetResult().ErrorCode, Is.EqualTo(SendErrorCode.NotConnected));
             }
             finally
             {
-                // Release the actual SDK owner even when an assertion fails; do
-                // not leave a background network instance for the next test.
-                Invoke(manager, "DisposeClient");
-                Object.DestroyImmediate(gameObject);
+                // The fixture no longer disposes a borrowed SDK client. Request
+                // the real composite owner even on assertion failure.
+                try { await manager.ShutdownAsync(); }
+                finally { Object.DestroyImmediate(gameObject); }
             }
         }
 
-        private static IEnumerator Wait(Task task, PulletNetworkManager manager)
+        private static async Task Wait(Task task, PulletNetworkManager manager)
         {
             var watch = Stopwatch.StartNew();
             while (!task.IsCompleted)
             {
                 Invoke(manager, "Update");
                 Assert.That(watch.Elapsed.TotalSeconds, Is.LessThan(10), "Unity operation did not complete.");
-                yield return null;
+                await Task.Yield();
             }
             task.GetAwaiter().GetResult();
         }
 
-        private static IEnumerator WaitForPayload(ICollection received, int count, PulletNetworkManager manager)
+        private static async Task WaitForPayload(ICollection received, int count, PulletNetworkManager manager)
         {
             var watch = Stopwatch.StartNew();
             while (received.Count < count)
             {
                 Invoke(manager, "Update");
                 Assert.That(watch.Elapsed.TotalSeconds, Is.LessThan(10), "Echo did not reach Unity main-thread dispatch.");
-                yield return null;
+                await Task.Yield();
             }
         }
 

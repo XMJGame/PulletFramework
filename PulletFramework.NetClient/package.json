@@ -3,7 +3,7 @@
   "displayName": "Pullet Framework NetClient",
   "version": "3.0.0-pre.1",
   "unity": "2021.3",
-  "description": "Development preview of the PulletNet 3.0 Unity adapter with explicit multi-client runtime and bounded main-thread delivery. Legacy component migration and Player platform acceptance are pending.",
+  "description": "Development preview of the PulletNet 3.0 Unity adapter with bounded multi-client delivery and a single-default-client Manager with awaitable shutdown. Player platform acceptance is pending.",
   "keywords": [
     "pulletnet",
     "networking",

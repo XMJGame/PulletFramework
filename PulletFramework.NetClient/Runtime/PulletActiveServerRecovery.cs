@@ -13,7 +13,7 @@ namespace PulletFramework.NetClient
     {
         private readonly Func<bool> _isConnected;
         private readonly Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> _connect;
-        private readonly Action _releaseFailedConnection;
+        private readonly Func<Task> _releaseFailedConnection;
         private readonly Func<bool> _canContinue;
         private readonly Action<int> _onAttempt;
         private readonly Action<string> _logInfo;
@@ -35,7 +35,7 @@ namespace PulletFramework.NetClient
         public PulletActiveServerRecovery(
             Func<bool> isConnected,
             Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connect,
-            Action releaseFailedConnection,
+            Func<Task> releaseFailedConnection,
             Func<bool> canContinue,
             Action<int> onAttempt,
             Action<string> logInfo,
@@ -116,7 +116,7 @@ namespace PulletFramework.NetClient
                     }
 
                     _logWarning($"持续恢复失败：{FormatError(result)}");
-                    _releaseFailedConnection();
+                    await _releaseFailedConnection();
                 }
             }
             catch (OperationCanceledException error) when (owner.Cancellation.IsCancellationRequested

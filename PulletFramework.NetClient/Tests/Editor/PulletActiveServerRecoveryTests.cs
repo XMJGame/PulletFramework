@@ -11,11 +11,26 @@ namespace PulletFramework.NetClient.Tests
     public sealed class PulletActiveServerRecoveryTests
     {
         [UnityTest]
+        public IEnumerator StopJoinsAsynchronousFailedAttemptRelease() => UnityTaskTest.Run(async () =>
+        {
+            var release = Signal(); var entered = Signal();
+            using var recovery = new PulletActiveServerRecovery(() => false,
+                (target, token) => Task.FromResult(ConnectionResult.Fail(ConnectionErrorCode.TransportUnavailable, "controlled failed attempt")),
+                () => { entered.TrySetResult(true); return release.Task; }, () => true, _ => { }, _ => { }, _ => { },
+                (duration, token) => Task.CompletedTask);
+            recovery.Start(Server("held-release"), .5f, "test", default); await entered.Task;
+            var stop = recovery.StopAsync();
+            try { Assert.That(stop.IsCompleted, Is.False); Assert.That(recovery.Completion.IsCompleted, Is.False); }
+            finally { release.TrySetResult(true); await stop; }
+            Assert.That(recovery.IsRunning, Is.False);
+        });
+
+        [UnityTest]
         public IEnumerator StartDiagnosticFailureCannotLeaveRecoveryRunning() => UnityTaskTest.Run(async () =>
         {
             var cause = new InvalidOperationException("controlled diagnostic failure");
             using (var recovery = new PulletActiveServerRecovery(() => false,
-                (target, token) => Task.FromResult(ConnectionResult.Ok()), () => { }, () => true,
+                (target, token) => Task.FromResult(ConnectionResult.Ok()), () => Task.CompletedTask, () => true,
                 _ => { }, _ => { }, _ => throw cause))
             {
                 Assert.That(recovery.Start(Server("127.0.0.1"), 0.5f, "probe", default), Is.True);
@@ -156,7 +171,7 @@ namespace PulletFramework.NetClient.Tests
         private static PulletActiveServerRecovery Controlled(
             Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connect, Action<int> attempt = null,
             Action release = null, Func<TimeSpan, CancellationToken, Task> delay = null)
-            => new PulletActiveServerRecovery(() => false, connect, release ?? (() => { }), () => true,
+            => new PulletActiveServerRecovery(() => false, connect, () => { release?.Invoke(); return Task.CompletedTask; }, () => true,
                 attempt ?? (_ => { }), _ => { }, _ => { }, delay ?? ((duration, token) => Task.CompletedTask));
         private static async Task<Exception> Failure(Task work)
         {
@@ -238,7 +253,7 @@ namespace PulletFramework.NetClient.Tests
             return new PulletActiveServerRecovery(
                 () => false,
                 connect,
-                () => { },
+                () => Task.CompletedTask,
                 () => true,
                 onAttempt,
                 _ => { },
