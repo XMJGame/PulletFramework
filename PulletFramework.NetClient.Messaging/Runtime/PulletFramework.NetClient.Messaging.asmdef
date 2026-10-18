@@ -1,0 +1,10 @@
+{
+  "name": "PulletFramework.NetClient.Messaging",
+  "rootNamespace": "PulletFramework.NetClient.Messaging",
+  "references": ["PulletFramework.NetClient", "PulletFramework.Messaging"],
+  "excludePlatforms": ["WebGL"],
+  "overrideReferences": true,
+  "precompiledReferences": ["PulletNet.Protocol.dll", "PulletNet.ClientSDK.dll", "PulletNet.Messaging.dll"],
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

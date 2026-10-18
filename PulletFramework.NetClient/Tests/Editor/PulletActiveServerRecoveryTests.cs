@@ -169,7 +169,7 @@ namespace PulletFramework.NetClient.Tests
         });
 
         private static PulletActiveServerRecovery Controlled(
-            Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connect, Action<int> attempt = null,
+            Func<ConnectionEndpoint, CancellationToken, Task<ConnectionResult>> connect, Action<int> attempt = null,
             Action release = null, Func<TimeSpan, CancellationToken, Task> delay = null)
             => new PulletActiveServerRecovery(() => false, connect, () => { release?.Invoke(); return Task.CompletedTask; }, () => true,
                 attempt ?? (_ => { }), _ => { }, _ => { }, delay ?? ((duration, token) => Task.CompletedTask));
@@ -182,7 +182,7 @@ namespace PulletFramework.NetClient.Tests
         [UnityTest]
         public IEnumerator Recovery_AttemptsTheExactSelectedEndpoint() => UnityTaskTest.Run(async () =>
         {
-            PulletServerInfo connectedTarget = null;
+            ConnectionEndpoint connectedTarget = null;
             var attempted = new TaskCompletionSource<bool>();
             await using (var recovery = CreateRecovery(
                        (target, token) =>
@@ -193,7 +193,7 @@ namespace PulletFramework.NetClient.Tests
                        },
                        _ => { }))
             {
-                PulletServerInfo expected = Server("10.0.0.8");
+                ConnectionEndpoint expected = Server("10.0.0.8");
                 Assert.That(recovery.Start(expected, 0.5f, "test", CancellationToken.None), Is.True);
 
                 Task finished = await Task.WhenAny(attempted.Task, Task.Delay(TimeSpan.FromSeconds(2)));
@@ -247,7 +247,7 @@ namespace PulletFramework.NetClient.Tests
         });
 
         private static PulletActiveServerRecovery CreateRecovery(
-            Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connect,
+            Func<ConnectionEndpoint, CancellationToken, Task<ConnectionResult>> connect,
             Action<int> onAttempt)
         {
             return new PulletActiveServerRecovery(
@@ -260,17 +260,9 @@ namespace PulletFramework.NetClient.Tests
                 _ => { });
         }
 
-        private static PulletServerInfo Server(string host)
+        private static ConnectionEndpoint Server(string host)
         {
-            return new PulletServerInfo
-            {
-                instanceId = "BUS-01",
-                serverName = "BUS-01",
-                host = host,
-                tcpPort = 19001,
-                udpPort = 19000,
-                webPort = 7779
-            };
+            return new ConnectionEndpoint(host, 19001, 19000, 7779);
         }
     }
 }

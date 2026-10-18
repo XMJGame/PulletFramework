@@ -103,7 +103,7 @@ namespace PulletNet.Validation
             if (scene.IsValid()) SceneManager.MoveGameObjectToScene(instance, scene);
             var owner = instance.AddComponent<PulletNetworkManager>(); _owners.Add(owner);
             owner.connectOnStart = false; owner.dontDestroyOnLoad = persistent;
-            owner.enableKeepAlive = false; owner.enableReconnect = false; owner.enableDiscovery = false;
+            owner.enableKeepAlive = false; owner.enableReconnect = false;
             owner.enableConnectionLogs = false; owner.connectionMode = mode;
             owner.udpPort = udpOverride == 0 ? _ports.udp : udpOverride; owner.tcpPort = _ports.tcp; owner.webSocketPort = _ports.ws;
             instance.SetActive(true); return owner;

@@ -25,6 +25,10 @@ Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小
 | `PulletFramework.MiniGame` | `com.xmjgame.pullet-framework.minigame` | 微信、抖音平台能力、SDK 桥接和统一发布窗口 | 否 |
 | `PulletFramework.HybridCLR` | `com.xmjgame.pullet-framework.hybridclr` | HybridCLR 构建、清单与运行时加载 | 否 |
 | `PulletFramework.NetClient` | `com.xmjgame.pullet-framework.netclient` | PulletNet 服务端的独立 Unity TCP、UDP、WebSocket 客户端 | 否 |
+| `PulletFramework.Discovery` | `com.xmjgame.pullet-framework.discovery` | 独立、有界的局域网发现主线程适配 | 否 |
+| `PulletFramework.NetClient.Discovery` | `com.xmjgame.pullet-framework.netclient-discovery` | Manager 的发现选择、Inspector 和事件组合 | 否 |
+| `PulletFramework.Messaging` | `com.xmjgame.pullet-framework.messaging` | 不拥有网络客户端的消息会话；显式 codec/RPC/通知 | 否 |
+| `PulletFramework.NetClient.Messaging` | `com.xmjgame.pullet-framework.netclient-messaging` | 既有 Runtime 上单次准确来源的 typed 连接 | 否 |
 
 推荐组合：
 
@@ -33,6 +37,10 @@ Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小
 - 微信/抖音小游戏：在上一组合基础上增加 `PulletFramework.MiniGame`
 - 需要代码热更新的 App：按需增加 `PulletFramework.HybridCLR`
 - 连接 PulletNet 服务端：独立安装 `PulletFramework.NetClient`，无需安装基础框架
+- Manager 自动发现后连接：raw NetClient + Discovery + NetClient.Discovery；独立发现只装 Discovery（依赖 Json.NET 3.2.1）
+- Runtime 上的 typed 连接：raw NetClient + Messaging + NetClient.Messaging；发现后 typed 再增加独立 Discovery，不需要 Manager 发现组合
+
+2026-10-18 的五包本地同步版本仍为 `3.0.0-pre.1`，不是正式发布，也不表示远端 `main` 或业务工程已经升级。raw 不再包含 Discovery/RPC/默认 JSON。旧 Manager API、发现 Inspector 字段和持久事件必须显式迁移，见[同步与迁移入口](Documentation/NetClient-Unity-Source-Sync.zh-CN.md)。包 ID 使用 `com.xmjgame.*`，代码命名空间仍为 `PulletFramework.*`，不要因同一版本字符串而混用旧包体。
 
 ## 安装
 
@@ -92,6 +100,9 @@ https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
 - [资源发布模块](PulletFramework.AssetPublishing/README.md)
 - [HybridCLR 模块](PulletFramework.HybridCLR/README.md)
 - [PulletNet Unity 客户端](PulletFramework.NetClient/README.md)
+- [网络五包同步、按需安装与回退](Documentation/NetClient-Unity-Source-Sync.zh-CN.md)
+- [独立发现](PulletFramework.Discovery/README.md)、[Manager 发现组合](PulletFramework.NetClient.Discovery/README.md)
+- [独立消息会话](PulletFramework.Messaging/README.md)、[Runtime 消息组合](PulletFramework.NetClient.Messaging/README.md)
 - [微信与抖音故障记录](PulletFramework.MiniGame/Documentation/PlatformTroubleshooting.zh-CN.md)
 - [YooAsset CDN 流程](PulletFramework.MiniGame/Documentation/YooAssetCdn.zh-CN.md)
 
@@ -100,7 +111,7 @@ https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
 ## 开发约定
 
 - 公共模块以本仓库为源头，再同步到验证工程，不在两处独立演化同一文件。
-- `PulletFramework.NetClient` 的底层 `PulletNet.Protocol`/`PulletNet.ClientSDK` DLL 从 PulletNet 源仓库构建；Unity 包源代码在 PulletNet 的 `UnityPackages` 维护，本仓库保存可安装的同步副本。
+- 五个网络相关 Unity 包统一在 PulletNet 的 `UnityPackages` 开发和验证，本仓库只保存固定安装副本；本轮复制已验 DLL，不在镜像内重新编译原生包或另行演化实现。各 NativeInput 记录准确 DLL/CI/源码身份，不能用最新原生 CI 的包名替换已验字节。
 - 当前只维护 `main` 分支；重要阶段使用小而清晰的提交形成回退点。
 - 未明确需要时，不反复执行耗时的 PC 或 WebGL 完整构建。
 - 提交前至少完成相关程序集编译检查，并确认 Pullet 模块没有绕过 `PLogger` 直接输出日志。

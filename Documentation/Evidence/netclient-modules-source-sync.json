@@ -1,0 +1,1960 @@
+{
+  "schema": 1,
+  "purpose": "Five fixed Unity package installation mirrors; not release or business upgrade",
+  "sourceRepository": "PulletNet",
+  "sourceCommit": "be8864b10ae2ff1415da31abe0f598147da89986",
+  "sourcePath": "UnityPackages",
+  "targetRepository": "PulletFramework",
+  "targetCommitBefore": "2bb9f189cc2649fd415bf2e4839a1c35b337d95d",
+  "targetBranch": "codex/unity-single-connection",
+  "sourceCodeAuthority": "PulletNet/UnityPackages only",
+  "packageCodeValidatedByU11": "9779ee7",
+  "u11HarnessAndEvidenceCommit": "cc26888",
+  "packages": [
+    {
+      "directory": "PulletFramework.NetClient",
+      "name": "com.xmjgame.pullet-framework.netclient",
+      "version": "3.0.0-pre.1",
+      "files": [
+        {
+          "path": "NativeInput.json",
+          "sha256": "E3295012CADC544E8386005F605AF5444DCA4ACD842BDA8B85B61CEA0BC9E8E0"
+        },
+        {
+          "path": "NativeInput.json.meta",
+          "sha256": "6A9A2166AF1036651FFB84533639674DB0A7206831E46055E1637240BFDC4637"
+        },
+        {
+          "path": "package.json",
+          "sha256": "47A4205455A1AE6C24D6E79E1603668E9E5D68F64801B8AB328B8021D468AD3B"
+        },
+        {
+          "path": "package.json.meta",
+          "sha256": "6A886BBC4DCA252BD6CC98BC6CFDC5B5CB2C3DB51E9AF9B95F2044DC4F29C2A9"
+        },
+        {
+          "path": "README.md",
+          "sha256": "4070F2F9CFF33AB4E8D13DDFAB42FD6816808C0423A12FAEA4A26B5DB2F7F3DB"
+        },
+        {
+          "path": "README.md.meta",
+          "sha256": "D3B813E5D771BD9B3F27D018B562784F5B3118C93E23FE06B4E404FCD6F2D1E4"
+        },
+        {
+          "path": "Runtime.meta",
+          "sha256": "E22749CDFB4DA74EBEC051C31A3C906322A04943472DF886F879275BB3DB8A52"
+        },
+        {
+          "path": "Runtime/AssemblyInfo.cs",
+          "sha256": "C834D492891BDE086039347ED78B3F0773475E5D578767F9AEA3804BAE60FEE7"
+        },
+        {
+          "path": "Runtime/AssemblyInfo.cs.meta",
+          "sha256": "2388DD08A757405BBA452B1CE9C03ABBC21ABC49F67E637A6E2FC6582728115D"
+        },
+        {
+          "path": "Runtime/ClientDispatchQueue.cs",
+          "sha256": "1C7CD1E599E9E67EA2FD01ACEE2CBA52ECB26283C068CD066EACB64A32BBB2EE"
+        },
+        {
+          "path": "Runtime/ClientDispatchQueue.cs.meta",
+          "sha256": "0F97C4A8C93CC3B210A1D12F6D27D27E9B1A25A5BFA9207D383AA0165D35629E"
+        },
+        {
+          "path": "Runtime/ConnectionEndpoint.cs",
+          "sha256": "615FA8CB827949A07BB3EA399B49B45CA2AFEFE86877AA5D2508C4805D24CF6C"
+        },
+        {
+          "path": "Runtime/ConnectionEndpoint.cs.meta",
+          "sha256": "B8191BF8B293521645F8F455FBC92E4A45FD917D2AA58F253E9E3F6E58DE18E8"
+        },
+        {
+          "path": "Runtime/Plugins.meta",
+          "sha256": "A18BC9497A8D2D98F78CB1E999EC8097536E7931AB0D30EE4483D46A08504A56"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.ClientSDK.dll",
+          "sha256": "F7220B5C2F76A16E829D94CB88413A0072153F22F1CDB7F6489C6058F537D8CA"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.ClientSDK.dll.meta",
+          "sha256": "11276060EC38334DD634B6F4F07936622A2183955CF139675E9772A2921C1CE8"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.Protocol.dll",
+          "sha256": "1E9BAAD69C602149FD18DCC9BADF9DD6109553CA0FB22A0EB37CFAE9B5348E39"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.Protocol.dll.meta",
+          "sha256": "6AC1FCE92BC6825A6599FF1244CE4A76440C1DF31ECBB265AA6D3BA0DA5AE7E7"
+        },
+        {
+          "path": "Runtime/Prefabs.meta",
+          "sha256": "942A9C33EDFF2A714107ECC41E10318D506A260E6FBECBC40A6E89B9C787692D"
+        },
+        {
+          "path": "Runtime/Prefabs/PulletNetworkManager.prefab",
+          "sha256": "FA213D1663B81271D2F32680542881AE5EF0BEDE64E3718D9FB59A8974EEE34E"
+        },
+        {
+          "path": "Runtime/Prefabs/PulletNetworkManager.prefab.meta",
+          "sha256": "84EE72D64A95953B03DFDE461EF627A66217178566D27EBD6A23454DDB1E9A6F"
+        },
+        {
+          "path": "Runtime/PulletActiveServerRecovery.cs",
+          "sha256": "D909954AA1085B6DCDA49E7E9F8B21C47C787CA8229E703C449F2AF546445C3F"
+        },
+        {
+          "path": "Runtime/PulletActiveServerRecovery.cs.meta",
+          "sha256": "9130467611981708F26C79B46B408C3E68C0EB5E2081A3E6BC31B574CC25DE83"
+        },
+        {
+          "path": "Runtime/PulletClientRuntime.cs",
+          "sha256": "14342BBF3EB3045ACAC95A9CA5514E91A9B49EE152CB1497201DAA58ABB5DE30"
+        },
+        {
+          "path": "Runtime/PulletClientRuntime.cs.meta",
+          "sha256": "34DBDF52B228C4964DF61535269083D613537CC67DF54E8B19ACDAE649C331FF"
+        },
+        {
+          "path": "Runtime/PulletClientRuntimeContracts.cs",
+          "sha256": "EE08B9FF72FA38BE1B7DBF517839F693556AA0FCE7A81FFBDA6D75E6509A40B7"
+        },
+        {
+          "path": "Runtime/PulletClientRuntimeContracts.cs.meta",
+          "sha256": "5C25B48C3B6F11D00562A82A8405D7148363F266C8C4C059979F1E2EF1729D6A"
+        },
+        {
+          "path": "Runtime/PulletConnectionCoordinator.cs",
+          "sha256": "8A2E906C6DA15204E457CE8066852D0FD458723DA5021D0F7834B163445E5F61"
+        },
+        {
+          "path": "Runtime/PulletConnectionCoordinator.cs.meta",
+          "sha256": "45CC7BC23E4F74AA021CC7E4E554AE8A6E31D5299B07B2E5A970300FAD25FD03"
+        },
+        {
+          "path": "Runtime/PulletFramework.NetClient.asmdef",
+          "sha256": "555F6A445DB682DF7196262484E658962A1B490CAB2CE19EA4A7175A335E3632"
+        },
+        {
+          "path": "Runtime/PulletFramework.NetClient.asmdef.meta",
+          "sha256": "AB94C9BC88A68F06D22AA15B6CC7022EF27FA241FD6D77637D2DF729C904CD97"
+        },
+        {
+          "path": "Runtime/PulletNetworkEventRelay.cs",
+          "sha256": "B935CA709994CF1B1C98FC50FEFC467AD288954E5A9A598A7242633F7DCB414C"
+        },
+        {
+          "path": "Runtime/PulletNetworkEventRelay.cs.meta",
+          "sha256": "E144370E445FA8B6F64C4EA624B3A950B2B3341DF527A0C762848C34D11485AE"
+        },
+        {
+          "path": "Runtime/PulletNetworkManager.cs",
+          "sha256": "F858FF2B2B1BF27A948E47F4ACC1524A90682CE9946F0AF3783B91B383C28060"
+        },
+        {
+          "path": "Runtime/PulletNetworkManager.cs.meta",
+          "sha256": "79346DCB203E3C5D5B167272CC1E936890AF60B58173E72ECA43138D95AF346C"
+        },
+        {
+          "path": "Samples~/ConnectionSample/PulletFramework.NetClient.Samples.asmdef",
+          "sha256": "00F838CBA65A484C8174BD5A42F4ADE480B0FB1A787184C2F1C3E88302FAD784"
+        },
+        {
+          "path": "Samples~/ConnectionSample/PulletFramework.NetClient.Samples.asmdef.meta",
+          "sha256": "3126518C508A6E79D5DC11CCE452456D03CDDA6B1A627C97198AA380A56AC4DB"
+        },
+        {
+          "path": "Samples~/ConnectionSample/PulletNetConnectionSample.cs",
+          "sha256": "56670AD89FBB9140773A2B02555608DE5B02429B704A969C949D3239FF00B302"
+        },
+        {
+          "path": "Samples~/ConnectionSample/PulletNetConnectionSample.cs.meta",
+          "sha256": "B687290FDF53301416E97C3F738874BF54BACD4D89EE0C8829133627B916B7F2"
+        },
+        {
+          "path": "Samples~/ConnectionSample/README.md",
+          "sha256": "43B58507356D24BDBBCCBA181A4EFA1A272AF7D5CA3B269E44DD40C208278A66"
+        },
+        {
+          "path": "Samples~/ConnectionSample/README.md.meta",
+          "sha256": "5CAD28F91607FF86A023293A7971DE42E0505BC3F9CCD780129DDFEC92ABB4F2"
+        },
+        {
+          "path": "Tests.meta",
+          "sha256": "FFDC224CE0029658A64E71BD04AA16E0F593F895A4A763305EEE36C46CE1D3E7"
+        },
+        {
+          "path": "Tests/Editor.meta",
+          "sha256": "37E53AF68F229F9B8BB39F99888AA7F93A859B7CA7D39968D738E1A252E55845"
+        },
+        {
+          "path": "Tests/Editor/ClientDispatchQueueTests.cs",
+          "sha256": "A1B25E089222DD286843DD7282D673BF0DE111217EC366FF315048E70F68A1C4"
+        },
+        {
+          "path": "Tests/Editor/ClientDispatchQueueTests.cs.meta",
+          "sha256": "A8390179520BCC5E17BF89A105A77965391B48567926FD84C97EA25B9C6E38F7"
+        },
+        {
+          "path": "Tests/Editor/ConnectionEndpointTests.cs",
+          "sha256": "C31C427E389587B0CCF1141E08EA1659E4F4704343A4F89AF18BB2CF0134921E"
+        },
+        {
+          "path": "Tests/Editor/ConnectionEndpointTests.cs.meta",
+          "sha256": "F18E5AFDD70D5DFEBF8E0C5C4FBC2AD9D87FD105A7498DD2E89D3681DAAB74CB"
+        },
+        {
+          "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs",
+          "sha256": "A4EF835B03BA26F14733E8E713C67796663495496FC61D7C1B2AC2BE6D786C1F"
+        },
+        {
+          "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs.meta",
+          "sha256": "DA3675AEA8609B856EC162B67A7F7C4A109F55ECA06229DD8DDDBA08653427CD"
+        },
+        {
+          "path": "Tests/Editor/PulletClientRuntimeTests.cs",
+          "sha256": "FACBFA24A20DBEA4BDD2C8EAAC166EA68367877A88BE7E4691256BE62D58B227"
+        },
+        {
+          "path": "Tests/Editor/PulletClientRuntimeTests.cs.meta",
+          "sha256": "9A6E74DCA25155C40761ABE620EC37094A5D0561E5101339B3EF596E945DC2F7"
+        },
+        {
+          "path": "Tests/Editor/PulletConnectionCoordinatorTests.cs",
+          "sha256": "FF20242C9800046B44D4E5C9CEC7EDAA7F8D207542D80E1EDA34947DBBB25BD5"
+        },
+        {
+          "path": "Tests/Editor/PulletConnectionCoordinatorTests.cs.meta",
+          "sha256": "CD750C023A0CF8112600D370726530B28F9DE37E917A6BC75E94C80D795AB70E"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef",
+          "sha256": "CDA5B1AC6ED7B7780EA8226E5A3FD02DAB796CF080A5BDEE07B331F621D394A8"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef.meta",
+          "sha256": "266D161E9CF1B7188986DEEFFD9690C1BFE071933CD5A9B88384B5061A6685BD"
+        },
+        {
+          "path": "Tests/Editor/PulletNetworkManagerLifecycleTests.cs",
+          "sha256": "B72440DF4F81F09DFD8DB1E6494A34E99600C68C58AA38ECA081C97CFDFA76C0"
+        },
+        {
+          "path": "Tests/Editor/PulletNetworkManagerLifecycleTests.cs.meta",
+          "sha256": "B5DFD879778B2B53C263878AF36080CF38F88A087F95BD7D530D67923154F8F9"
+        },
+        {
+          "path": "Tests/Editor/PulletNetworkManagerTests.cs",
+          "sha256": "90FE87025E110937469E8B57AF9EA2967BB9022DDA1067617DB141A6159E8D2E"
+        },
+        {
+          "path": "Tests/Editor/PulletNetworkManagerTests.cs.meta",
+          "sha256": "B8B6C92A9529BA844E73F78B6E09EA6DC07C8E93762069F000594039680E60BD"
+        },
+        {
+          "path": "Tests/Editor/UnityTaskTest.cs",
+          "sha256": "2A630B9B8989A8444A404CC77E640917BCA320193221002C13FC6ADD834F270B"
+        },
+        {
+          "path": "Tests/Editor/UnityTaskTest.cs.meta",
+          "sha256": "8285F435A5D558E5DCBB31ACAC468C5EC5AD7547449FE78154B471AFEDE54AF0"
+        },
+        {
+          "path": "Validation~/MultiConnectionEchoTests.cs",
+          "sha256": "5B4821D2E55A99127420766270A2C73908B8B3A249AC3AB32FCAC545E1EBD8FB"
+        },
+        {
+          "path": "Validation~/Player/Editor/BuildNetClientPlayerAcceptance.cs",
+          "sha256": "EAE2836D405A885BB27C2C9629DFC561BC526E9B43E67607D1E0E854EB49F4A7"
+        },
+        {
+          "path": "Validation~/Player/Editor/PulletNet.PlayerAcceptance.Editor.asmdef",
+          "sha256": "31862A0F4F14A538EB773928B989066D3BA59185139B83CD9C140CE91086D636"
+        },
+        {
+          "path": "Validation~/Player/NetClientPlayerAcceptance.cs",
+          "sha256": "C21964FED3590452CC2E11B4B9E024EFDC31A0B693168DBA8C4A73ACEA5ED725"
+        },
+        {
+          "path": "Validation~/Player/PulletNet.PlayerAcceptance.asmdef",
+          "sha256": "EE3FD6D754BB5FF1365E8C5EEF2AE765EE9FAA95CB10483ACAA1B37E6EC2BE89"
+        },
+        {
+          "path": "Validation~/README.md",
+          "sha256": "0BF7A188C325C606C1ABFAF429C8D839C7A82C5EC6D1DE3211C5914C7814EF5B"
+        },
+        {
+          "path": "Validation~/SdkHostUnityCleanupTests.cs",
+          "sha256": "7EFEF2C852CB2B434195EDF12C7D5BA1EBFAE1A943C612A9DE76964E11E0B423"
+        },
+        {
+          "path": "Validation~/Server/EchoServer.csproj",
+          "sha256": "4B5793783728E91DE208DA3500E36086461B19731D5723E464D37A975017E8BC"
+        },
+        {
+          "path": "Validation~/Server/Program.cs",
+          "sha256": "768506F797FE2353AF07DF7E5949EA717C05376B44E7D2208857AF94543B6A15"
+        },
+        {
+          "path": "Validation~/SingleConnectionEchoTests.cs",
+          "sha256": "3E4F7BB47629F19930B75C3A24076D7B45AE6B2671E4AD580F283AEF5D504795"
+        },
+        {
+          "path": "Validation~/UdpHandshakeCancellationTests.cs",
+          "sha256": "3E6D6DC7E840ADA46F94FEC2740C9E02E41E0547B03422D2CA1BE9C800274C23"
+        },
+        {
+          "path": "Validation~/UnityApplicationPlayModeTests.cs",
+          "sha256": "4B16F987A4526FB3603516A1736EB5108EC8CBC06C23AB191F5FBF7F25B852CC"
+        }
+      ],
+      "oldFilesCount": 90,
+      "retiredPaths": [
+        "Runtime/Messaging.meta",
+        "Runtime/Messaging/MessageSubscriptions.cs",
+        "Runtime/Messaging/MessageSubscriptions.cs.meta",
+        "Runtime/Messaging/PulletMessageClient.cs",
+        "Runtime/Messaging/PulletMessageClient.cs.meta",
+        "Runtime/Messaging/PulletMessageProtocol.cs",
+        "Runtime/Messaging/PulletMessageProtocol.cs.meta",
+        "Runtime/Messaging/PulletMessageRouter.cs",
+        "Runtime/Messaging/PulletMessageRouter.cs.meta",
+        "Runtime/Messaging/PulletMessageSerialization.cs",
+        "Runtime/Messaging/PulletMessageSerialization.cs.meta",
+        "Runtime/PulletAutoConnectStrategy.cs",
+        "Runtime/PulletAutoConnectStrategy.cs.meta",
+        "Runtime/PulletServerDiscovery.cs",
+        "Runtime/PulletServerDiscovery.cs.meta",
+        "Tests/Editor/PulletAutoConnectStrategyTests.cs",
+        "Tests/Editor/PulletAutoConnectStrategyTests.cs.meta",
+        "Tests/Editor/PulletMessagingTests.cs",
+        "Tests/Editor/PulletMessagingTests.cs.meta",
+        "Tests/Editor/PulletServerDiscoveryTests.cs",
+        "Tests/Editor/PulletServerDiscoveryTests.cs.meta"
+      ],
+      "rootFolderMetaPresent": true,
+      "allFilesMatchCanonicalAndU11VerifiedExport": true
+    },
+    {
+      "directory": "PulletFramework.Discovery",
+      "name": "com.xmjgame.pullet-framework.discovery",
+      "version": "3.0.0-pre.1",
+      "files": [
+        {
+          "path": "NativeInput.json",
+          "sha256": "3BDEE2A22D1F924A6793B66792C55D794BEDACFA88D15C80579C0D4BBB6E2264"
+        },
+        {
+          "path": "package.json",
+          "sha256": "5502BC4EE5A466B1828305936BDA277771C050EF31DEB79F356D4A9112E6877F"
+        },
+        {
+          "path": "README.md",
+          "sha256": "AB1EDE5BDA129F1DDF10B780FE402913C0E846DAEDDC5A65F12D8DDD08F76AED"
+        },
+        {
+          "path": "Runtime.meta",
+          "sha256": "1D958643B097AB3F48268ABC74F32A02BB1821217386F884093237C13B6BDC94"
+        },
+        {
+          "path": "Runtime/AssemblyInfo.cs",
+          "sha256": "5EEF212AF6022709F766815AFCBAF320A16FB5AA707EDCBFE922BA3E5D2E74DF"
+        },
+        {
+          "path": "Runtime/AssemblyInfo.cs.meta",
+          "sha256": "72977DEC32BD05D8AA34C0799832D09056DAD4BB50C2811E9CEC182D08EF910D"
+        },
+        {
+          "path": "Runtime/DiscoveryRuntime.cs",
+          "sha256": "0A72B1423680E032404FBAE7393F7F0481BC87E008809E1BBEAF4323A5B2E51F"
+        },
+        {
+          "path": "Runtime/DiscoveryRuntime.cs.meta",
+          "sha256": "22A6B333374D044B0B288EE626B148430EC3EF15D60215DF3092CF7D360A2C8A"
+        },
+        {
+          "path": "Runtime/DiscoverySnapshot.cs",
+          "sha256": "CF9A21E915F29A2450F5CBA1672A9112646C9B1EE6F4440D226411B92462374A"
+        },
+        {
+          "path": "Runtime/DiscoverySnapshot.cs.meta",
+          "sha256": "8E8843DF483BA41FA5ECB0208C15B0D7DC07AA5E31A84506E3351CA607AE1839"
+        },
+        {
+          "path": "Runtime/Plugins.meta",
+          "sha256": "B0DC1C305EE67F9C6CA997E743493592AC8FFDD608E674B15AE2B3EC5A189E15"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.Discovery.dll",
+          "sha256": "13DF8D0B8724769DDA24113EF128D4582FADAB9A66E9EA1E8AFD4CB07D771CF8"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.Discovery.dll.meta",
+          "sha256": "E5D97704CFBEAAAD43DEE5B67D2F090EC4735C571CCF895839F29236CC906EBC"
+        },
+        {
+          "path": "Runtime/PulletFramework.Discovery.asmdef",
+          "sha256": "E67D9F2455009B8C6902054986BD904BE7954F1FD40C586CA61460C779734568"
+        },
+        {
+          "path": "Runtime/PulletFramework.Discovery.asmdef.meta",
+          "sha256": "3A621475698E3FE0D4930BF0AEDB29AD5F86C5B8CFDB9DCC956C9ECB4C18017A"
+        },
+        {
+          "path": "Tests.meta",
+          "sha256": "E049789BB266DBC5B3F30513327AC8217ED3F4965A03601612AAC108948515FD"
+        },
+        {
+          "path": "Tests/Editor.meta",
+          "sha256": "C3D43EA9EB3B0B9C6CC49DF7D7ECBE3B2D3ED802565FBE2B6BE694A86CC13D7F"
+        },
+        {
+          "path": "Tests/Editor/DiscoveryCompatibilityTests.cs",
+          "sha256": "01DEEC0A62758AD53257A276D5FF4BBA86E04724319DD24507F48FDA070D480D"
+        },
+        {
+          "path": "Tests/Editor/DiscoveryCompatibilityTests.cs.meta",
+          "sha256": "ADC5774F6AF042530AE4555F78292E1AFFBE1E1EECCBCB4264D61270E9261847"
+        },
+        {
+          "path": "Tests/Editor/DiscoveryRuntimeTests.cs",
+          "sha256": "F74AC59DEC149615101D9D2B1679D1C6A34CA622FBEFF4E6675B7AC58B645CBA"
+        },
+        {
+          "path": "Tests/Editor/DiscoveryRuntimeTests.cs.meta",
+          "sha256": "EFFC2407C5721ABBFC25A0192CC7437800E7CF0726BD659C66896E3E911EE064"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.Discovery.Tests.Editor.asmdef",
+          "sha256": "13D0D9BD8E113BFCA024E60182CBBD8142ECEC1BC0645C9C05FB2C5EEED13284"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.Discovery.Tests.Editor.asmdef.meta",
+          "sha256": "98A5D6DE24FD6967D07A3F9026D7CB32FEC1AB6EB16F4E4C49CE2695408DF546"
+        }
+      ],
+      "oldFilesCount": 0,
+      "retiredPaths": [],
+      "rootFolderMetaPresent": true,
+      "allFilesMatchCanonicalAndU11VerifiedExport": true
+    },
+    {
+      "directory": "PulletFramework.Messaging",
+      "name": "com.xmjgame.pullet-framework.messaging",
+      "version": "3.0.0-pre.1",
+      "files": [
+        {
+          "path": "NativeInput.json",
+          "sha256": "F82075555CA1ABC0BE8AAF0902F22AB4AAD3490081D03E02FDC928BD289EDD59"
+        },
+        {
+          "path": "NativeInput.json.meta",
+          "sha256": "515716693B24FBED40B0E6E0B12A0BA4D7C7B21B78BF2188D336A5516578AF98"
+        },
+        {
+          "path": "package.json",
+          "sha256": "CE20B7F0D493DB079CFD0E6E945D23A9EAF27A54B4ACEFEC3FBE692FE8819B31"
+        },
+        {
+          "path": "package.json.meta",
+          "sha256": "4A23B83798FD5850265AC595DC64347CB31E4E5A2532C02AE87E70D58DF7561D"
+        },
+        {
+          "path": "README.md",
+          "sha256": "CB6784C7D8DE0C3A7916BB580E30F9CAC1F3AC3BCDF17B7E31A71155417B9FD2"
+        },
+        {
+          "path": "README.md.meta",
+          "sha256": "C3B194CF82FDC83A56F636ADEC470A70173AD1544907A0E399BCC19047E61489"
+        },
+        {
+          "path": "Runtime.meta",
+          "sha256": "9FF1FBABF0A7CF5938BE534E901AC19A8B6F8BD599A0B7F07A6CCCD2473A47E0"
+        },
+        {
+          "path": "Runtime/MessageInputResult.cs",
+          "sha256": "F5EF7DA106BC89AF259518C9D13CFFFB75F6D555B8FBA6457D090B1D17AE7B31"
+        },
+        {
+          "path": "Runtime/MessageInputResult.cs.meta",
+          "sha256": "5C7E4432529903C20CADAFCFDBD25151F3B87986604F831DB66AA3B113439518"
+        },
+        {
+          "path": "Runtime/MessageSession.cs",
+          "sha256": "7932B860748A238D1DAF785A368CE24A4ACD66EE9E21E624F1814BF09DB5915D"
+        },
+        {
+          "path": "Runtime/MessageSession.cs.meta",
+          "sha256": "D1688C5D91A4A22E7E774FA63C80F80F820D1E726BFB852224994732C8FC818A"
+        },
+        {
+          "path": "Runtime/Plugins.meta",
+          "sha256": "DDF5F8D326233646DF4D1C61849B55519BB3D122C4A82FFDD7EAE77E3BB23376"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.Messaging.dll",
+          "sha256": "BA76F2BA75A005A4F147F3EA1A33C575A39194FBA0387DD21BDBD11E9FA42876"
+        },
+        {
+          "path": "Runtime/Plugins/PulletNet.Messaging.dll.meta",
+          "sha256": "8B0BDF0822666FA4EF49093CEE4C85B88035B2D4F73F2CD1A17DB97A416CAEFB"
+        },
+        {
+          "path": "Runtime/PulletFramework.Messaging.asmdef",
+          "sha256": "57AE2E5172E1401DDDB93C47C1CC2116F89534614C6D6BDB6AD7CC1C32D2EF19"
+        },
+        {
+          "path": "Runtime/PulletFramework.Messaging.asmdef.meta",
+          "sha256": "4A6BDCEBA3C00787EB4740FCC22EF9ACC0D5DDE25F1339E60FD9F60CCD5CFA8F"
+        },
+        {
+          "path": "Tests.meta",
+          "sha256": "20086996C21BFED501AC6C3CAC6760999539097CE19FF5525C466BC3FD857C91"
+        },
+        {
+          "path": "Tests/Editor.meta",
+          "sha256": "440C73EBDCEBEBF3331652F8C29A7CA90E6B52B6F232207285BAFD58EB8C5992"
+        },
+        {
+          "path": "Tests/Editor/MessageSessionTests.cs",
+          "sha256": "4B17CCB48B0279367CD7EF29236858F65B062EAED8EFA90D477B5E0EE417A0EF"
+        },
+        {
+          "path": "Tests/Editor/MessageSessionTests.cs.meta",
+          "sha256": "B7F99D1815F90943B22CE70E3A4E075EFC7C11D186988AEABDEBB8DE5957E03C"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.Messaging.Tests.Editor.asmdef",
+          "sha256": "7D145C2ACCBEF3FE16D2C617DE109165F0452A8BF9098F0E0D8AFF96960EE952"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.Messaging.Tests.Editor.asmdef.meta",
+          "sha256": "F2ACCF13D6C475BA3E760DFFB75ECDC8F1BFFD9E154F3E16D2F6B76CE4069297"
+        }
+      ],
+      "oldFilesCount": 0,
+      "retiredPaths": [],
+      "rootFolderMetaPresent": true,
+      "allFilesMatchCanonicalAndU11VerifiedExport": true
+    },
+    {
+      "directory": "PulletFramework.NetClient.Discovery",
+      "name": "com.xmjgame.pullet-framework.netclient-discovery",
+      "version": "3.0.0-pre.1",
+      "files": [
+        {
+          "path": "package.json",
+          "sha256": "A83DCC44330946C76F4AB127C45AC51BD1C85125F294398533839D3F5E7EE4BC"
+        },
+        {
+          "path": "package.json.meta",
+          "sha256": "A4BE41C718907AF68CD21245A4FABC755BCEB1778CEE2C8B1EC419F71FFDCE44"
+        },
+        {
+          "path": "README.md",
+          "sha256": "129FDA71E2788D4F299AD0C411E567DA341DB682588B9519C2674DB95CF01EB5"
+        },
+        {
+          "path": "README.md.meta",
+          "sha256": "887B34C742DA808D28DA90F512BE6D191E50459CF40739012EED886BA2BBF94B"
+        },
+        {
+          "path": "Runtime.meta",
+          "sha256": "55D992EB1DE84B00F5D821CFD89656149F7404B3C71238D9E55F95E74851B8B8"
+        },
+        {
+          "path": "Runtime/AssemblyInfo.cs",
+          "sha256": "816147400A0B5B63D6B095F01660650845035E8605B7C56926E2EE7E6A1D460B"
+        },
+        {
+          "path": "Runtime/AssemblyInfo.cs.meta",
+          "sha256": "5141AD14E8A7762AA953B1855A8753528DC8CD223011B3CB702FF4B6D0C43776"
+        },
+        {
+          "path": "Runtime/AutoConnectMode.cs",
+          "sha256": "7B1B06CBA5607DF107716EE813AD44B1CBC42810B7B07AD134026B0B29F9F635"
+        },
+        {
+          "path": "Runtime/AutoConnectMode.cs.meta",
+          "sha256": "A9B4F9DB0E0A2CA049FA88EB57B6CB7EFC8C761A8367CDA4FBF10B671145345D"
+        },
+        {
+          "path": "Runtime/PulletAutoConnectStrategy.cs",
+          "sha256": "22AF32BF95F6EDCF2D81B23F39C17BB8FD2256406AE193B81460B1C986316667"
+        },
+        {
+          "path": "Runtime/PulletAutoConnectStrategy.cs.meta",
+          "sha256": "2DDE368B4602DE2112008BE3F7F2FDCF334D82C2D01B7C01ACA8FFC5A2A21998"
+        },
+        {
+          "path": "Runtime/PulletDiscoveryConnector.cs",
+          "sha256": "871F98BF618DE3A6780B7243774CCE379082088C296B5EE5FDE3B28E326E5C45"
+        },
+        {
+          "path": "Runtime/PulletDiscoveryConnector.cs.meta",
+          "sha256": "783485D7A461E25DF73FE36E86C30F190A2A8F84C3B19743DAABC9873B2D8760"
+        },
+        {
+          "path": "Runtime/PulletDiscoveryEventRelay.cs",
+          "sha256": "D18A1977451D19C06AAFBEB14809D00AE790AED72B297091D67147E9907FD1D2"
+        },
+        {
+          "path": "Runtime/PulletDiscoveryEventRelay.cs.meta",
+          "sha256": "2872BEC7D1D4805E67732E6E991CDA12DB03D0E8DCF5AE9628E6CD4B0C74BDD8"
+        },
+        {
+          "path": "Runtime/PulletFramework.NetClient.Discovery.asmdef",
+          "sha256": "F93FF99128A3DC4B65DD227D9E15E42714F1D4FEA453A456A7B4E726A6FB1F98"
+        },
+        {
+          "path": "Runtime/PulletFramework.NetClient.Discovery.asmdef.meta",
+          "sha256": "79749496EE25DE57040A47108969175917268A1A23B474381703137C53A105AA"
+        },
+        {
+          "path": "Tests.meta",
+          "sha256": "28A7184820C5B6F39D4B3B7B9D21AAD18323C45CFEB9731C330FF8D30682796C"
+        },
+        {
+          "path": "Tests/Editor.meta",
+          "sha256": "1A868A3236D1D1499A1502CB9A5E911639F3EBDB8AFF6E98E14FDBBA63B61528"
+        },
+        {
+          "path": "Tests/Editor/PulletAutoConnectStrategyTests.cs",
+          "sha256": "DE9E2EA1255F96DC1F4B67872B7BB8088D0104E7978D0ABB4C5FDEB0AABD62AB"
+        },
+        {
+          "path": "Tests/Editor/PulletAutoConnectStrategyTests.cs.meta",
+          "sha256": "12EE85B06B786DEB8F169D97A249088A6ED8774815DEF56FCD76E55418DF7818"
+        },
+        {
+          "path": "Tests/Editor/PulletDiscoveryConnectorTests.cs",
+          "sha256": "295B3E2BE71A7B3EFB79941D595277D9E622E831F95217A8B6F05870EE813FBD"
+        },
+        {
+          "path": "Tests/Editor/PulletDiscoveryConnectorTests.cs.meta",
+          "sha256": "CFE019B96DEE314290364A77B5CEE61285173CA69586A92D5C658BFC9A4DC5E7"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.NetClient.Discovery.Tests.Editor.asmdef",
+          "sha256": "294A004962AEAD22318ED213D50E0999E70F6CF3DACF1750D94D2E09CF9CDA07"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.NetClient.Discovery.Tests.Editor.asmdef.meta",
+          "sha256": "F8746DF01F1B2AFC74C24C5909DDB63A1C8BC3E4BE7733FEDE8BB35BF6481715"
+        },
+        {
+          "path": "Tests/Editor/UnityTaskTest.cs",
+          "sha256": "A1FF4886AB51648A1F8E42BD1BAC68135D0963C3432FF1AFBE96DA43C00B5C51"
+        },
+        {
+          "path": "Tests/Editor/UnityTaskTest.cs.meta",
+          "sha256": "28C89671426A97FDEE8C230E4D7B8F21C4D0A022D443C352FC30A3F5AC7B3585"
+        },
+        {
+          "path": "Validation~/DiscoveryConnectionEchoTests.cs",
+          "sha256": "23BE02F24745D6C4969FAD04D368766BA9F802B003D03B15426D577646EF370C"
+        },
+        {
+          "path": "Validation~/DiscoveryScenePlayModeTests.cs",
+          "sha256": "985E4A0F81F58CB007AF257E2029136EAD9F0225A9F8D3AA0BA0A37C2F412C59"
+        }
+      ],
+      "oldFilesCount": 0,
+      "retiredPaths": [],
+      "rootFolderMetaPresent": true,
+      "allFilesMatchCanonicalAndU11VerifiedExport": true
+    },
+    {
+      "directory": "PulletFramework.NetClient.Messaging",
+      "name": "com.xmjgame.pullet-framework.netclient-messaging",
+      "version": "3.0.0-pre.1",
+      "files": [
+        {
+          "path": "package.json",
+          "sha256": "A030F94E7EC09F9CCBDBC89CFA22790E95B7C686FBD20546ACD99D223B156048"
+        },
+        {
+          "path": "package.json.meta",
+          "sha256": "0F8F0C95205DEA6511B9DD8AC2A5A6251C5462089329BDAC4995A67619186EC3"
+        },
+        {
+          "path": "README.md",
+          "sha256": "4B8F3331CB745C93FF9B3FCCBA9B668A862CB42978CB481B0E25B724F6D8F0F7"
+        },
+        {
+          "path": "README.md.meta",
+          "sha256": "64F355BE3CD477E6EA88EA84DADBB6626F01DD3D02BB30F3C9B333BC5A398E94"
+        },
+        {
+          "path": "Runtime.meta",
+          "sha256": "4096AF4F301B3087223BAC13A9A2C0886E3A77BB26B052634F284B9B52D3C7D8"
+        },
+        {
+          "path": "Runtime/PulletFramework.NetClient.Messaging.asmdef",
+          "sha256": "940B852EF8C6589BB12D1587DF47AFA4D8EB179662284C8F9FD6F750B51506AD"
+        },
+        {
+          "path": "Runtime/PulletFramework.NetClient.Messaging.asmdef.meta",
+          "sha256": "4612C8A9FFFE0AF0556158FF1426C71129216853A9A076F0BFBF76485F45A2FA"
+        },
+        {
+          "path": "Runtime/PulletMessageConnection.cs",
+          "sha256": "3A6823EFE91CD14E0AAB41066D0A7AEB0B28F2B6EDC18B2254C71BA9712045D8"
+        },
+        {
+          "path": "Runtime/PulletMessageConnection.cs.meta",
+          "sha256": "8036C29FF440BC520E576C4407FB91A2C096A3133459257639C43973F8C9B314"
+        },
+        {
+          "path": "Tests.meta",
+          "sha256": "55D114035C7F6B997B7F85CE35D1E21DE5EAF6460BC7406DA659B3A233941662"
+        },
+        {
+          "path": "Tests/Editor.meta",
+          "sha256": "DB1FEC652705289618C230FD325D645F0570749F0B6525810EB5B91E33FAEA5B"
+        },
+        {
+          "path": "Tests/Editor/MessageConnectionTests.cs",
+          "sha256": "130C74AAB68CF5E07834E1AD7504FFFABB0875F382FBD989BB386B004DB17E45"
+        },
+        {
+          "path": "Tests/Editor/MessageConnectionTests.cs.meta",
+          "sha256": "25F95DF250CB5CC848B8D2C1057B93D2D7878AA0B0D75A4246BD3AD3D885B6C3"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.NetClient.Messaging.Tests.Editor.asmdef",
+          "sha256": "199C044D57795336AFEAE19C7845A3F18043AD94EDA798380F907E15BD75E15A"
+        },
+        {
+          "path": "Tests/Editor/PulletFramework.NetClient.Messaging.Tests.Editor.asmdef.meta",
+          "sha256": "576E6F4860AE423C6425259098666245843BD010D5AFAFA84A6C15BB3EC469C5"
+        },
+        {
+          "path": "Validation~/MessageConnectionNetworkTests.cs",
+          "sha256": "D1063C213A0548D76EAAF6D0F9321C501DFA21D578029E1D715543B9ED48FC40"
+        }
+      ],
+      "oldFilesCount": 0,
+      "retiredPaths": [],
+      "rootFolderMetaPresent": false,
+      "allFilesMatchCanonicalAndU11VerifiedExport": true
+    }
+  ],
+  "nativeInputs": [
+    {
+      "package": "PulletFramework.NetClient",
+      "input": {
+        "schema": 1,
+        "purpose": "U8 isolated Unity input compatibility checkpoint from exact Windows CI; not release, Player or all-platform acceptance",
+        "source": "2205c8debed2edc132be672c05b129ee1fe0c162",
+        "ciRun": 39058109182,
+        "ciAttempt": 1,
+        "ciPlatform": "windows-only",
+        "nativePackageVersion": "3.0.0-rc.1",
+        "wireVersion": 3,
+        "libraries": [
+          {
+            "assembly": "PulletNet.Protocol",
+            "framework": "netstandard2.0",
+            "packageSha256": "e79ce259ef4709d8abb67f97e74856235e56c7bec75f99b31cd1bb5541286563",
+            "librarySha256": "1e9baad69c602149fd18dcc9badf9dd6109553ca0fb22a0eb37cfae9b5348e39"
+          },
+          {
+            "assembly": "PulletNet.ClientSDK",
+            "framework": "netstandard2.1",
+            "packageSha256": "b5bd908ae043b6fd03f17a5351533ae0f378a7e7bd61b0808bca61b89419c2de",
+            "librarySha256": "f7220b5c2f76a16e829d94cb88413a0072153f22f1cdb7f6489c6058f537d8ca"
+          }
+        ]
+      }
+    },
+    {
+      "package": "PulletFramework.Discovery",
+      "input": {
+        "schema": 1,
+        "purpose": "U9-A optional Unity discovery input from the verified local nine-package gate; not remote CI, release or device acceptance",
+        "source": "d05c59ca5e629e246a0db9fa0cf0fe52e015a984",
+        "nativePackageVersion": "3.0.0-discovery.candidate.20261018",
+        "discoveryProtocolVersion": 1,
+        "libraries": [
+          {
+            "assembly": "PulletNet.Discovery",
+            "framework": "netstandard2.1",
+            "packageSha256": "d7a8840613a2645ddfb362bf5eabbc6ac812675a19fb29709050dc102da6d963",
+            "librarySha256": "13df8d0b8724769dda24113ef128d4582fadab9a66e9ea1e8afd4cb07d771cf8"
+          }
+        ]
+      }
+    },
+    {
+      "package": "PulletFramework.Messaging",
+      "input": {
+        "schema": 1,
+        "purpose": "U10-A standalone Unity message session; verified existing CI package, not new release or binding acceptance",
+        "source": "2205c8debed2edc132be672c05b129ee1fe0c162",
+        "nativePackageVersion": "3.0.0-rc.1",
+        "ciRun": 39058109182,
+        "ciAttempt": 1,
+        "libraries": [
+          {
+            "assembly": "PulletNet.Messaging",
+            "framework": "netstandard2.1",
+            "packageSha256": "A1DD56E348341131D3CB0ED8D019FB26B985D5F8FC5605A89E046E15E7138A81",
+            "librarySha256": "BA76F2BA75A005A4F147F3EA1A33C575A39194FBA0387DD21BDBD11E9FA42876"
+          }
+        ]
+      }
+    }
+  ],
+  "synchronization": {
+    "packages": 5,
+    "files": 163.0,
+    "oldRawFiles": 90,
+    "newRawFiles": 73,
+    "retiredOldRawPaths": [
+      "Runtime/Messaging.meta",
+      "Runtime/Messaging/MessageSubscriptions.cs",
+      "Runtime/Messaging/MessageSubscriptions.cs.meta",
+      "Runtime/Messaging/PulletMessageClient.cs",
+      "Runtime/Messaging/PulletMessageClient.cs.meta",
+      "Runtime/Messaging/PulletMessageProtocol.cs",
+      "Runtime/Messaging/PulletMessageProtocol.cs.meta",
+      "Runtime/Messaging/PulletMessageRouter.cs",
+      "Runtime/Messaging/PulletMessageRouter.cs.meta",
+      "Runtime/Messaging/PulletMessageSerialization.cs",
+      "Runtime/Messaging/PulletMessageSerialization.cs.meta",
+      "Runtime/PulletAutoConnectStrategy.cs",
+      "Runtime/PulletAutoConnectStrategy.cs.meta",
+      "Runtime/PulletServerDiscovery.cs",
+      "Runtime/PulletServerDiscovery.cs.meta",
+      "Tests/Editor/PulletAutoConnectStrategyTests.cs",
+      "Tests/Editor/PulletAutoConnectStrategyTests.cs.meta",
+      "Tests/Editor/PulletMessagingTests.cs",
+      "Tests/Editor/PulletMessagingTests.cs.meta",
+      "Tests/Editor/PulletServerDiscoveryTests.cs",
+      "Tests/Editor/PulletServerDiscoveryTests.cs.meta"
+    ],
+    "allSourceExportAndTargetHashesMatch": true,
+    "untouchedFilesVerified": 591,
+    "userDocumentPreserved": true,
+    "backup": "G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\framework-five-package-sync-20261018/Before",
+    "retiredOriginal": "G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\framework-five-package-sync-20261018/Retired/PulletFramework.NetClient",
+    "nativeRebuilt": false,
+    "mazuChanged": false,
+    "pushed": false
+  },
+  "preservedGuids": [
+    {
+      "path": "Runtime/PulletNetworkManager.cs.meta",
+      "beforeSha256": "79346DCB203E3C5D5B167272CC1E936890AF60B58173E72ECA43138D95AF346C",
+      "afterSha256": "79346DCB203E3C5D5B167272CC1E936890AF60B58173E72ECA43138D95AF346C"
+    },
+    {
+      "path": "Runtime/PulletNetworkEventRelay.cs.meta",
+      "beforeSha256": "E144370E445FA8B6F64C4EA624B3A950B2B3341DF527A0C762848C34D11485AE",
+      "afterSha256": "E144370E445FA8B6F64C4EA624B3A950B2B3341DF527A0C762848C34D11485AE"
+    },
+    {
+      "path": "Runtime/Prefabs/PulletNetworkManager.prefab.meta",
+      "beforeSha256": "84EE72D64A95953B03DFDE461EF627A66217178566D27EBD6A23454DDB1E9A6F",
+      "afterSha256": "84EE72D64A95953B03DFDE461EF627A66217178566D27EBD6A23454DDB1E9A6F"
+    }
+  ],
+  "untouchedExistingFilesVerified": 591,
+  "protectedUserFile": "Documentation/NetClient-3.0-Alignment.zh-CN.md",
+  "protectedUserSha256": "02C45DFB867A83230BDA0F4F69E4C1D805EE6970EFCD4EEE31DC19160D271DBA",
+  "migrationDocuments": [
+    {
+      "name": "Discovery-U9B-Migration.zh-CN.md",
+      "sha256": "8CC2C3205216B94CAB3369CB913E461FF01EB21835122C7A09897E4D3D68AE20",
+      "origin": "PulletNet/Docs/Unity/Discovery-U9B-Migration.zh-CN.md"
+    },
+    {
+      "name": "Messaging-U10-Migration.zh-CN.md",
+      "sha256": "0223171F42FD9FB5CA03D31908D2E9DE90B435CAC34C70697B431DF46D393745",
+      "origin": "PulletNet/Docs/Unity/Messaging-U10-Migration.zh-CN.md"
+    },
+    {
+      "name": "U11-PC-Acceptance.zh-CN.md",
+      "sha256": "8373D15E67473E7A14D5B517244AB6D6EDF94018FFC6D0A3E7390DE907AC7837",
+      "origin": "PulletNet/Docs/Unity/U11-PC-Acceptance.zh-CN.md"
+    },
+    {
+      "name": "NetClient-Installation-and-Player-Checklist.zh-CN.md",
+      "sha256": "7CD1F394FFF989EDF65D944EBE585FBC8561857D843C558130C85D34323560D2",
+      "origin": "PulletNet/Docs/Unity/NetClient-Installation-and-Player-Checklist.zh-CN.md"
+    }
+  ],
+  "localPlayMode": {
+    "unity": "2022.3.62f3",
+    "acceptance": {
+      "passed": true,
+      "action": "PlayMode",
+      "scenarios": 16,
+      "echoes": 22,
+      "serverExit": 0,
+      "inputFilesVerified": 163,
+      "osBackgroundValidated": false,
+      "androidOrIl2CppValidated": false
+    },
+    "execution": {
+      "startedUtc": "2026-10-18T13:13:59.7113712+08:00",
+      "finishedUtc": "2026-10-18T13:14:19.7784085+08:00",
+      "exitCode": 0,
+      "retry": false,
+      "packageInput": "validation-input.json",
+      "action": "PlayMode"
+    },
+    "unityExit": {
+      "arguments": [
+        "-batchmode",
+        "-nographics",
+        "-projectPath",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\framework-five-package-sync-20261018\\Framework-PlayMode/Project\"",
+        "-runTests",
+        "-testPlatform",
+        "EditMode",
+        "-assemblyNames",
+        "PulletNet.UnityAcceptance.Tests.Editor",
+        "-testFilter",
+        "ModulePlayModeTests",
+        "-testResults",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\framework-five-package-sync-20261018\\Framework-PlayMode/results.xml\"",
+        "-logFile",
+        "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\framework-five-package-sync-20261018\\Framework-PlayMode/unity.log\""
+      ],
+      "exitCode": 0,
+      "startedUtc": "2026-10-18T13:14:00.1142856+08:00",
+      "finishedUtc": "2026-10-18T13:14:19.540597+08:00"
+    },
+    "serverExit": {
+      "exitCode": 0
+    },
+    "scenarios": [
+      {
+        "name": "Discovery-TcpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 19269,
+        "lastFrame": 25721,
+        "echoes": 1
+      },
+      {
+        "name": "Discovery-UdpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 1874,
+        "lastFrame": 8533,
+        "echoes": 1
+      },
+      {
+        "name": "Discovery-WebSocketOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 36953,
+        "lastFrame": 43829,
+        "echoes": 1
+      },
+      {
+        "name": "DiscoveryCloseJoinsOutstandingIo",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 54994,
+        "lastFrame": 54995,
+        "echoes": 0
+      },
+      {
+        "name": "DiscoveryTyped-TcpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 28039,
+        "lastFrame": 35255,
+        "echoes": 2
+      },
+      {
+        "name": "DiscoveryTyped-UdpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 10329,
+        "lastFrame": 17545,
+        "echoes": 2
+      },
+      {
+        "name": "DiscoveryTyped-WebSocketOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 45975,
+        "lastFrame": 53575,
+        "echoes": 2
+      },
+      {
+        "name": "Raw-TcpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 17545,
+        "lastFrame": 19269,
+        "echoes": 1
+      },
+      {
+        "name": "Raw-UdpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 9,
+        "lastFrame": 1874,
+        "echoes": 1
+      },
+      {
+        "name": "Raw-WebSocketOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 35255,
+        "lastFrame": 36953,
+        "echoes": 1
+      },
+      {
+        "name": "RuntimeCloseRetiresPendingRpc",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 54995,
+        "lastFrame": 56143,
+        "echoes": 0
+      },
+      {
+        "name": "TwoTypedSourcesKeepIndependentRpcOne",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 56143,
+        "lastFrame": 59426,
+        "echoes": 3
+      },
+      {
+        "name": "Typed-TcpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 25721,
+        "lastFrame": 28039,
+        "echoes": 2
+      },
+      {
+        "name": "Typed-UdpOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 8533,
+        "lastFrame": 10329,
+        "echoes": 2
+      },
+      {
+        "name": "Typed-WebSocketOnly",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 43829,
+        "lastFrame": 45975,
+        "echoes": 2
+      },
+      {
+        "name": "TypedCloseInsideNotification",
+        "completed": true,
+        "playing": true,
+        "mainThread": true,
+        "cleanupJoined": true,
+        "firstFrame": 53575,
+        "lastFrame": 54994,
+        "echoes": 1
+      }
+    ],
+    "result": {
+      "passed": true,
+      "mainThread": true,
+      "playing": true,
+      "cleanupJoined": true,
+      "scenarios": 16,
+      "echoes": 22,
+      "unity": "2022.3.62f3",
+      "platform": "WindowsEditor",
+      "error": ""
+    },
+    "nunitRunnerCount": 1,
+    "exactEchoes": 22,
+    "input": {
+      "purpose": "actual synchronized Framework package copies, isolated U11 public consumer",
+      "packageSource": "G:/GitHub/PulletFramework",
+      "frameworkBaseRevision": "2bb9f189cc2649fd415bf2e4839a1c35b337d95d",
+      "frameworkBranch": "codex/unity-single-connection",
+      "canonicalSourceRevision": "be8864b10ae2ff1415da31abe0f598147da89986",
+      "harnessOrigin": "G:/XuMingJun/2026/PICO GPS XR/PulletNet",
+      "harnessToolSha256": "51BACFF7239768A92A15288450AFFFA86282F64A89ACCE9B1AD9B1F64CA08420",
+      "copiedToolSha256": "51BACFF7239768A92A15288450AFFFA86282F64A89ACCE9B1AD9B1F64CA08420",
+      "toolInputSourceFieldMeaning": "Git revision identifies harness parent repository; actual package origin is Framework snapshot recorded here",
+      "packageFiles": [
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "NativeInput.json",
+          "sha256": "E3295012CADC544E8386005F605AF5444DCA4ACD842BDA8B85B61CEA0BC9E8E0"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "NativeInput.json.meta",
+          "sha256": "6A9A2166AF1036651FFB84533639674DB0A7206831E46055E1637240BFDC4637"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "package.json",
+          "sha256": "47A4205455A1AE6C24D6E79E1603668E9E5D68F64801B8AB328B8021D468AD3B"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "package.json.meta",
+          "sha256": "6A886BBC4DCA252BD6CC98BC6CFDC5B5CB2C3DB51E9AF9B95F2044DC4F29C2A9"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "README.md",
+          "sha256": "4070F2F9CFF33AB4E8D13DDFAB42FD6816808C0423A12FAEA4A26B5DB2F7F3DB"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "README.md.meta",
+          "sha256": "D3B813E5D771BD9B3F27D018B562784F5B3118C93E23FE06B4E404FCD6F2D1E4"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime.meta",
+          "sha256": "E22749CDFB4DA74EBEC051C31A3C906322A04943472DF886F879275BB3DB8A52"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/AssemblyInfo.cs",
+          "sha256": "C834D492891BDE086039347ED78B3F0773475E5D578767F9AEA3804BAE60FEE7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/AssemblyInfo.cs.meta",
+          "sha256": "2388DD08A757405BBA452B1CE9C03ABBC21ABC49F67E637A6E2FC6582728115D"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/ClientDispatchQueue.cs",
+          "sha256": "1C7CD1E599E9E67EA2FD01ACEE2CBA52ECB26283C068CD066EACB64A32BBB2EE"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/ClientDispatchQueue.cs.meta",
+          "sha256": "0F97C4A8C93CC3B210A1D12F6D27D27E9B1A25A5BFA9207D383AA0165D35629E"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/ConnectionEndpoint.cs",
+          "sha256": "615FA8CB827949A07BB3EA399B49B45CA2AFEFE86877AA5D2508C4805D24CF6C"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/ConnectionEndpoint.cs.meta",
+          "sha256": "B8191BF8B293521645F8F455FBC92E4A45FD917D2AA58F253E9E3F6E58DE18E8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Plugins.meta",
+          "sha256": "A18BC9497A8D2D98F78CB1E999EC8097536E7931AB0D30EE4483D46A08504A56"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Plugins/PulletNet.ClientSDK.dll",
+          "sha256": "F7220B5C2F76A16E829D94CB88413A0072153F22F1CDB7F6489C6058F537D8CA"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Plugins/PulletNet.ClientSDK.dll.meta",
+          "sha256": "11276060EC38334DD634B6F4F07936622A2183955CF139675E9772A2921C1CE8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Plugins/PulletNet.Protocol.dll",
+          "sha256": "1E9BAAD69C602149FD18DCC9BADF9DD6109553CA0FB22A0EB37CFAE9B5348E39"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Plugins/PulletNet.Protocol.dll.meta",
+          "sha256": "6AC1FCE92BC6825A6599FF1244CE4A76440C1DF31ECBB265AA6D3BA0DA5AE7E7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Prefabs.meta",
+          "sha256": "942A9C33EDFF2A714107ECC41E10318D506A260E6FBECBC40A6E89B9C787692D"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Prefabs/PulletNetworkManager.prefab",
+          "sha256": "FA213D1663B81271D2F32680542881AE5EF0BEDE64E3718D9FB59A8974EEE34E"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/Prefabs/PulletNetworkManager.prefab.meta",
+          "sha256": "84EE72D64A95953B03DFDE461EF627A66217178566D27EBD6A23454DDB1E9A6F"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletActiveServerRecovery.cs",
+          "sha256": "D909954AA1085B6DCDA49E7E9F8B21C47C787CA8229E703C449F2AF546445C3F"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletActiveServerRecovery.cs.meta",
+          "sha256": "9130467611981708F26C79B46B408C3E68C0EB5E2081A3E6BC31B574CC25DE83"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletClientRuntime.cs",
+          "sha256": "14342BBF3EB3045ACAC95A9CA5514E91A9B49EE152CB1497201DAA58ABB5DE30"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletClientRuntime.cs.meta",
+          "sha256": "34DBDF52B228C4964DF61535269083D613537CC67DF54E8B19ACDAE649C331FF"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletClientRuntimeContracts.cs",
+          "sha256": "EE08B9FF72FA38BE1B7DBF517839F693556AA0FCE7A81FFBDA6D75E6509A40B7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletClientRuntimeContracts.cs.meta",
+          "sha256": "5C25B48C3B6F11D00562A82A8405D7148363F266C8C4C059979F1E2EF1729D6A"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletConnectionCoordinator.cs",
+          "sha256": "8A2E906C6DA15204E457CE8066852D0FD458723DA5021D0F7834B163445E5F61"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletConnectionCoordinator.cs.meta",
+          "sha256": "45CC7BC23E4F74AA021CC7E4E554AE8A6E31D5299B07B2E5A970300FAD25FD03"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletFramework.NetClient.asmdef",
+          "sha256": "555F6A445DB682DF7196262484E658962A1B490CAB2CE19EA4A7175A335E3632"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletFramework.NetClient.asmdef.meta",
+          "sha256": "AB94C9BC88A68F06D22AA15B6CC7022EF27FA241FD6D77637D2DF729C904CD97"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletNetworkEventRelay.cs",
+          "sha256": "B935CA709994CF1B1C98FC50FEFC467AD288954E5A9A598A7242633F7DCB414C"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletNetworkEventRelay.cs.meta",
+          "sha256": "E144370E445FA8B6F64C4EA624B3A950B2B3341DF527A0C762848C34D11485AE"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletNetworkManager.cs",
+          "sha256": "F858FF2B2B1BF27A948E47F4ACC1524A90682CE9946F0AF3783B91B383C28060"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Runtime/PulletNetworkManager.cs.meta",
+          "sha256": "79346DCB203E3C5D5B167272CC1E936890AF60B58173E72ECA43138D95AF346C"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Samples~/ConnectionSample/PulletFramework.NetClient.Samples.asmdef",
+          "sha256": "00F838CBA65A484C8174BD5A42F4ADE480B0FB1A787184C2F1C3E88302FAD784"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Samples~/ConnectionSample/PulletFramework.NetClient.Samples.asmdef.meta",
+          "sha256": "3126518C508A6E79D5DC11CCE452456D03CDDA6B1A627C97198AA380A56AC4DB"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Samples~/ConnectionSample/PulletNetConnectionSample.cs",
+          "sha256": "56670AD89FBB9140773A2B02555608DE5B02429B704A969C949D3239FF00B302"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Samples~/ConnectionSample/PulletNetConnectionSample.cs.meta",
+          "sha256": "B687290FDF53301416E97C3F738874BF54BACD4D89EE0C8829133627B916B7F2"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Samples~/ConnectionSample/README.md",
+          "sha256": "43B58507356D24BDBBCCBA181A4EFA1A272AF7D5CA3B269E44DD40C208278A66"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Samples~/ConnectionSample/README.md.meta",
+          "sha256": "5CAD28F91607FF86A023293A7971DE42E0505BC3F9CCD780129DDFEC92ABB4F2"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests.meta",
+          "sha256": "FFDC224CE0029658A64E71BD04AA16E0F593F895A4A763305EEE36C46CE1D3E7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor.meta",
+          "sha256": "37E53AF68F229F9B8BB39F99888AA7F93A859B7CA7D39968D738E1A252E55845"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/ClientDispatchQueueTests.cs",
+          "sha256": "A1B25E089222DD286843DD7282D673BF0DE111217EC366FF315048E70F68A1C4"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/ClientDispatchQueueTests.cs.meta",
+          "sha256": "A8390179520BCC5E17BF89A105A77965391B48567926FD84C97EA25B9C6E38F7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/ConnectionEndpointTests.cs",
+          "sha256": "C31C427E389587B0CCF1141E08EA1659E4F4704343A4F89AF18BB2CF0134921E"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/ConnectionEndpointTests.cs.meta",
+          "sha256": "F18E5AFDD70D5DFEBF8E0C5C4FBC2AD9D87FD105A7498DD2E89D3681DAAB74CB"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs",
+          "sha256": "A4EF835B03BA26F14733E8E713C67796663495496FC61D7C1B2AC2BE6D786C1F"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletActiveServerRecoveryTests.cs.meta",
+          "sha256": "DA3675AEA8609B856EC162B67A7F7C4A109F55ECA06229DD8DDDBA08653427CD"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletClientRuntimeTests.cs",
+          "sha256": "FACBFA24A20DBEA4BDD2C8EAAC166EA68367877A88BE7E4691256BE62D58B227"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletClientRuntimeTests.cs.meta",
+          "sha256": "9A6E74DCA25155C40761ABE620EC37094A5D0561E5101339B3EF596E945DC2F7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletConnectionCoordinatorTests.cs",
+          "sha256": "FF20242C9800046B44D4E5C9CEC7EDAA7F8D207542D80E1EDA34947DBBB25BD5"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletConnectionCoordinatorTests.cs.meta",
+          "sha256": "CD750C023A0CF8112600D370726530B28F9DE37E917A6BC75E94C80D795AB70E"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef",
+          "sha256": "CDA5B1AC6ED7B7780EA8226E5A3FD02DAB796CF080A5BDEE07B331F621D394A8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletFramework.NetClient.Tests.Editor.asmdef.meta",
+          "sha256": "266D161E9CF1B7188986DEEFFD9690C1BFE071933CD5A9B88384B5061A6685BD"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletNetworkManagerLifecycleTests.cs",
+          "sha256": "B72440DF4F81F09DFD8DB1E6494A34E99600C68C58AA38ECA081C97CFDFA76C0"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletNetworkManagerLifecycleTests.cs.meta",
+          "sha256": "B5DFD879778B2B53C263878AF36080CF38F88A087F95BD7D530D67923154F8F9"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletNetworkManagerTests.cs",
+          "sha256": "90FE87025E110937469E8B57AF9EA2967BB9022DDA1067617DB141A6159E8D2E"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/PulletNetworkManagerTests.cs.meta",
+          "sha256": "B8B6C92A9529BA844E73F78B6E09EA6DC07C8E93762069F000594039680E60BD"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/UnityTaskTest.cs",
+          "sha256": "2A630B9B8989A8444A404CC77E640917BCA320193221002C13FC6ADD834F270B"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Tests/Editor/UnityTaskTest.cs.meta",
+          "sha256": "8285F435A5D558E5DCBB31ACAC468C5EC5AD7547449FE78154B471AFEDE54AF0"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/MultiConnectionEchoTests.cs",
+          "sha256": "5B4821D2E55A99127420766270A2C73908B8B3A249AC3AB32FCAC545E1EBD8FB"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/Player/Editor/BuildNetClientPlayerAcceptance.cs",
+          "sha256": "EAE2836D405A885BB27C2C9629DFC561BC526E9B43E67607D1E0E854EB49F4A7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/Player/Editor/PulletNet.PlayerAcceptance.Editor.asmdef",
+          "sha256": "31862A0F4F14A538EB773928B989066D3BA59185139B83CD9C140CE91086D636"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/Player/NetClientPlayerAcceptance.cs",
+          "sha256": "C21964FED3590452CC2E11B4B9E024EFDC31A0B693168DBA8C4A73ACEA5ED725"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/Player/PulletNet.PlayerAcceptance.asmdef",
+          "sha256": "EE3FD6D754BB5FF1365E8C5EEF2AE765EE9FAA95CB10483ACAA1B37E6EC2BE89"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/README.md",
+          "sha256": "0BF7A188C325C606C1ABFAF429C8D839C7A82C5EC6D1DE3211C5914C7814EF5B"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/SdkHostUnityCleanupTests.cs",
+          "sha256": "7EFEF2C852CB2B434195EDF12C7D5BA1EBFAE1A943C612A9DE76964E11E0B423"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/Server/EchoServer.csproj",
+          "sha256": "4B5793783728E91DE208DA3500E36086461B19731D5723E464D37A975017E8BC"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/Server/Program.cs",
+          "sha256": "768506F797FE2353AF07DF7E5949EA717C05376B44E7D2208857AF94543B6A15"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/SingleConnectionEchoTests.cs",
+          "sha256": "3E4F7BB47629F19930B75C3A24076D7B45AE6B2671E4AD580F283AEF5D504795"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/UdpHandshakeCancellationTests.cs",
+          "sha256": "3E6D6DC7E840ADA46F94FEC2740C9E02E41E0547B03422D2CA1BE9C800274C23"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient",
+          "path": "Validation~/UnityApplicationPlayModeTests.cs",
+          "sha256": "4B16F987A4526FB3603516A1736EB5108EC8CBC06C23AB191F5FBF7F25B852CC"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "NativeInput.json",
+          "sha256": "3BDEE2A22D1F924A6793B66792C55D794BEDACFA88D15C80579C0D4BBB6E2264"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "package.json",
+          "sha256": "5502BC4EE5A466B1828305936BDA277771C050EF31DEB79F356D4A9112E6877F"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "README.md",
+          "sha256": "AB1EDE5BDA129F1DDF10B780FE402913C0E846DAEDDC5A65F12D8DDD08F76AED"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime.meta",
+          "sha256": "1D958643B097AB3F48268ABC74F32A02BB1821217386F884093237C13B6BDC94"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/AssemblyInfo.cs",
+          "sha256": "5EEF212AF6022709F766815AFCBAF320A16FB5AA707EDCBFE922BA3E5D2E74DF"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/AssemblyInfo.cs.meta",
+          "sha256": "72977DEC32BD05D8AA34C0799832D09056DAD4BB50C2811E9CEC182D08EF910D"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/DiscoveryRuntime.cs",
+          "sha256": "0A72B1423680E032404FBAE7393F7F0481BC87E008809E1BBEAF4323A5B2E51F"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/DiscoveryRuntime.cs.meta",
+          "sha256": "22A6B333374D044B0B288EE626B148430EC3EF15D60215DF3092CF7D360A2C8A"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/DiscoverySnapshot.cs",
+          "sha256": "CF9A21E915F29A2450F5CBA1672A9112646C9B1EE6F4440D226411B92462374A"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/DiscoverySnapshot.cs.meta",
+          "sha256": "8E8843DF483BA41FA5ECB0208C15B0D7DC07AA5E31A84506E3351CA607AE1839"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/Plugins.meta",
+          "sha256": "B0DC1C305EE67F9C6CA997E743493592AC8FFDD608E674B15AE2B3EC5A189E15"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/Plugins/PulletNet.Discovery.dll",
+          "sha256": "13DF8D0B8724769DDA24113EF128D4582FADAB9A66E9EA1E8AFD4CB07D771CF8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/Plugins/PulletNet.Discovery.dll.meta",
+          "sha256": "E5D97704CFBEAAAD43DEE5B67D2F090EC4735C571CCF895839F29236CC906EBC"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/PulletFramework.Discovery.asmdef",
+          "sha256": "E67D9F2455009B8C6902054986BD904BE7954F1FD40C586CA61460C779734568"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Runtime/PulletFramework.Discovery.asmdef.meta",
+          "sha256": "3A621475698E3FE0D4930BF0AEDB29AD5F86C5B8CFDB9DCC956C9ECB4C18017A"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests.meta",
+          "sha256": "E049789BB266DBC5B3F30513327AC8217ED3F4965A03601612AAC108948515FD"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests/Editor.meta",
+          "sha256": "C3D43EA9EB3B0B9C6CC49DF7D7ECBE3B2D3ED802565FBE2B6BE694A86CC13D7F"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests/Editor/DiscoveryCompatibilityTests.cs",
+          "sha256": "01DEEC0A62758AD53257A276D5FF4BBA86E04724319DD24507F48FDA070D480D"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests/Editor/DiscoveryCompatibilityTests.cs.meta",
+          "sha256": "ADC5774F6AF042530AE4555F78292E1AFFBE1E1EECCBCB4264D61270E9261847"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests/Editor/DiscoveryRuntimeTests.cs",
+          "sha256": "F74AC59DEC149615101D9D2B1679D1C6A34CA622FBEFF4E6675B7AC58B645CBA"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests/Editor/DiscoveryRuntimeTests.cs.meta",
+          "sha256": "EFFC2407C5721ABBFC25A0192CC7437800E7CF0726BD659C66896E3E911EE064"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests/Editor/PulletFramework.Discovery.Tests.Editor.asmdef",
+          "sha256": "13D0D9BD8E113BFCA024E60182CBBD8142ECEC1BC0645C9C05FB2C5EEED13284"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.discovery",
+          "path": "Tests/Editor/PulletFramework.Discovery.Tests.Editor.asmdef.meta",
+          "sha256": "98A5D6DE24FD6967D07A3F9026D7CB32FEC1AB6EB16F4E4C49CE2695408DF546"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "NativeInput.json",
+          "sha256": "F82075555CA1ABC0BE8AAF0902F22AB4AAD3490081D03E02FDC928BD289EDD59"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "NativeInput.json.meta",
+          "sha256": "515716693B24FBED40B0E6E0B12A0BA4D7C7B21B78BF2188D336A5516578AF98"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "package.json",
+          "sha256": "CE20B7F0D493DB079CFD0E6E945D23A9EAF27A54B4ACEFEC3FBE692FE8819B31"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "package.json.meta",
+          "sha256": "4A23B83798FD5850265AC595DC64347CB31E4E5A2532C02AE87E70D58DF7561D"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "README.md",
+          "sha256": "CB6784C7D8DE0C3A7916BB580E30F9CAC1F3AC3BCDF17B7E31A71155417B9FD2"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "README.md.meta",
+          "sha256": "C3B194CF82FDC83A56F636ADEC470A70173AD1544907A0E399BCC19047E61489"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime.meta",
+          "sha256": "9FF1FBABF0A7CF5938BE534E901AC19A8B6F8BD599A0B7F07A6CCCD2473A47E0"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/MessageInputResult.cs",
+          "sha256": "F5EF7DA106BC89AF259518C9D13CFFFB75F6D555B8FBA6457D090B1D17AE7B31"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/MessageInputResult.cs.meta",
+          "sha256": "5C7E4432529903C20CADAFCFDBD25151F3B87986604F831DB66AA3B113439518"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/MessageSession.cs",
+          "sha256": "7932B860748A238D1DAF785A368CE24A4ACD66EE9E21E624F1814BF09DB5915D"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/MessageSession.cs.meta",
+          "sha256": "D1688C5D91A4A22E7E774FA63C80F80F820D1E726BFB852224994732C8FC818A"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/Plugins.meta",
+          "sha256": "DDF5F8D326233646DF4D1C61849B55519BB3D122C4A82FFDD7EAE77E3BB23376"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/Plugins/PulletNet.Messaging.dll",
+          "sha256": "BA76F2BA75A005A4F147F3EA1A33C575A39194FBA0387DD21BDBD11E9FA42876"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/Plugins/PulletNet.Messaging.dll.meta",
+          "sha256": "8B0BDF0822666FA4EF49093CEE4C85B88035B2D4F73F2CD1A17DB97A416CAEFB"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/PulletFramework.Messaging.asmdef",
+          "sha256": "57AE2E5172E1401DDDB93C47C1CC2116F89534614C6D6BDB6AD7CC1C32D2EF19"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Runtime/PulletFramework.Messaging.asmdef.meta",
+          "sha256": "4A6BDCEBA3C00787EB4740FCC22EF9ACC0D5DDE25F1339E60FD9F60CCD5CFA8F"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Tests.meta",
+          "sha256": "20086996C21BFED501AC6C3CAC6760999539097CE19FF5525C466BC3FD857C91"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Tests/Editor.meta",
+          "sha256": "440C73EBDCEBEBF3331652F8C29A7CA90E6B52B6F232207285BAFD58EB8C5992"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Tests/Editor/MessageSessionTests.cs",
+          "sha256": "4B17CCB48B0279367CD7EF29236858F65B062EAED8EFA90D477B5E0EE417A0EF"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Tests/Editor/MessageSessionTests.cs.meta",
+          "sha256": "B7F99D1815F90943B22CE70E3A4E075EFC7C11D186988AEABDEBB8DE5957E03C"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Tests/Editor/PulletFramework.Messaging.Tests.Editor.asmdef",
+          "sha256": "7D145C2ACCBEF3FE16D2C617DE109165F0452A8BF9098F0E0D8AFF96960EE952"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.messaging",
+          "path": "Tests/Editor/PulletFramework.Messaging.Tests.Editor.asmdef.meta",
+          "sha256": "F2ACCF13D6C475BA3E760DFFB75ECDC8F1BFFD9E154F3E16D2F6B76CE4069297"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "package.json",
+          "sha256": "A83DCC44330946C76F4AB127C45AC51BD1C85125F294398533839D3F5E7EE4BC"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "package.json.meta",
+          "sha256": "A4BE41C718907AF68CD21245A4FABC755BCEB1778CEE2C8B1EC419F71FFDCE44"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "README.md",
+          "sha256": "129FDA71E2788D4F299AD0C411E567DA341DB682588B9519C2674DB95CF01EB5"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "README.md.meta",
+          "sha256": "887B34C742DA808D28DA90F512BE6D191E50459CF40739012EED886BA2BBF94B"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime.meta",
+          "sha256": "55D992EB1DE84B00F5D821CFD89656149F7404B3C71238D9E55F95E74851B8B8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/AssemblyInfo.cs",
+          "sha256": "816147400A0B5B63D6B095F01660650845035E8605B7C56926E2EE7E6A1D460B"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/AssemblyInfo.cs.meta",
+          "sha256": "5141AD14E8A7762AA953B1855A8753528DC8CD223011B3CB702FF4B6D0C43776"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/AutoConnectMode.cs",
+          "sha256": "7B1B06CBA5607DF107716EE813AD44B1CBC42810B7B07AD134026B0B29F9F635"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/AutoConnectMode.cs.meta",
+          "sha256": "A9B4F9DB0E0A2CA049FA88EB57B6CB7EFC8C761A8367CDA4FBF10B671145345D"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletAutoConnectStrategy.cs",
+          "sha256": "22AF32BF95F6EDCF2D81B23F39C17BB8FD2256406AE193B81460B1C986316667"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletAutoConnectStrategy.cs.meta",
+          "sha256": "2DDE368B4602DE2112008BE3F7F2FDCF334D82C2D01B7C01ACA8FFC5A2A21998"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletDiscoveryConnector.cs",
+          "sha256": "871F98BF618DE3A6780B7243774CCE379082088C296B5EE5FDE3B28E326E5C45"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletDiscoveryConnector.cs.meta",
+          "sha256": "783485D7A461E25DF73FE36E86C30F190A2A8F84C3B19743DAABC9873B2D8760"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletDiscoveryEventRelay.cs",
+          "sha256": "D18A1977451D19C06AAFBEB14809D00AE790AED72B297091D67147E9907FD1D2"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletDiscoveryEventRelay.cs.meta",
+          "sha256": "2872BEC7D1D4805E67732E6E991CDA12DB03D0E8DCF5AE9628E6CD4B0C74BDD8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletFramework.NetClient.Discovery.asmdef",
+          "sha256": "F93FF99128A3DC4B65DD227D9E15E42714F1D4FEA453A456A7B4E726A6FB1F98"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Runtime/PulletFramework.NetClient.Discovery.asmdef.meta",
+          "sha256": "79749496EE25DE57040A47108969175917268A1A23B474381703137C53A105AA"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests.meta",
+          "sha256": "28A7184820C5B6F39D4B3B7B9D21AAD18323C45CFEB9731C330FF8D30682796C"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor.meta",
+          "sha256": "1A868A3236D1D1499A1502CB9A5E911639F3EBDB8AFF6E98E14FDBBA63B61528"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/PulletAutoConnectStrategyTests.cs",
+          "sha256": "DE9E2EA1255F96DC1F4B67872B7BB8088D0104E7978D0ABB4C5FDEB0AABD62AB"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/PulletAutoConnectStrategyTests.cs.meta",
+          "sha256": "12EE85B06B786DEB8F169D97A249088A6ED8774815DEF56FCD76E55418DF7818"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/PulletDiscoveryConnectorTests.cs",
+          "sha256": "295B3E2BE71A7B3EFB79941D595277D9E622E831F95217A8B6F05870EE813FBD"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/PulletDiscoveryConnectorTests.cs.meta",
+          "sha256": "CFE019B96DEE314290364A77B5CEE61285173CA69586A92D5C658BFC9A4DC5E7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/PulletFramework.NetClient.Discovery.Tests.Editor.asmdef",
+          "sha256": "294A004962AEAD22318ED213D50E0999E70F6CF3DACF1750D94D2E09CF9CDA07"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/PulletFramework.NetClient.Discovery.Tests.Editor.asmdef.meta",
+          "sha256": "F8746DF01F1B2AFC74C24C5909DDB63A1C8BC3E4BE7733FEDE8BB35BF6481715"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/UnityTaskTest.cs",
+          "sha256": "A1FF4886AB51648A1F8E42BD1BAC68135D0963C3432FF1AFBE96DA43C00B5C51"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Tests/Editor/UnityTaskTest.cs.meta",
+          "sha256": "28C89671426A97FDEE8C230E4D7B8F21C4D0A022D443C352FC30A3F5AC7B3585"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Validation~/DiscoveryConnectionEchoTests.cs",
+          "sha256": "23BE02F24745D6C4969FAD04D368766BA9F802B003D03B15426D577646EF370C"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-discovery",
+          "path": "Validation~/DiscoveryScenePlayModeTests.cs",
+          "sha256": "985E4A0F81F58CB007AF257E2029136EAD9F0225A9F8D3AA0BA0A37C2F412C59"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "package.json",
+          "sha256": "A030F94E7EC09F9CCBDBC89CFA22790E95B7C686FBD20546ACD99D223B156048"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "package.json.meta",
+          "sha256": "0F8F0C95205DEA6511B9DD8AC2A5A6251C5462089329BDAC4995A67619186EC3"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "README.md",
+          "sha256": "4B8F3331CB745C93FF9B3FCCBA9B668A862CB42978CB481B0E25B724F6D8F0F7"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "README.md.meta",
+          "sha256": "64F355BE3CD477E6EA88EA84DADBB6626F01DD3D02BB30F3C9B333BC5A398E94"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Runtime.meta",
+          "sha256": "4096AF4F301B3087223BAC13A9A2C0886E3A77BB26B052634F284B9B52D3C7D8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Runtime/PulletFramework.NetClient.Messaging.asmdef",
+          "sha256": "940B852EF8C6589BB12D1587DF47AFA4D8EB179662284C8F9FD6F750B51506AD"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Runtime/PulletFramework.NetClient.Messaging.asmdef.meta",
+          "sha256": "4612C8A9FFFE0AF0556158FF1426C71129216853A9A076F0BFBF76485F45A2FA"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Runtime/PulletMessageConnection.cs",
+          "sha256": "3A6823EFE91CD14E0AAB41066D0A7AEB0B28F2B6EDC18B2254C71BA9712045D8"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Runtime/PulletMessageConnection.cs.meta",
+          "sha256": "8036C29FF440BC520E576C4407FB91A2C096A3133459257639C43973F8C9B314"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Tests.meta",
+          "sha256": "55D114035C7F6B997B7F85CE35D1E21DE5EAF6460BC7406DA659B3A233941662"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Tests/Editor.meta",
+          "sha256": "DB1FEC652705289618C230FD325D645F0570749F0B6525810EB5B91E33FAEA5B"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Tests/Editor/MessageConnectionTests.cs",
+          "sha256": "130C74AAB68CF5E07834E1AD7504FFFABB0875F382FBD989BB386B004DB17E45"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Tests/Editor/MessageConnectionTests.cs.meta",
+          "sha256": "25F95DF250CB5CC848B8D2C1057B93D2D7878AA0B0D75A4246BD3AD3D885B6C3"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Tests/Editor/PulletFramework.NetClient.Messaging.Tests.Editor.asmdef",
+          "sha256": "199C044D57795336AFEAE19C7845A3F18043AD94EDA798380F907E15BD75E15A"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Tests/Editor/PulletFramework.NetClient.Messaging.Tests.Editor.asmdef.meta",
+          "sha256": "576E6F4860AE423C6425259098666245843BD010D5AFAFA84A6C15BB3EC469C5"
+        },
+        {
+          "package": "com.xmjgame.pullet-framework.netclient-messaging",
+          "path": "Validation~/MessageConnectionNetworkTests.cs",
+          "sha256": "D1063C213A0548D76EAAF6D0F9321C501DFA21D578029E1D715543B9ED48FC40"
+        }
+      ],
+      "serverSha256": "61C1722A90DF0627DDC92B6DD6C770E4598D59C7830C474FECC8BAFC03E0ACFA",
+      "nativeRebuilt": false,
+      "playerRebuilt": false,
+      "mazuChanged": false
+    },
+    "testXmlSha256": "4F1D56D775E52028BDF0D44180F8F151137C01F5DAF470FE2908045FFA9B17A7"
+  },
+  "rollback": {
+    "backup": "G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\framework-five-package-sync-20261018/Before",
+    "retiredOriginal": "G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\framework-five-package-sync-20261018/Retired/PulletFramework.NetClient",
+    "permanentDeletion": false,
+    "scope": "old complete raw package, prior root metadata/README/installation note/sync note/receipt"
+  },
+  "nativeRebuilt": false,
+  "playerRebuiltThisBatch": false,
+  "nativeFullSuiteRun": false,
+  "newRemoteCI": false,
+  "pushed": false,
+  "mergedToMain": false,
+  "businessProjectsChanged": false,
+  "androidOrPicoValidated": false,
+  "realProtobufOrAotValidated": false,
+  "crossMachineBroadcastValidated": false,
+  "realOsBackgroundValidated": false
+}

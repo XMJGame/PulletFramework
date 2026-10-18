@@ -51,8 +51,8 @@ MonoBehaviour:
   webSocketPath: /ws
   webSocketUseTls: 0
   connectionMode: 1
-  autoConnectMode: 2
-  connectOnStart: 1
+  _legacyDiscoveryMode: -1
+  connectOnStart: 0
   dontDestroyOnLoad: 1
   reconnectOnApplicationResume: 1
   enableKeepAlive: 1
@@ -60,14 +60,6 @@ MonoBehaviour:
   keepReconnectingActiveServer: 0
   activeServerReconnectDelaySeconds: 3
   maxReconnectAttempts: 10
-  enableDiscovery: 1
-  discoveryPort: 58888
-  discoveryTimeoutSeconds: 3
-  discoveryMaxAttempts: 5
-  discoverySendIntervalSeconds: 0.5
-  discoveryRetrySeconds: 1
-  retryDiscoveryUntilConnected: 1
-  discoveryServiceType: pulletnet
   payloadQueueCapacity: 1024
   maxPayloadCallbacksPerFrame: 256
   payloadQueueBytes: 4194304

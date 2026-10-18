@@ -47,6 +47,33 @@ namespace PulletFramework.NetClient.Tests
             Assert.Throws<InvalidOperationException>(() => Source(runtime, "b"));
             Assert.Throws<InvalidOperationException>(() => Source(runtime, "a"));
         }
+        [UnityTest]
+        public IEnumerator CapturedRemovalIsObservationOnlyAndSurvivesNameReuse() => UnityTaskTest.Run(async () =>
+        {
+            var runtime = Runtime(); var source = Source(runtime, "same");
+            var first = runtime.GetRemovalCompletion(source);
+            Assert.That(runtime.GetRemovalCompletion(source), Is.SameAs(first));
+            Assert.That(first.IsCompleted, Is.False);
+            Assert.That(runtime.TryGetClient("same", out _), Is.True);
+            Assert.That(await runtime.RemoveAsync(source), Is.SameAs(await first));
+            var replacement = Source(runtime, "same");
+            Assert.That(runtime.GetRemovalCompletion(replacement), Is.Not.SameAs(first));
+            Assert.That((await first).Source, Is.SameAs(source));
+            Assert.Throws<InvalidOperationException>(() => runtime.GetRemovalCompletion(source));
+        });
+
+        [UnityTest]
+        public IEnumerator CapturedRemovalAlsoSettlesWhenRuntimeOwnsShutdown() => UnityTaskTest.Run(async () =>
+        {
+            var runtime = Runtime(); var source = Source(runtime, "a");
+            var completion = runtime.GetRemovalCompletion(source);
+            await runtime.CloseAsync();
+            Assert.That((await completion).IsSuccess, Is.True);
+            Assert.That(source.Client.State, Is.EqualTo(ConnectionState.Disposed));
+            var other = Runtime(); var foreign = Source(other, "a");
+            Assert.Throws<InvalidOperationException>(() => runtime.GetRemovalCompletion(foreign));
+        });
+
         [Test]
         public void LifecyclePrecedesPayloadEvenWithOneEventPerFrame()
         {

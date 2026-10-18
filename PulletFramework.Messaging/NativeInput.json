@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "purpose": "U10-A standalone Unity message session; verified existing CI package, not new release or binding acceptance",
+  "source": "2205c8debed2edc132be672c05b129ee1fe0c162",
+  "nativePackageVersion": "3.0.0-rc.1",
+  "ciRun": 39058109182,
+  "ciAttempt": 1,
+  "libraries": [
+    {
+      "assembly": "PulletNet.Messaging",
+      "framework": "netstandard2.1",
+      "packageSha256": "A1DD56E348341131D3CB0ED8D019FB26B985D5F8FC5605A89E046E15E7138A81",
+      "librarySha256": "BA76F2BA75A005A4F147F3EA1A33C575A39194FBA0387DD21BDBD11E9FA42876"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "PulletFramework.NetClient.Discovery.Tests.Editor",
+  "references": [
+    "PulletFramework.NetClient.Discovery",
+    "PulletFramework.NetClient",
+    "PulletFramework.Discovery"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "PulletNet.ClientSDK.dll",
+    "PulletNet.Discovery.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS",
+    "PULLETNET_UNITY_TEST_FRAMEWORK"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.test-framework",
+      "expression": "1.1.0",
+      "define": "PULLETNET_UNITY_TEST_FRAMEWORK"
+    }
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
