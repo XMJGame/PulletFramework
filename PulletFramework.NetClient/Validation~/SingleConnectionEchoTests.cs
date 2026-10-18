@@ -31,7 +31,6 @@ namespace PulletFramework.NetClient.Tests
             manager.connectOnStart = false;
             manager.dontDestroyOnLoad = false;
             manager.enableConnectionLogs = false;
-            manager.enableDiscovery = false;
             manager.enableKeepAlive = false;
             manager.enableReconnect = false;
             manager.connectionMode = mode;
@@ -47,10 +46,12 @@ namespace PulletFramework.NetClient.Tests
                 Invoke(manager, "Awake");
             try
             {
-                Task<ConnectionResult> connect = manager.ConnectAsync();
+                var endpoint = new ConnectionEndpoint("127.0.0.1", ports.tcp, ports.udp, ports.ws);
+                Task<ConnectionResult> connect = manager.ConnectAsync(endpoint);
                 await Wait(connect, manager);
                 Assert.That(connect.Result.IsSuccess, Is.True, connect.Result.Message);
                 Assert.That(manager.IsConnected, Is.True);
+                Assert.That(manager.ActiveEndpoint, Is.SameAs(endpoint));
                 Invoke(manager, "Update");
                 Assert.That(sessions.Count, Is.EqualTo(1));
 
@@ -85,9 +86,11 @@ namespace PulletFramework.NetClient.Tests
                 await Wait(disconnect, manager);
                 Assert.That(disconnect.Result.IsSuccess, Is.True, disconnect.Result.Message);
                 Assert.That(manager.IsConnected, Is.False);
-                connect = manager.ConnectAsync();
+                connect = manager.ConnectAsync(endpoint);
                 await Wait(connect, manager);
                 Assert.That(connect.Result.IsSuccess, Is.True, connect.Result.Message);
+                var successfulEndpoint = manager.ActiveEndpoint;
+                Assert.That(successfulEndpoint, Is.SameAs(endpoint));
                 Invoke(manager, "Update");
                 Assert.That(sessions.Count, Is.EqualTo(2));
                 Assert.That(sessions[1], Is.Not.EqualTo(sessions[0]), "Fresh connect creates a new Session.");
@@ -100,6 +103,11 @@ namespace PulletFramework.NetClient.Tests
                 await Wait(disconnect, manager);
                 Assert.That(disconnect.Result.IsSuccess, Is.True);
                 Assert.That(manager.SendAsync(new byte[] { 15 }).GetAwaiter().GetResult().ErrorCode, Is.EqualTo(SendErrorCode.NotConnected));
+                manager.host = "inspector-changed-after-disconnect";
+                var rejected = await manager.ConnectAsync(new ConnectionEndpoint("127.0.0.1", 0, 0, 0));
+                Assert.That(rejected.ErrorCode, Is.EqualTo(ConnectionErrorCode.InvalidState));
+                Assert.That(manager.ActiveEndpoint, Is.SameAs(successfulEndpoint),
+                    "Failed candidates and Inspector changes must not replace the recovery target.");
             }
             finally
             {

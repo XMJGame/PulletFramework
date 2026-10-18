@@ -10,20 +10,16 @@
     "udp",
     "tcp",
     "netclient",
-    "messaging",
-    "rpc",
     "unity"
   ],
   "author": {
     "name": "XMJGame"
   },
-  "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
-  },
+  "dependencies": {},
   "samples": [
     {
       "displayName": "Connection Sample",
-      "description": "PulletNet connection, discovery and message receiving example.",
+      "description": "PulletNet raw connection, payload receiving and awaitable shutdown example.",
       "path": "Samples~/ConnectionSample"
     }
   ]

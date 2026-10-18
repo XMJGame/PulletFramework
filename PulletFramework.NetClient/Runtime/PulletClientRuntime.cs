@@ -87,6 +87,14 @@ namespace PulletFramework.NetClient
             }
         }
 
+        /// <summary>
+        /// Capture an exact registration's stable removal result before relinquishing it.
+        /// Observation does not request removal. The captured task remains valid after
+        /// name reuse or Runtime close; retain it rather than looking up the name later.
+        /// </summary>
+        public Task<PulletClientCloseResult> GetRemovalCompletion(HostedClient source)
+        { lock (_gate) return RequireEntry(source).Removed.Task; }
+
         /// <summary>Request removal of an exact handle. Never synchronously wait in a callback; cancellation abandons only this wait.</summary>
         public Task<PulletClientCloseResult> RemoveAsync(HostedClient source, CancellationToken ct = default)
         {
@@ -206,8 +214,8 @@ namespace PulletFramework.NetClient
                     _payloads.ReadGeneration(entry.Payloads), kind, detail), null));
         }
 
-        // The optional facade may invoke Messaging before raw subscribers. An
-        // application callback can invalidate the session during that delivery.
+        // A previous application subscriber can invalidate the session during
+        // this borrowed delivery; later subscribers must recheck its generation.
         internal bool IsCurrentPayload(HostedClient source, long generation)
         {
             lock (_gate) return TryActive(source, out var entry) &&

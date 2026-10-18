@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using PulletFramework.Messaging;
 using PulletNet.ClientSDK;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -37,7 +36,7 @@ namespace PulletFramework.NetClient.Tests
             var io = Signal(); var entered = Signal();
             await ReplaceRecovery(async (target, token) => { entered.TrySetResult(true); await io.Task; return ConnectionResult.Ok(); });
             var recovery = Get<PulletActiveServerRecovery>("_activeServerRecovery");
-            Assert.That(recovery.Start(new PulletServerInfo { host = "held" }, .5f, "test", default), Is.True);
+            Assert.That(recovery.Start(new ConnectionEndpoint("held", 0, 0, 0), .5f, "test", default), Is.True);
             await entered.Task;
             using var cancellation = new CancellationTokenSource();
             var waiter = _manager.ShutdownAsync(cancellation.Token); var shared = _manager.ShutdownAsync();
@@ -47,7 +46,7 @@ namespace PulletFramework.NetClient.Tests
                 Assert.That(shared.IsCompleted, Is.False); Assert.That(recovery.IsRunning, Is.True);
                 Assert.That(_manager.ShutdownAsync(), Is.SameAs(shared));
                 Assert.That((await _manager.ConnectAsync()).ErrorCode, Is.EqualTo(ConnectionErrorCode.Disposed));
-                Assert.That(_manager.StartDiscovery(), Is.False);
+                Assert.That(_manager.IsShuttingDown, Is.True);
             }
             finally { io.TrySetResult(true); await shared; }
             Assert.That(recovery.IsRunning, Is.False);
@@ -117,12 +116,12 @@ namespace PulletFramework.NetClient.Tests
             var source = CreateSource(); Assert.That(source.Client.State, Is.EqualTo(ConnectionState.Disconnected));
             await _manager.ShutdownAsync();
             Assert.That((await _manager.ConnectAsync()).ErrorCode, Is.EqualTo(ConnectionErrorCode.Disposed));
-            Assert.That((await _manager.AutoConnectAsync()).ErrorCode, Is.EqualTo(ConnectionErrorCode.Disposed));
+            Assert.That((await _manager.ConnectAsync(new ConnectionEndpoint("127.0.0.1", 1, 2, 3))).ErrorCode, Is.EqualTo(ConnectionErrorCode.Disposed));
             Assert.That((await _manager.DisconnectAsync()).ErrorCode, Is.EqualTo(ConnectionErrorCode.Disposed));
             Assert.That((await _manager.SuspendAsync()).ErrorCode, Is.EqualTo(ConnectionErrorCode.Disposed));
             Assert.That((await _manager.ResumeAsync()).ErrorCode, Is.EqualTo(ConnectionErrorCode.Disposed));
             Assert.That((await _manager.SendAsync(new byte[] { 1 })).IsSuccess, Is.False);
-            Assert.That(_manager.StartDiscovery(), Is.False);
+            Assert.That(_manager.IsShuttingDown, Is.True);
         });
 
         [UnityTest] public IEnumerator DestroyRequestsShutdownButDoesNotClaimRecoveryExited() => UnityTaskTest.Run(async () =>
@@ -130,7 +129,7 @@ namespace PulletFramework.NetClient.Tests
             var io = Signal();
             await ReplaceRecovery(async (target, token) => { await io.Task; return ConnectionResult.Ok(); });
             var recovery = Get<PulletActiveServerRecovery>("_activeServerRecovery");
-            recovery.Start(new PulletServerInfo { host = "held" }, .5f, "test", default);
+            recovery.Start(new ConnectionEndpoint("held", 0, 0, 0), .5f, "test", default);
             Invoke("OnDestroy"); var shutdown = _manager.ShutdownAsync();
             try { Assert.That(shutdown.IsCompleted, Is.False); Assert.That(PulletNetworkManager.Instance, Is.Null); }
             finally { io.TrySetResult(true); await shutdown; }
@@ -140,7 +139,7 @@ namespace PulletFramework.NetClient.Tests
         [UnityTest] public IEnumerator ConcurrentShutdownRequestsPublishOnlyOneTask() => UnityTaskTest.Run(async () =>
         {
             var io = Signal(); await ReplaceRecovery(async (target, token) => { await io.Task; return ConnectionResult.Ok(); });
-            Get<PulletActiveServerRecovery>("_activeServerRecovery").Start(new PulletServerInfo { host = "held" }, .5f, "test", default);
+            Get<PulletActiveServerRecovery>("_activeServerRecovery").Start(new ConnectionEndpoint("held", 0, 0, 0), .5f, "test", default);
             var tasks = new Task[12]; var dispatch = new Task[12];
             for (int i = 0; i < tasks.Length; i++) { int index = i; dispatch[i] = Task.Run(() => { tasks[index] = _manager.ShutdownAsync(); }); }
             try
@@ -166,15 +165,6 @@ namespace PulletFramework.NetClient.Tests
             finally { coordinator.OperationGate.Release(); }
         });
 
-        [UnityTest] public IEnumerator DiscoveryIsOwnedAndJoinedWithoutGlobalDiscoverySubscription() => UnityTaskTest.Run(async () =>
-        {
-            _manager.discoveryTimeoutSeconds = 30; _manager.discoveryMaxAttempts = 1;
-            var discovery = _manager.DiscoverAsync(); Assert.That(_manager.IsDiscovering, Is.True);
-            Assert.That(_manager.StartDiscovery(), Is.False);
-            await _manager.ShutdownAsync(); Assert.That(discovery.IsCompleted, Is.True);
-            Assert.That(_manager.IsDiscovering, Is.False); Assert.That((await discovery).Count, Is.Zero);
-        });
-
         [Test] public void ApplicationActionsAreOrderedAndCallbackFailureDoesNotSkipTheNextAction()
         {
             var delivered = new List<int>();
@@ -185,20 +175,6 @@ namespace PulletFramework.NetClient.Tests
             Invoke("Update"); Assert.That(delivered, Is.EqualTo(new[] { 1, 2 }));
         }
 
-        [UnityTest] public IEnumerator MessagingInvalidationSuppressesRawPayloadDelivery() => UnityTaskTest.Run(async () =>
-        {
-            var protocol = new PulletMessageProtocolOptions(0x5658); var serializer = new JsonMessageSerializer();
-            _manager.ConfigureMessaging(protocol, serializer);
-            var source = CreateSource(); var runtime = Get<PulletClientRuntime>("_runtime"); Open(runtime, source);
-            int messages = 0, raw = 0;
-            using var subscription = _manager.Subscribe<ProbeMessage>(2001, _ =>
-            { messages++; runtime.OnState(source, new ConnectionStateChangedEvent(ConnectionState.Connected, ConnectionState.Disconnected)); });
-            _manager.PayloadReceived += _ => raw++;
-            var bytes = PulletMessageFrame.Encode(protocol, serializer.Encoding, PulletMessageKind.Notification, 2001, 0, serializer.Serialize(new ProbeMessage { Value = 7 }));
-            runtime.Receive(source, new ReceivedPayload(bytes, TransportKind.Udp, ChannelType.ReliableOrdered, 0));
-            Invoke("Update"); Assert.That(messages, Is.EqualTo(1)); Assert.That(raw, Is.Zero);
-            await _manager.ShutdownAsync();
-        });
 
         [UnityTest] public IEnumerator ApplicationEventOverflowHasAnObservableTerminalFailureWithoutUpdate() => UnityTaskTest.Run(async () =>
         {
@@ -210,9 +186,7 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(_manager.ShutdownAsync(), Is.SameAs(shutdown));
         });
 
-        public sealed class ProbeMessage { public int Value; }
-
-        private async Task ReplaceRecovery(Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connect)
+        private async Task ReplaceRecovery(Func<ConnectionEndpoint, CancellationToken, Task<ConnectionResult>> connect)
         {
             await Get<PulletActiveServerRecovery>("_activeServerRecovery").StopAsync();
             Set("_activeServerRecovery", new PulletActiveServerRecovery(() => false, connect, () => Task.CompletedTask,

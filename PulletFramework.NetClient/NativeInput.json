@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "purpose": "U3/U4 development input from exact Windows native CI; not release, latest-source dual-platform or Player acceptance",
-  "source": "2b046d5e55efb04c768d4b7127c3a6fdbc548c22",
-  "ciRun": 38887773146,
+  "purpose": "U8 isolated Unity input compatibility checkpoint from exact Windows CI; not release, Player or all-platform acceptance",
+  "source": "2205c8debed2edc132be672c05b129ee1fe0c162",
+  "ciRun": 39058109182,
   "ciAttempt": 1,
   "ciPlatform": "windows-only",
   "nativePackageVersion": "3.0.0-rc.1",
@@ -11,14 +11,14 @@
     {
       "assembly": "PulletNet.Protocol",
       "framework": "netstandard2.0",
-      "packageSha256": "326528e44915edc52b65b33595189494616019b9ce82cb0659e230d3e985a75c",
-      "librarySha256": "58745e4bf3454ac4067beed904f46c24cce5ee376c4a6fcfded72239ec6c09b2"
+      "packageSha256": "e79ce259ef4709d8abb67f97e74856235e56c7bec75f99b31cd1bb5541286563",
+      "librarySha256": "1e9baad69c602149fd18dcc9badf9dd6109553ca0fb22a0eb37cfae9b5348e39"
     },
     {
       "assembly": "PulletNet.ClientSDK",
       "framework": "netstandard2.1",
-      "packageSha256": "f20d462f7eb28b4544c53f0390769e2d823b544ec83f3c49ba7017b9949e59ca",
-      "librarySha256": "0d48d46ac4864b4208db4af35c0d83c226a139583331d42c5bce8bf6d01cb75a"
+      "packageSha256": "b5bd908ae043b6fd03f17a5351533ae0f378a7e7bd61b0808bca61b89419c2de",
+      "librarySha256": "f7220b5c2f76a16e829d94cb88413a0072153f22f1cdb7f6489c6058f537d8ca"
     }
   ]
 }

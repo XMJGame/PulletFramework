@@ -16,8 +16,6 @@ namespace PulletFramework.NetClient
         [Serializable] public sealed class BoolEvent : UnityEvent<bool> { }
         [Serializable] public sealed class StringEvent : UnityEvent<string> { }
         [Serializable] public sealed class BytesEvent : UnityEvent<byte[]> { }
-        [Serializable] public sealed class ServerListEvent : UnityEvent<PulletServerInfo[]> { }
-        [Serializable] public sealed class DiscoveryAttemptEvent : UnityEvent<int, int> { }
 
         [Tooltip("false 表示首次连接，true 表示内部快速重连成功。")]
         public BoolEvent onConnected = new BoolEvent();
@@ -27,11 +25,6 @@ namespace PulletFramework.NetClient
         public BytesEvent onMessageReceived = new BytesEvent();
         public StringEvent onNetworkError = new StringEvent();
 
-        public UnityEvent onDiscoveryStarted = new UnityEvent();
-        public DiscoveryAttemptEvent onDiscoveryAttempt = new DiscoveryAttemptEvent();
-        public ServerListEvent onDiscoverySucceeded = new ServerListEvent();
-        public StringEvent onDiscoveryFailed = new StringEvent();
-        public UnityEvent onDiscoveryStopped = new UnityEvent();
 
         private PulletNetworkManager _network;
 
@@ -50,12 +43,6 @@ namespace PulletFramework.NetClient
             _network.PayloadQueueFaulted += HandleNetworkError;
             _network.Reconnected += HandleReconnected;
             _network.ReconnectFailed += HandleReconnectFailed;
-            _network.DiscoveryStarted += HandleDiscoveryStarted;
-            _network.DiscoveryAttempted += HandleDiscoveryAttempt;
-            _network.DiscoverySucceeded += HandleDiscoverySucceeded;
-            _network.DiscoveryFailed += HandleDiscoveryFailed;
-            _network.DiscoveryStopped += HandleDiscoveryStopped;
-            _network.MessageProtocolError += HandleNetworkError;
         }
 
         private void OnDisable()
@@ -68,12 +55,6 @@ namespace PulletFramework.NetClient
             _network.PayloadQueueFaulted -= HandleNetworkError;
             _network.Reconnected -= HandleReconnected;
             _network.ReconnectFailed -= HandleReconnectFailed;
-            _network.DiscoveryStarted -= HandleDiscoveryStarted;
-            _network.DiscoveryAttempted -= HandleDiscoveryAttempt;
-            _network.DiscoverySucceeded -= HandleDiscoverySucceeded;
-            _network.DiscoveryFailed -= HandleDiscoveryFailed;
-            _network.DiscoveryStopped -= HandleDiscoveryStopped;
-            _network.MessageProtocolError -= HandleNetworkError;
         }
 
         private void HandleConnected(ConnectedEvent _) => onConnected?.Invoke(false);
@@ -83,15 +64,5 @@ namespace PulletFramework.NetClient
         private void HandleReconnected() => onConnected?.Invoke(true);
         private void HandleReconnectFailed(ReconnectFailedEvent value) => onNetworkError?.Invoke(value.Reason);
         private void HandleNetworkError(string value) => onNetworkError?.Invoke(value);
-        private void HandleDiscoveryStarted() => onDiscoveryStarted?.Invoke();
-        private void HandleDiscoveryAttempt(int attempt, int maximum) => onDiscoveryAttempt?.Invoke(attempt, maximum);
-        private void HandleDiscoverySucceeded(System.Collections.Generic.IReadOnlyList<PulletServerInfo> servers)
-        {
-            var snapshot = new PulletServerInfo[servers.Count];
-            for (int i = 0; i < snapshot.Length; i++) snapshot[i] = servers[i];
-            onDiscoverySucceeded?.Invoke(snapshot);
-        }
-        private void HandleDiscoveryFailed(string value) => onDiscoveryFailed?.Invoke(value);
-        private void HandleDiscoveryStopped() => onDiscoveryStopped?.Invoke();
     }
 }

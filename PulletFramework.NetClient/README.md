@@ -1,176 +1,89 @@
 # PulletFramework.NetClient
 
-`PulletFramework.NetClient` 是面向 PulletNet 服务端的 Unity 客户端包。它内置
-`PulletNet.ClientSDK.dll` 和 `PulletNet.Protocol.dll`，在其上提供 Unity 生命周期管理、
-主线程事件派发、组件化 Inspector 配置和局域网服务器发现。
+Unity原始网络适配，开发版本3.0.0-pre.1。包ID保持
+`com.xmjgame.pullet-framework.netclient`，namespace保持`PulletFramework.NetClient`。
+唯一开发源是PulletNet仓库UnityPackages；Framework和业务工程只是另行安排的固定安装副本。
 
-本包不依赖 `PulletFramework` 主模块：既可以单独安装，也可以与其他 Pullet Framework
-模块组合使用。服务端及跨平台 C# 网络内核仍使用 `PulletNet` 名称。
+## 当前范围
 
-当前为 `3.0.0-pre.1` 开发检查点，不是正式发布或完整Unity3.0验收。U2单连接、U3/U4内部派发和薄 `PulletClientRuntime` 已完整接入；
-Manager现为同一Runtime的单默认来源门面，具有字节/条数预算及可等待Shutdown；多连接仍应显式创建Runtime、订阅事件并由Unity帧owner调用Update，Create不自动连接。
-本目录 `NativeInput.json` 与DLL现锁定到准确 `2b046d5` RC1 / Windows CI38887773146 attempt1，包含SDK UDP退出修复。
-该准确包的隔离Unity2022.3.62f3检查点121/121通过（含Runtime25项与真实连接11项），真实服务20次回显且Stop/Dispose exit0。
-旧dac3c64 RC2的12关键场景20独立进程240/240按相同Runtime源码及SDK/Protocol有序实现零差异复用为行为证据，不冒充相同二进制。
-当前接入合同和新输入证据见仓库Documentation中的 `NetClient-U3-Runtime-Contract.zh-CN.md` 与 `NetClient-U3-CI-Input-Checkpoint.zh-CN.md`；原本地检查点和失败记录仍保留。
-此前Editor测试前启动AV原件仍保留、未追溯结案；Android IL2CPP/PICO尚未验收。
-U5-A持续恢复策略的原130项包检查点与9项20轮保留为历史证据；当前Manager合同见PulletNet仓库 `Docs/Unity/NetClient-U5-Manager-Contract.zh-CN.md`，安装仓库Documentation保存同步副本。本轮不把显式Shutdown接入等同于所有目标平台的生命周期验收。
-2.x 项目请继续保留原安装，不能直接混用新 DLL、旧包装层或旧服务器。
+只负责Unity主线程交付、连接配置、生命周期和默认来源Manager。NativeInput锁定
+2205c8d / Windows CI39058109182 attempt1的Protocol(netstandard2.0)与ClientSDK(netstandard2.1)
+两份实际DLL，不含NetCore/Hosting，不原地重建DLL。
+raw不再内置Messaging/RPC/默认JSON，package.json和asmdef不再依赖Json.NET。
+强类型消息按需嵌入com.xmjgame.pullet-framework.messaging与netclient-messaging组合包；
+不安装可选包也能完整使用原始连接/收发/关闭。
+旧ConfigureMessaging/Subscribe/CallAsync/SendMessageAsync及PulletMessage*接口已移除，
+升级前阅读开发仓库Docs/Unity/Messaging-U10-Migration.zh-CN.md；没有静默转发或旧RPC兼容层。
 
-U6已在真实PlayMode完成8场景、8份完成收据、12次Native回显/真实退出和独立示例程序集公开API验收；首轮Runner绿但执行不完整的结果不采纳，详见开发仓库Docs/Unity的U6检查点。该证据不认证OS真实后台或Player。交付使用Tools/Export-PulletNetUnityPackage的只读新目录导出，不用旧构建脚本原地覆盖NativeInput锁定的DLL；安装/回退及Player协作清单同见Docs/Unity。
+Discovery已迁为可选包，核心不再引用发现程序集，不再持有发现Socket/DTO/策略。
+需要发现时同时嵌入：
+- com.xmjgame.pullet-framework.discovery：独立DiscoveryRuntime，可单独使用。
+- com.xmjgame.pullet-framework.netclient-discovery：组合选择策略、Inspector和事件桥接。
 
-U7已完成Unity 2022.3.62f3 Windows x64 Mono开发Player（Low裁剪）的有限验收：三传输、重连、场景退出与显式Shutdown等7场景/10次回显，客户端和服务端exit0。构建0错误、报告1条警告，不称零警告；OS真实后台、IL2CPP和其他平台未验。详情见开发仓库 `Docs/Unity/NetClient-U7-Player-Checkpoint.zh-CN.md`。
-包可嵌入未安装Unity Test Framework的工程；Editor测试程序集仅在安装该测试框架且启用测试时编译。安装Test Framework 1.1.33的隔离工程已执行现有124项包测试，零失败/跳过；不是删除或屏蔽测试求绿。
+旧Manager/Relay发现成员已移除；升级前先保存旧资产/配置/事件备份，
+按开发仓库Docs/Unity/Discovery-U9B-Migration.zh-CN.md逐项迁移。
+旧autoConnectMode会触发明确的迁移拒绝，不静默解释成固定连接。
+只有核对配置/持久事件完成后才ConfirmDiscoveryMigration并保存资产；
+Editor脚本迁移时须用Undo.RecordObject/EditorUtility.SetDirty并保存，不以运行期确认代替持久化。
+ActiveServer改为ActiveEndpoint；发现元数据由发现消费者保留。
 
-## 平台范围
+## 连接与使用
 
-- Windows、macOS、Linux、Android 和 iOS 是 ClientSDK 的 TCP、UDP、WebSocket 目标平台；
-  目前仅上述Windows Mono Player组合完成有限实际验收，其他组合不能由此推定通过。
-- 当前不支持 WebGL、微信小游戏和抖音小游戏。这些平台需要另行实现基于 JavaScript 或平台 SDK
-  的 WebSocket 传输，不能直接使用本包现有的 `System.Net.Sockets` 实现。
-- 局域网发现依赖 UDP 广播，因此也不适用于 WebGL 和小游戏。
-
-运行时程序集已排除 WebGL，避免把当前不支持的传输实现打入对应 Player。
-本检查点在隔离 Unity 2022.3.62f3 / Windows Editor 中完成 61 项包测试及 3 项真实回显，共 64 项通过。
-旧 2.x 的 Unity 2021.3 记录不认证本版；包清单最低版本字段不是该版本已实测的证明。
-
-## 安装
-
-通过 Unity Package Manager 的 **Add package from git URL** 添加：
-
-```text
-https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
-```
-
-Unity 适配以 PulletNet 仓库 `UnityPackages/PulletFramework.NetClient` 为唯一开发源；
-验证通过后同步到 PulletFramework 同名目录作为可安装副本。业务工程使用自己 `Packages` 内的
-嵌入式副本，不通过工程外开发路径、软链接或自动同步追随源码变化。
-本轮在 PulletNet 隔离工作区开发和验证，未更新妈祖工程的 2.x 安装。更换输入时必须同时验证
-准确的 Protocol/ClientSDK 包、版本及哈希，并使用新的验证目录。源码、DLL、NativeInput 和 meta
-作为同一受控输入，不使用旧脚本直接覆盖新适配层的 DLL。
-
-## 使用
-
-1. 将包内 `Runtime/Prefabs/PulletNetworkManager.prefab` 拖入启动场景；也可以在自己的
-   GameObject 上手动添加 `PulletNetworkManager`。
-2. 直接在组件 Inspector 中填写地址、端口、连接模式与发现策略。包内 Prefab 使用通用默认值，
-   业务项目建议创建 Prefab Variant 保存自己的端口和发现服务类型。客户端运行时、设备身份与应用版本应由业务登录消息声明。
-   默认 `UdpOnly=1`；`TcpOnly=4`、`WebSocketOnly=5` 只使用各自端口。旧资产中的组合模式值 2/3
-   必须由使用者明确迁移，校验会拒绝它们；不要修改枚举编号或静默转成另一种模式。
-3. 订阅 `Connected`、`Disconnected`、`PayloadReceived`，或在 Inspector 中绑定公开的
-   `OnConnected`、`OnConnectedFailed`、`OnDisconnected` UnityEvent。重连结果通过代码事件
-   `ReconnectAttempt`、`Reconnected`、`ReconnectFailed` 交给业务层制定恢复策略。
-4. 等待 `ConnectAsync` 或 `AutoConnectAsync` 成功，再通过 `SendMessageAsync` 发送强类型业务消息，
-   或通过 `CallAsync` 发起需要响应的 RPC；只有自定义二进制协议时才直接调用 `SendAsync`。
-
-服务器地址由业务层决定：可以使用固定 IP、选择发现列表中的服务器，或使用 Manager 的自动发现流程。
-`AutoConnectMode` 支持直接连接、优先发现、直连失败后发现。发现响应中的 `0.0.0.0`、回环地址会自动
-替换为实际响应来源地址。收到 `PayloadReceived` 后若要跨帧或异步处理，
-请先调用 `ReceivedPayload.ToOwned()` 并在用完后释放；Unity 适配层内部会持有并自动释放
-跨线程所需的 `OwnedPayload`。
-
-`enableConnectionLogs` 默认开启。Console 会明确输出当前 `AutoConnectMode`、固定地址连接、
-从直连切换到发现、发现轮次、自动选中的服务器、连接/重连成功或失败等关键决策；不会打印每个
-业务数据包。正式项目如果接入自己的日志系统，可以关闭该选项并监听相应事件。
-
-断线后，ClientSDK 会按 `maxReconnectAttempts` 对当前服务器执行一轮重连，并通过
-`ReconnectAttempt`、`Reconnected`、`ReconnectFailed` 报告结果。达到重连上限后是否继续连接、
-是否重新发现或是否切换服务器属于应用业务策略，通用 Manager 不替业务作出决定。
-
-一次新的显式连接或断开会取消仍在进行的旧连接请求。旧请求迟到的结果不会覆盖新的目标服务器。
-断线时 Manager 会立即取消旧会话的待完成 RPC，并清空尚未交付给主线程的旧会话消息；
-业务层收到重连成功后，仍应按自身协议重新注册和同步状态。
-当前来源的生命周期事实按顺序交付。显式移除来源会丢弃该来源尚未消费的普通记录；
-新来源不继承旧句柄的排队/迟到事件。需要保留已交付历史的业务应在自己的回调中记录。
-
-主线程Payload默认1024条/4MiB，每帧256条/1MiB，在首次创建默认来源时冻结配置。
-准备/排队/回调消费中的有效字节都计费；超过完整帧预算的单条消息在复制前拒收。
-`Unreliable`/`Sequenced` 过载丢弃本次入站，不驱逐旧数据。可靠溢出、复制失败或生命周期队列
-满载使默认来源交付不完整，Runtime先停止它，Manager收到终态后请求整体Shutdown，不自动重连。
-主线程已交付的可靠溢出事实累加到 `ReliablePayloadOverflowCount`，通过 `PayloadQueueFaulted`
-报告；不再Update也可从失败的 `ShutdownAsync` 观察未交付终态。`DroppedPayloadCount`读取Runtime丢弃统计。
-`PulletNetworkManager.IsConnected` 直接读取 ClientSDK 的 `ConnectionState`，Unity 层不再维护另一份
-可能漂移的连接布尔值。
+通用Prefab保持原GUID，默认不自动连接。固定连接时显式启用Manager.connectOnStart，
+或由自己的界面调用ConnectAsync。要自动发现则关闭这个选项，由可选Connector负责启动。
+端口只验证所选传输：UdpOnly=1、TcpOnly=4、WebSocketOnly=5；旧2/3及未知值拒绝，不静默降级。
+WebSocket路径/TLS仍是显式配置，不从发现结果推断。
 
 ```csharp
 using PulletFramework.NetClient;
 using PulletNet.ClientSDK;
 
-ConnectionResult result = await manager.ConnectAsync();
+var result = await manager.ConnectAsync(
+    new ConnectionEndpoint("127.0.0.1", 7778, 7777, 7779), cancellationToken);
 if (result.IsSuccess)
     await manager.SendAsync(payload, ChannelType.ReliableOrdered);
 
-// SendAsync 的旧模式门面委托 SDK.SendDefaultAsync；ID 入口明确分开，避免把枚举值当作 ID。
-await manager.SendOnChannelAsync(payload, channelId: 0);
-// 只能发送到已协商的 ID；成功仅表示本地接纳，不表示 Socket 完成、ACK 或业务处理。
+// 原固定配置入口仍可用：
+await manager.DisconnectAsync();
+await manager.ConnectAsync();
 
-// 自动发现并连接；可通过 ServersDiscovered 获取完整列表供业务 UI 选择。
-ConnectionResult autoResult = await manager.AutoConnectAsync();
-
-// 供“附近服务器”界面使用：有限次数广播，可主动停止，并返回整个发现列表。
-manager.DiscoverySucceeded += servers => ShowVehicleList(servers);
-manager.DiscoveryFailed += error => ShowDiscoveryError(error);
-manager.StartDiscovery();
-// manager.StopDiscovery();
-
-// 在销毁组件/切场景前，由回调外的应用退出流程等待。不可在Unity主线程同步阻塞。
+// 退出前等待真实关闭，再销毁对象：
 await manager.ShutdownAsync();
-// OnDestroy/OnApplicationQuit只能请求关闭，不会替Unity提供可等待的退出屏障。
 ```
 
-单连接真实回显的可复用测试入口见 `Validation~/README.md`。U2 不暴露保留 Session 的 UDP 重绑入口；
-多来源代际和交付队列合同完成前，不把这一底层能力直接映射到 Unity。
+准确端点入口不补缺端口。ActiveEndpoint是最后成功端点，不等于当前在线；看IsConnected。
+修改Inspector、失败候选或断开不覆盖最后成功目标。
+新的显式连接/断开使旧意图失效；可选策略通过本地ConnectionRevision观察取代，不新增SDK状态机。
+RetireDisconnectedClientAsync只回收断开默认来源，等待真实Remove，不断开活跃来源；
+显式移除会丢弃尚未消费的旧来源普通通知，新来源不继承旧句柄事件。
 
-## 强类型业务消息
+代码订阅Connected、ConnectFailed、Disconnected、PayloadReceived及重连事件。
+可选PulletNetworkEventRelay只桥接原始连接/Payload/网络错误的Inspector监听，不包含发现/typed协议事件。
+onNetworkError不再转发旧MessageProtocolError；需要业务消息诊断时显式接入typed inputDiagnostic。
+原始Payload仅在回调中借用；需跨帧/异步持有时ToOwned并在用完后Dispose。
 
-Manager 内置 JSON 序列化、强类型消息订阅和 RPC。业务层在 DTO 上通过继承
-`PulletMessageAttribute` 的属性声明固定消息 ID 和 Request/Response/Notification 类型，
-正常调用只传消息对象，不再在每个发送和订阅位置重复填写消息 ID。
-`Subscribe<T>` 返回可安全重复取消的 `IMessageSubscription`。单条订阅既可以调用
-`Unsubscribe()`，也可以交给 `MessageSubscriptionGroup` 随业务模块统一释放：
+## 多连接、预算与关闭
 
-```csharp
-using PulletFramework.Messaging;
+多连接使用独立PulletClientRuntime及明确的帧owner，不创建多个单例Manager。
+默认Payload预算1024条/4MiB、每帧256条/1MiB，首次创建默认来源时冻结。
+准备/排队/消费有效字节都计费；超完整帧预算的单条消息在复制前拒收。
+不可靠过载拒收本条、不驱逐旧数据；可靠交付不完整会终止来源，不能自动恢复业务状态。
+Send成功是本地接纳，不是对端ACK，更不是业务已处理。
 
-IMessageSubscription poseSubscription = manager.Subscribe<VehiclePose>(
-    pose => vehicleInfo.UpdatePose(pose));
+ShutdownAsync永久关闭接纳，并等待已接纳操作、恢复和Runtime真实退出；
+一个等待者取消只放弃自己的等待，不取消共享清理。
+OnDestroy/OnApplicationQuit只请求关闭，Unity不等待这些回调。不可同步Wait/Result堵住主线程。
+使用可选发现组合时先await connector.CloseAsync，再await manager.ShutdownAsync。
 
-// 单独取消；重复调用是安全的。
-manager.Unsubscribe(poseSubscription);
+## 支持与验证边界
 
-// 页面或业务管理器拥有多条订阅时集中管理。
-var subscriptions = new MessageSubscriptionGroup();
-subscriptions.Add(manager.Subscribe<VehiclePose>(OnPose));
-subscriptions.Add(manager.Subscribe<ExperienceState>(OnState));
-subscriptions.UnsubscribeAll(); // 可继续向该组添加新订阅
-subscriptions.Dispose();        // 生命周期结束，不再允许添加
-```
+当前实际工具链Unity2022.3.62f3/Windows Editor及x64 Mono Development Low裁剪Player。
+U11已用实际PlayMode和最小raw/可选组合Player完成有限收发/场景/退出验收，
+准确范围见开发仓库Docs/Unity/U11-PC-Acceptance.zh-CN.md；不是容量、全部平台或正式发布认证。
+清单最低2021.3不是已实测声明；早期U6/U7 PlayMode/Mono Player只认证当时输入。
+U9发现检查点不替代U11；当前仍不认证OS真实后台、Android IL2CPP/PICO或跨机广播。
+WebGL/小游戏暂不支持；网络核心、KCP和目标平台扩展不在本批。
 
-通知使用 `SendMessageAsync(message, ...)`，RPC 使用
-`CallAsync<TRequest, TResponse>(request, timeout, ...)`。框架会校验 DTO 的消息类型；
-Request 不能作为通知发送，Response 也不能被订阅为通知。显式传入消息 ID 的重载保留给
-协议适配和底层工具使用，普通业务代码应优先使用类型契约重载。
-
-同一个消息 ID 只能绑定一种消息类型；同类型可以有多个订阅者。某一个订阅者抛出异常时，
-剩余订阅者仍会继续执行，错误通过 `MessageProtocolError` 报告。发送与 RPC 接口仍使用
-`SendMessageAsync` 和 `CallAsync`。
-`CallAsync` 的超时覆盖发送与等待响应的整个过程；收到没有待完成请求对应的响应时，
-不会将其当作普通业务通知派发。
-
-`PulletServerDiscovery` 同时提供静态 `StartDiscovery` / `StopDiscovery`，以及 `OnStarted`、
-`OnAttempt`、`OnSuccess`、`OnFailure`、`OnStopped` 回调。`discoveryMaxAttempts` 只限制广播次数；
-停止广播后仍会在 `discoveryTimeoutSeconds` 时间窗内接收响应，以免遗漏稍晚返回的服务器。
-发现 JSON 统一使用官方 `com.unity.nuget.newtonsoft-json` 包解析。
-
-包内的 **Connection Sample** 演示了连接、断开和发送 UTF-8 消息。它只是接入示例，
-不定义业务消息格式。
-
-## 职责边界
-
-- `PulletNet.Protocol`：客户端与服务端共享的框架控制协议。
-- `PulletNet.ClientSDK`：不依赖 Unity 的连接、传输与重连实现。
-- `PulletFramework.NetClient`：Unity 侧的组件配置、发现、生命周期和事件适配。
-- 业务项目：消息 ID、序列化、鉴权和玩法消息处理。
-
-本包与 `PulletFramework` 中原有的网络类是两条不同的接入路径。使用 PulletNet 服务端的
-新项目应直接接入本包，不必让同一条网络消息再经过两套网络 API。
+安装使用完整固定包的嵌入副本，不使用工程外绝对路径、软链接或自动追随开发源。
+Tools/Export-PulletNetUnityPackage.ps1仅做只读新目录导出；不更新DLL或自动安装下游。
+包内Connection Sample保留原始连接/收发/关闭示例，不定义业务协议。

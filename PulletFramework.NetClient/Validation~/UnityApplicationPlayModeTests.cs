@@ -100,16 +100,14 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(manager.ShutdownAsync(), Is.SameAs(shutdown));
         });
 
-        [UnityTest] public IEnumerator SceneUnloadInvokesRealDestroyAndJoinsOwnedDiscoveryAndConnection()
+        [UnityTest] public IEnumerator SceneUnloadInvokesRealDestroyAndJoinsOwnedConnection()
             => Play(async () =>
         {
             var scene = NewScene(); var manager = NewManager(scene); manager.gameObject.SetActive(true);
             await Connect(manager); await Echo(manager, 6);
-            manager.enableDiscovery = true; manager.discoveryTimeoutSeconds = 30; manager.discoveryMaxAttempts = 1;
-            var discovery = manager.DiscoverAsync(); Assert.That(manager.IsDiscovering, Is.True);
             await Unload(scene); Assert.That(manager == null, Is.True);
-            await Await(manager.ShutdownAsync()); Assert.That(discovery.IsCompleted, Is.True);
-            Assert.That((await discovery).Count, Is.Zero); Assert.That(PulletNetworkManager.Instance, Is.Null);
+            await Await(manager.ShutdownAsync());
+            Assert.That(PulletNetworkManager.Instance, Is.Null);
         });
 
         [UnityTest] public IEnumerator PersistentManagerSurvivesOriginalSceneUnloadUntilExplicitShutdown()
@@ -191,7 +189,7 @@ namespace PulletFramework.NetClient.Tests
             if (scene.IsValid()) SceneManager.MoveGameObjectToScene(instance, scene);
             var manager = instance.AddComponent<PulletNetworkManager>(); _managers.Add(manager);
             manager.connectOnStart = false; manager.dontDestroyOnLoad = persistent; manager.enableConnectionLogs = false;
-            manager.enableDiscovery = false; manager.enableKeepAlive = false; manager.enableReconnect = false;
+            manager.enableKeepAlive = false; manager.enableReconnect = false;
             manager.connectionMode = ConnectionMode.UdpOnly; manager.udpPort = ports.udp; manager.tcpPort = ports.tcp; manager.webSocketPort = ports.ws;
             return manager;
         }

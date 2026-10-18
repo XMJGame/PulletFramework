@@ -31,10 +31,34 @@ namespace PulletFramework.NetClient.Tests
         {
             Assert.That(_manager.ValidateConfiguration(out string error), Is.True, error);
             Assert.That(_manager.connectionMode, Is.EqualTo(ConnectionMode.UdpOnly));
-            Assert.That(_manager.autoConnectMode, Is.EqualTo(AutoConnectMode.DirectThenDiscover));
-            Assert.That(_manager.discoveryMaxAttempts, Is.GreaterThan(0));
-            Assert.That(_manager.discoverySendIntervalSeconds, Is.GreaterThan(0f));
             Assert.That(_manager.enableReconnect, Is.True);
+            Assert.That(_manager.connectOnStart, Is.False);
+        }
+
+        [Test]
+        public void RawAssemblyDoesNotReferenceOptionalMessagingDiscoveryOrJson()
+        {
+            var assembly = typeof(PulletNetworkManager).Assembly;
+            foreach (var reference in assembly.GetReferencedAssemblies())
+                foreach (var forbidden in new[] { "Newtonsoft.Json", "PulletNet.Messaging", "PulletNet.Discovery", "PulletFramework.Messaging", "PulletFramework.Discovery", "PulletFramework.NetClient.Messaging", "PulletFramework.NetClient.Discovery" })
+                    Assert.That(reference.Name, Is.Not.EqualTo(forbidden));
+            foreach (var type in assembly.GetTypes())
+                Assert.That(type.Namespace ?? "", Does.Not.StartWith("PulletFramework.Messaging"));
+        }
+
+        [Test]
+        public void ManagerExposesRawOperationsButNotTheRetiredTypedFacade()
+        {
+            var manager = typeof(PulletNetworkManager);
+            foreach (var method in manager.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+                foreach (var retired in new[] { "ConfigureMessaging", "Subscribe", "Unsubscribe", "SendMessageAsync", "CallAsync", "CancelPendingMessages" })
+                    Assert.That(method.Name, Is.Not.EqualTo(retired));
+            Assert.That(manager.GetProperty("IsMessagingConfigured"), Is.Null);
+            Assert.That(manager.GetEvent("MessageProtocolError"), Is.Null);
+            Assert.That(manager.GetEvent("UnhandledBusinessMessage"), Is.Null);
+            foreach (var required in new[] { "ConnectAsync", "DisconnectAsync", "ShutdownAsync", "SendOnChannelAsync" })
+                Assert.That(manager.GetMember(required).Length, Is.GreaterThan(0));
+            Assert.That(manager.GetEvent("PayloadReceived"), Is.Not.Null);
         }
 
         [Test]
@@ -44,10 +68,6 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(relay.onConnected, Is.Not.Null);
             Assert.That(relay.onConnectFailed, Is.Not.Null);
             Assert.That(relay.onDisconnected, Is.Not.Null);
-            Assert.That(relay.onDiscoveryStarted, Is.Not.Null);
-            Assert.That(relay.onDiscoverySucceeded, Is.Not.Null);
-            Assert.That(relay.onDiscoveryFailed, Is.Not.Null);
-            Assert.That(relay.onDiscoveryStopped, Is.Not.Null);
         }
 
         [Test]
@@ -63,8 +83,8 @@ namespace PulletFramework.NetClient.Tests
             Assert.That(manager.tcpPort, Is.EqualTo(7778));
             Assert.That(manager.udpPort, Is.EqualTo(7777));
             Assert.That(manager.connectionMode, Is.EqualTo(ConnectionMode.UdpOnly));
-            Assert.That(manager.autoConnectMode, Is.EqualTo(AutoConnectMode.DirectThenDiscover));
-            Assert.That(manager.discoveryServiceType, Is.EqualTo("pulletnet"));
+            Assert.That(manager.connectOnStart, Is.False);
+            Assert.That(manager.RequiresDiscoveryMigration, Is.False);
             Assert.That(manager.keepReconnectingActiveServer, Is.False,
                 "通用 Prefab 不应默认无限连接旧服务器，由具体项目明确开启。");
             Assert.That(manager.activeServerReconnectDelaySeconds, Is.EqualTo(3f));
@@ -155,12 +175,34 @@ namespace PulletFramework.NetClient.Tests
         }
 
         [Test]
-        public void Validate_RejectsInvalidDiscoveryAttemptCount()
+        public void LegacyDiscoveryAssetFailsUntilExplicitMigrationAcknowledgement()
         {
-            _manager.discoveryMaxAttempts = 0;
+            typeof(PulletNetworkManager).GetField("_legacyDiscoveryMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_manager, 2);
 
             Assert.That(_manager.ValidateConfiguration(out string error), Is.False);
             StringAssert.Contains("Discovery", error);
+            Assert.That(_manager.RequiresDiscoveryMigration, Is.True);
+            _manager.ConfirmDiscoveryMigration();
+            Assert.That(_manager.ValidateConfiguration(out error), Is.True, error);
+        }
+
+        [Test]
+        public void OldSerializedAutoConnectModeIsRecognizedAsMigrationRequired()
+        {
+            const string original = "Packages/com.xmjgame.pullet-framework.netclient/Runtime/Prefabs/PulletNetworkManager.prefab";
+            const string temporary = "Assets/__PulletNetLegacyDiscovery.prefab";
+            Assert.That(System.IO.File.Exists(temporary), Is.False, "Never overwrite a user's asset.");
+            try
+            {
+                string yaml = System.IO.File.ReadAllText(original).Replace("_legacyDiscoveryMode: -1", "autoConnectMode: 1");
+                System.IO.File.WriteAllText(temporary, yaml);
+                AssetDatabase.ImportAsset(temporary, ImportAssetOptions.ForceSynchronousImport);
+                var oldAsset = AssetDatabase.LoadAssetAtPath<GameObject>(temporary).GetComponent<PulletNetworkManager>();
+                Assert.That(oldAsset.RequiresDiscoveryMigration, Is.True);
+                Assert.That(oldAsset.ValidateConfiguration(out var error), Is.False);
+                StringAssert.Contains("migration", error);
+            }
+            finally { AssetDatabase.DeleteAsset(temporary); }
         }
 
         [UnityEngine.TestTools.UnityTest]

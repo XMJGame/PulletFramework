@@ -1,0 +1,11 @@
+{
+  "name": "PulletFramework.NetClient.Messaging.Tests.Editor",
+  "references": ["PulletFramework.NetClient", "PulletFramework.Messaging", "PulletFramework.NetClient.Messaging"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["PulletNet.Protocol.dll", "PulletNet.ClientSDK.dll", "PulletNet.Messaging.dll"],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS", "PULLETNET_UNITY_TEST_FRAMEWORK"],
+  "versionDefines": [{"name": "com.unity.test-framework", "expression": "1.1.0", "define": "PULLETNET_UNITY_TEST_FRAMEWORK"}],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

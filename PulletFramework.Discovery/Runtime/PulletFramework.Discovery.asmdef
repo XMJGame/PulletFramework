@@ -1,0 +1,14 @@
+{
+  "name": "PulletFramework.Discovery",
+  "rootNamespace": "PulletFramework.Discovery",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": ["WebGL"],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["PulletNet.Discovery.dll", "Newtonsoft.Json.dll"],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

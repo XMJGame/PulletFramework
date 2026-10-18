@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "purpose": "U9-A optional Unity discovery input from the verified local nine-package gate; not remote CI, release or device acceptance",
+  "source": "d05c59ca5e629e246a0db9fa0cf0fe52e015a984",
+  "nativePackageVersion": "3.0.0-discovery.candidate.20261018",
+  "discoveryProtocolVersion": 1,
+  "libraries": [{
+    "assembly": "PulletNet.Discovery",
+    "framework": "netstandard2.1",
+    "packageSha256": "d7a8840613a2645ddfb362bf5eabbc6ac812675a19fb29709050dc102da6d963",
+    "librarySha256": "13df8d0b8724769dda24113ef128d4582fadab9a66e9ea1e8afd4cb07d771cf8"
+  }]
+}

@@ -12,7 +12,7 @@ namespace PulletFramework.NetClient
     internal sealed class PulletActiveServerRecovery : IDisposable, IAsyncDisposable
     {
         private readonly Func<bool> _isConnected;
-        private readonly Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> _connect;
+        private readonly Func<ConnectionEndpoint, CancellationToken, Task<ConnectionResult>> _connect;
         private readonly Func<Task> _releaseFailedConnection;
         private readonly Func<bool> _canContinue;
         private readonly Action<int> _onAttempt;
@@ -34,7 +34,7 @@ namespace PulletFramework.NetClient
 
         public PulletActiveServerRecovery(
             Func<bool> isConnected,
-            Func<PulletServerInfo, CancellationToken, Task<ConnectionResult>> connect,
+            Func<ConnectionEndpoint, CancellationToken, Task<ConnectionResult>> connect,
             Func<Task> releaseFailedConnection,
             Func<bool> canContinue,
             Action<int> onAttempt,
@@ -62,12 +62,12 @@ namespace PulletFramework.NetClient
 
         /// <summary>启动持续恢复；已有恢复运行、目标无效或生命周期结束时返回 false。</summary>
         public bool Start(
-            PulletServerInfo target,
+            ConnectionEndpoint target,
             float retryDelaySeconds,
             string reason,
             CancellationToken lifetimeToken)
         {
-            if (target == null || string.IsNullOrWhiteSpace(target.host) || lifetimeToken.IsCancellationRequested)
+            if (target == null || string.IsNullOrWhiteSpace(target.Host) || lifetimeToken.IsCancellationRequested)
                 return false;
             RunOwner owner;
             lock (_gate)
@@ -84,7 +84,7 @@ namespace PulletFramework.NetClient
         }
 
         private async Task RunAsync(
-            PulletServerInfo target,
+            ConnectionEndpoint target,
             float retryDelaySeconds,
             string reason,
             RunOwner owner)

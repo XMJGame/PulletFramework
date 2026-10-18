@@ -1,0 +1,22 @@
+{
+  "name": "PulletFramework.NetClient.Discovery",
+  "rootNamespace": "PulletFramework.NetClient.Discovery",
+  "references": [
+    "PulletFramework.NetClient",
+    "PulletFramework.Discovery"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [
+    "WebGL"
+  ],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "PulletNet.ClientSDK.dll",
+    "PulletNet.Discovery.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

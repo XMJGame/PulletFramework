@@ -1,0 +1,794 @@
+{
+  "schema": 1,
+  "stage": "U11 finite Windows PlayMode/Mono Player acceptance",
+  "packageCodeBase": "9779ee7",
+  "unity": "2022.3.62f3",
+  "backend": "Mono",
+  "architecture": "x64",
+  "stripping": "Low",
+  "developmentBuild": true,
+  "headless": true,
+  "runs": [
+    {
+      "name": "raw-play-01",
+      "acceptance": {
+        "passed": true,
+        "action": "RawPlayMode",
+        "scenarios": 8,
+        "echoes": 12,
+        "serverExit": 0,
+        "inputFilesVerified": 73,
+        "osBackgroundValidated": false,
+        "androidOrIl2CppValidated": false
+      },
+      "scenarios": [
+        {
+          "scenario": "DuplicateManagerDestroyDoesNotCloseTheOriginalConnection",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 1440
+        },
+        {
+          "scenario": "ExplicitShutdownCompletesBeforeTheOwnerSceneIsUnloaded",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 1580
+        },
+        {
+          "scenario": "ImportedSampleCompilesAsAnExternalConsumerAndUsesAwaitablePublicApi",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 1650
+        },
+        {
+          "scenario": "InjectedPauseFocusNotificationsSuspendAndResumeThroughRealFrames",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 3131
+        },
+        {
+          "scenario": "InspectorRelayDisableReenableAndDestroyDoNotDuplicateOrRetainCallbacks",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 3087
+        },
+        {
+          "scenario": "PersistentManagerSurvivesOriginalSceneUnloadUntilExplicitShutdown",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 2095
+        },
+        {
+          "scenario": "RealDestroyCancelsAndJoinsAnOutstandingUdpHandshake",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 282
+        },
+        {
+          "scenario": "SceneUnloadInvokesRealDestroyAndJoinsOwnedConnection",
+          "completed": true,
+          "playing": true,
+          "firstFrame": 9,
+          "lastFrame": 2071
+        }
+      ],
+      "serverExit": 0,
+      "actualEchoes": 12
+    },
+    {
+      "name": "modules-play-02",
+      "acceptance": {
+        "passed": true,
+        "action": "PlayMode",
+        "scenarios": 16,
+        "echoes": 22,
+        "serverExit": 0,
+        "inputFilesVerified": 163,
+        "osBackgroundValidated": false,
+        "androidOrIl2CppValidated": false
+      },
+      "scenarios": [
+        {
+          "name": "Discovery-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 20086,
+          "lastFrame": 26745,
+          "echoes": 1
+        },
+        {
+          "name": "Discovery-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 2344,
+          "lastFrame": 8868,
+          "echoes": 1
+        },
+        {
+          "name": "Discovery-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 38324,
+          "lastFrame": 45365,
+          "echoes": 1
+        },
+        {
+          "name": "DiscoveryCloseJoinsOutstandingIo",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 56761,
+          "lastFrame": 56762,
+          "echoes": 0
+        },
+        {
+          "name": "DiscoveryTyped-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 29170,
+          "lastFrame": 36676,
+          "echoes": 2
+        },
+        {
+          "name": "DiscoveryTyped-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 11027,
+          "lastFrame": 18133,
+          "echoes": 2
+        },
+        {
+          "name": "DiscoveryTyped-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 47364,
+          "lastFrame": 55191,
+          "echoes": 2
+        },
+        {
+          "name": "Raw-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 18133,
+          "lastFrame": 20086,
+          "echoes": 1
+        },
+        {
+          "name": "Raw-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 9,
+          "lastFrame": 2344,
+          "echoes": 1
+        },
+        {
+          "name": "Raw-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 36676,
+          "lastFrame": 38324,
+          "echoes": 1
+        },
+        {
+          "name": "RuntimeCloseRetiresPendingRpc",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 56762,
+          "lastFrame": 57606,
+          "echoes": 0
+        },
+        {
+          "name": "TwoTypedSourcesKeepIndependentRpcOne",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 57606,
+          "lastFrame": 60748,
+          "echoes": 3
+        },
+        {
+          "name": "Typed-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 26745,
+          "lastFrame": 29170,
+          "echoes": 2
+        },
+        {
+          "name": "Typed-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 8868,
+          "lastFrame": 11027,
+          "echoes": 2
+        },
+        {
+          "name": "Typed-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 45365,
+          "lastFrame": 47364,
+          "echoes": 2
+        },
+        {
+          "name": "TypedCloseInsideNotification",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 55191,
+          "lastFrame": 56761,
+          "echoes": 1
+        }
+      ],
+      "serverExit": 0,
+      "actualEchoes": 22
+    },
+    {
+      "name": "raw-player-01",
+      "acceptance": {
+        "osBackgroundValidated": false,
+        "stripping": "Low",
+        "playerExit": 0,
+        "passed": true,
+        "androidOrIl2CppValidated": false,
+        "architecture": "x64",
+        "echoes": 10,
+        "unity": "2022.3.62f3",
+        "platform": "WindowsPlayer",
+        "scenarios": 7,
+        "serverExit": 0,
+        "embeddedInputFilesVerified": 73,
+        "backend": "Mono"
+      },
+      "scenarios": [
+        {
+          "scenario": "AwaitShutdownBeforeApplicationQuit",
+          "completed": true,
+          "playing": true,
+          "frame": 89173
+        },
+        {
+          "scenario": "DestroyJoinsOutstandingHandshake",
+          "completed": true,
+          "playing": true,
+          "frame": 80714
+        },
+        {
+          "scenario": "PersistentOwnerSurvivesOriginalScene",
+          "completed": true,
+          "playing": true,
+          "frame": 80699
+        },
+        {
+          "scenario": "ReconnectAndExplicitSceneShutdown-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "frame": 39792
+        },
+        {
+          "scenario": "ReconnectAndExplicitSceneShutdown-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "frame": 20670
+        },
+        {
+          "scenario": "ReconnectAndExplicitSceneShutdown-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "frame": 58253
+        },
+        {
+          "scenario": "SceneUnloadJoinsDestroyFallback",
+          "completed": true,
+          "playing": true,
+          "frame": 66990
+        }
+      ],
+      "serverExit": 0,
+      "actualEchoes": 10
+    },
+    {
+      "name": "modules-player-02",
+      "acceptance": {
+        "passed": true,
+        "action": "Player",
+        "scenarios": 16,
+        "echoes": 22,
+        "serverExit": 0,
+        "inputFilesVerified": 163,
+        "osBackgroundValidated": false,
+        "androidOrIl2CppValidated": false
+      },
+      "scenarios": [
+        {
+          "name": "Discovery-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 105810,
+          "lastFrame": 142030,
+          "echoes": 1
+        },
+        {
+          "name": "Discovery-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 12511,
+          "lastFrame": 47748,
+          "echoes": 1
+        },
+        {
+          "name": "Discovery-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 208632,
+          "lastFrame": 245444,
+          "echoes": 1
+        },
+        {
+          "name": "DiscoveryCloseJoinsOutstandingIo",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 307448,
+          "lastFrame": 307450,
+          "echoes": 0
+        },
+        {
+          "name": "DiscoveryTyped-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 155565,
+          "lastFrame": 196506,
+          "echoes": 2
+        },
+        {
+          "name": "DiscoveryTyped-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 57253,
+          "lastFrame": 97727,
+          "echoes": 2
+        },
+        {
+          "name": "DiscoveryTyped-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 258551,
+          "lastFrame": 299393,
+          "echoes": 2
+        },
+        {
+          "name": "Raw-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 97727,
+          "lastFrame": 105810,
+          "echoes": 1
+        },
+        {
+          "name": "Raw-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 1,
+          "lastFrame": 12511,
+          "echoes": 1
+        },
+        {
+          "name": "Raw-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 196506,
+          "lastFrame": 208632,
+          "echoes": 1
+        },
+        {
+          "name": "RuntimeCloseRetiresPendingRpc",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 307450,
+          "lastFrame": 312578,
+          "echoes": 0
+        },
+        {
+          "name": "TwoTypedSourcesKeepIndependentRpcOne",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 312578,
+          "lastFrame": 331212,
+          "echoes": 3
+        },
+        {
+          "name": "Typed-TcpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 142030,
+          "lastFrame": 155565,
+          "echoes": 2
+        },
+        {
+          "name": "Typed-UdpOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 47748,
+          "lastFrame": 57253,
+          "echoes": 2
+        },
+        {
+          "name": "Typed-WebSocketOnly",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 245444,
+          "lastFrame": 258551,
+          "echoes": 2
+        },
+        {
+          "name": "TypedCloseInsideNotification",
+          "completed": true,
+          "playing": true,
+          "mainThread": true,
+          "cleanupJoined": true,
+          "firstFrame": 299393,
+          "lastFrame": 307448,
+          "echoes": 1
+        }
+      ],
+      "serverExit": 0,
+      "actualEchoes": 22
+    }
+  ],
+  "players": [
+    {
+      "name": "modules-player-02",
+      "build": {
+        "result": "Succeeded",
+        "backend": "Mono",
+        "stripping": "Low",
+        "architecture": "x64",
+        "unity": "2022.3.62f3",
+        "errors": 0,
+        "warnings": 1
+      },
+      "playerExit": 0,
+      "quit": {
+        "observed": true,
+        "cleanupJoinedBeforeQuit": true
+      },
+      "warning": {
+        "result": "Succeeded",
+        "unity": "2022.3.62f3",
+        "warnings": 1,
+        "errors": 0,
+        "messages": [
+          {
+            "step": "Building scene Assets/ModuleAcceptance.unity",
+            "type": "Warning",
+            "text": "GfxDevice renderer is null. Unity cannot update the Ambient Probe and Reflection Probes that the SkyManager generates. Run the Editor without the -nographics argument or generate lighting for your scene."
+          }
+        ],
+        "playerRebuilt": false
+      },
+      "executableSha256": "76A4560E40EC43334F5300F52D45E74F55579709D5EA01EB838F24C7AC9E568B",
+      "managedLibraries": [
+        "Mono.Security.dll",
+        "mscorlib.dll",
+        "Newtonsoft.Json.dll",
+        "PulletFramework.Discovery.dll",
+        "PulletFramework.Messaging.dll",
+        "PulletFramework.NetClient.Discovery.dll",
+        "PulletFramework.NetClient.dll",
+        "PulletFramework.NetClient.Messaging.dll",
+        "PulletFramework.NetClient.Samples.dll",
+        "PulletNet.ClientSDK.dll",
+        "PulletNet.Discovery.dll",
+        "PulletNet.Messaging.dll",
+        "PulletNet.Protocol.dll",
+        "PulletNet.UnityAcceptance.dll",
+        "System.Configuration.dll",
+        "System.Core.dll",
+        "System.Data.dll",
+        "System.dll",
+        "System.Drawing.dll",
+        "System.Numerics.dll",
+        "System.Runtime.Serialization.dll",
+        "System.Xml.dll",
+        "System.Xml.Linq.dll",
+        "UnityEngine.AIModule.dll",
+        "UnityEngine.AndroidJNIModule.dll",
+        "UnityEngine.AnimationModule.dll",
+        "UnityEngine.AssetBundleModule.dll",
+        "UnityEngine.AudioModule.dll",
+        "UnityEngine.CoreModule.dll",
+        "UnityEngine.DirectorModule.dll",
+        "UnityEngine.dll",
+        "UnityEngine.GridModule.dll",
+        "UnityEngine.IMGUIModule.dll",
+        "UnityEngine.InputLegacyModule.dll",
+        "UnityEngine.InputModule.dll",
+        "UnityEngine.JSONSerializeModule.dll",
+        "UnityEngine.ParticleSystemModule.dll",
+        "UnityEngine.Physics2DModule.dll",
+        "UnityEngine.PhysicsModule.dll",
+        "UnityEngine.PropertiesModule.dll",
+        "UnityEngine.SharedInternalsModule.dll",
+        "UnityEngine.SubsystemsModule.dll",
+        "UnityEngine.TerrainModule.dll",
+        "UnityEngine.TextRenderingModule.dll",
+        "UnityEngine.TilemapModule.dll",
+        "UnityEngine.UIElementsModule.dll",
+        "UnityEngine.UIModule.dll",
+        "UnityEngine.UnityAnalyticsModule.dll",
+        "UnityEngine.UnityWebRequestModule.dll",
+        "UnityEngine.VFXModule.dll",
+        "UnityEngine.VideoModule.dll",
+        "UnityEngine.VRModule.dll",
+        "UnityEngine.XRModule.dll"
+      ],
+      "testFrameworkInstalled": false
+    },
+    {
+      "name": "raw-player-01",
+      "build": {
+        "result": "Succeeded",
+        "unity": "2022.3.62f3",
+        "backend": "Mono",
+        "architecture": "x64",
+        "stripping": "Low",
+        "errors": 0,
+        "warnings": 1
+      },
+      "playerExit": 0,
+      "quit": {
+        "hookObserved": true,
+        "cleanupJoinedBeforeQuit": true
+      },
+      "warning": {
+        "result": "Succeeded",
+        "unity": "2022.3.62f3",
+        "warnings": 1,
+        "errors": 0,
+        "messages": [
+          {
+            "step": "Building scene Assets/PlayerAcceptance.unity",
+            "type": "Warning",
+            "text": "GfxDevice renderer is null. Unity cannot update the Ambient Probe and Reflection Probes that the SkyManager generates. Run the Editor without the -nographics argument or generate lighting for your scene."
+          }
+        ],
+        "playerRebuilt": false
+      },
+      "executableSha256": "76A4560E40EC43334F5300F52D45E74F55579709D5EA01EB838F24C7AC9E568B",
+      "managedLibraries": [
+        "Mono.Security.dll",
+        "mscorlib.dll",
+        "PulletFramework.NetClient.dll",
+        "PulletFramework.NetClient.Samples.dll",
+        "PulletNet.ClientSDK.dll",
+        "PulletNet.PlayerAcceptance.dll",
+        "PulletNet.Protocol.dll",
+        "System.Configuration.dll",
+        "System.Core.dll",
+        "System.dll",
+        "System.Numerics.dll",
+        "System.Xml.dll",
+        "UnityEngine.AIModule.dll",
+        "UnityEngine.AndroidJNIModule.dll",
+        "UnityEngine.AnimationModule.dll",
+        "UnityEngine.AssetBundleModule.dll",
+        "UnityEngine.AudioModule.dll",
+        "UnityEngine.CoreModule.dll",
+        "UnityEngine.DirectorModule.dll",
+        "UnityEngine.dll",
+        "UnityEngine.GridModule.dll",
+        "UnityEngine.IMGUIModule.dll",
+        "UnityEngine.InputLegacyModule.dll",
+        "UnityEngine.InputModule.dll",
+        "UnityEngine.JSONSerializeModule.dll",
+        "UnityEngine.ParticleSystemModule.dll",
+        "UnityEngine.Physics2DModule.dll",
+        "UnityEngine.PhysicsModule.dll",
+        "UnityEngine.PropertiesModule.dll",
+        "UnityEngine.SharedInternalsModule.dll",
+        "UnityEngine.SubsystemsModule.dll",
+        "UnityEngine.TerrainModule.dll",
+        "UnityEngine.TextRenderingModule.dll",
+        "UnityEngine.TilemapModule.dll",
+        "UnityEngine.UIElementsModule.dll",
+        "UnityEngine.UIModule.dll",
+        "UnityEngine.UnityAnalyticsModule.dll",
+        "UnityEngine.UnityWebRequestModule.dll",
+        "UnityEngine.VFXModule.dll",
+        "UnityEngine.VideoModule.dll",
+        "UnityEngine.VRModule.dll",
+        "UnityEngine.XRModule.dll"
+      ],
+      "testFrameworkInstalled": false
+    }
+  ],
+  "harnessSources": [
+    {
+      "path": "Editor/BuildAcceptance.cs",
+      "sha256": "65A330B3C082A4CC7C47EE058F86AC7102B1607F10ABFB9DDD09DD8F6B1B09B4"
+    },
+    {
+      "path": "Editor/PulletNet.UnityAcceptance.Editor.asmdef",
+      "sha256": "19923639A1DBE642D1B734248DDE363E7FA51F030FEB962BC06C55E3542091CC"
+    },
+    {
+      "path": "Editor/Tests/ModulePlayModeTests.cs",
+      "sha256": "479F43CB564464F67524D97608BF01B16B420760122AC1341533A75EBCBE6FE2"
+    },
+    {
+      "path": "Editor/Tests/PulletNet.UnityAcceptance.Tests.Editor.asmdef",
+      "sha256": "FF72A246E22CDE006E272F86D5983DA46C96AB1E2FB484DD0FF0DA325D2E4189"
+    },
+    {
+      "path": "Runtime/ModuleAcceptance.cs",
+      "sha256": "0819CACE3822B46E3C7439A04DF6DC8CE3E3619C9FDA5EE60965537D6B510899"
+    },
+    {
+      "path": "Runtime/PulletNet.UnityAcceptance.asmdef",
+      "sha256": "98CC1569420F88B3F99B73A2B909FA7B91CE357689503A1F2976C82CB9C36CC8"
+    }
+  ],
+  "packages": [
+    {
+      "name": "PulletFramework.Discovery",
+      "files": 23,
+      "exportMatchesSource": true
+    },
+    {
+      "name": "PulletFramework.Messaging",
+      "files": 22,
+      "exportMatchesSource": true
+    },
+    {
+      "name": "PulletFramework.NetClient",
+      "files": 73,
+      "exportMatchesSource": true
+    },
+    {
+      "name": "PulletFramework.NetClient.Discovery",
+      "files": 29,
+      "exportMatchesSource": true
+    },
+    {
+      "name": "PulletFramework.NetClient.Messaging",
+      "files": 16,
+      "exportMatchesSource": true
+    }
+  ],
+  "packageReadmeOnlyChangesAfterTests": [
+    {
+      "package": "com.xmjgame.pullet-framework.netclient",
+      "path": "README.md",
+      "testedHash": "0D82238BECD1F2F05F2E6C99719A4B58F0F1C9C1612E936BAC962BFD10A6E541",
+      "documentationAfterTestHash": "4070F2F9CFF33AB4E8D13DDFAB42FD6816808C0423A12FAEA4A26B5DB2F7F3DB"
+    },
+    {
+      "package": "com.xmjgame.pullet-framework.messaging",
+      "path": "README.md",
+      "testedHash": "02513E700F1510B4AD89D5EF88BD21EFBE6416D4F9CF547467720E95FB82BF69",
+      "documentationAfterTestHash": "CB6784C7D8DE0C3A7916BB580E30F9CAC1F3AC3BCDF17B7E31A71155417B9FD2"
+    },
+    {
+      "package": "com.xmjgame.pullet-framework.netclient-messaging",
+      "path": "README.md",
+      "testedHash": "B5740ED5D52417201A6AB869D0114668FD0C99C718FA26F1B9A10EA320809782",
+      "documentationAfterTestHash": "4B8F3331CB745C93FF9B3FCCBA9B668A862CB42978CB481B0E25B724F6D8F0F7"
+    },
+    {
+      "package": "com.xmjgame.pullet-framework.discovery",
+      "path": "README.md",
+      "testedHash": "6C08BCA328CD477FD8EFC01EDF8D45223F2C1F52978BE909347DC8ED6F45F342",
+      "documentationAfterTestHash": "AB1EDE5BDA129F1DDF10B780FE402913C0E846DAEDDC5A65F12D8DDD08F76AED"
+    },
+    {
+      "package": "com.xmjgame.pullet-framework.netclient-discovery",
+      "path": "README.md",
+      "testedHash": "6276E3ADC346CB9EB7400E713F20FFEE3B536CB15EEE4499BE6204483C8CC93B",
+      "documentationAfterTestHash": "129FDA71E2788D4F299AD0C411E567DA341DB682588B9519C2674DB95CF01EB5"
+    }
+  ],
+  "originalBuildReportsUnchanged": true,
+  "buildInspection": {
+    "exitCode": 0,
+    "arguments": [
+      "-batchmode",
+      "-nographics",
+      "-quit",
+      "-projectPath",
+      "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u11-20261018/report-inspection/Project\"",
+      "-executeMethod",
+      "InspectCurrentReports.Inspect",
+      "-logFile",
+      "\"G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-u11-20261018/report-inspection/unity.log\""
+    ],
+    "originalReportsUnchanged": true,
+    "hashes": {
+      "modules-player-02": "1CF2BAFB933CB4381A76B58DDECAA885A236AB89F7D76AF5D12E72418BC7D4F6",
+      "raw-player-01": "C78241A6D9DAF0FBF8CF22CA78492505DEC15B211AF2FB06B6189F0B94CB661C"
+    },
+    "playersRebuilt": false
+  },
+  "preservedFailure": {
+    "path": "modules-player-01",
+    "exit": 1,
+    "stage": "Editor test assembly compilation before build",
+    "cause": "Missing test-framework version condition; NUnit code compiled without its package",
+    "fix": "Only validation asmdef guard; no runtime change or added Player test package"
+  },
+  "noNativeRuntimeOrProtocolChange": true,
+  "noNewRemoteCI": true,
+  "pushed": false,
+  "downstreamSynced": false,
+  "actualProtobufCodecValidated": false,
+  "androidIl2CppPicoValidated": false,
+  "unity2021Validated": false,
+  "realOsBackgroundValidated": false,
+  "crossMachineBroadcastValidated": false,
+  "capacityClaim": false
+}
