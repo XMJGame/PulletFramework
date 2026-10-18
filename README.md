@@ -40,7 +40,7 @@ Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小
 - Manager 自动发现后连接：raw NetClient + Discovery + NetClient.Discovery；独立发现只装 Discovery（依赖 Json.NET 3.2.1）
 - Runtime 上的 typed 连接：raw NetClient + Messaging + NetClient.Messaging；发现后 typed 再增加独立 Discovery，不需要 Manager 发现组合
 
-2026-10-18 的五包本地同步版本仍为 `3.0.0-pre.1`，不是正式发布，也不表示远端 `main` 或业务工程已经升级。raw 不再包含 Discovery/RPC/默认 JSON。旧 Manager API、发现 Inspector 字段和持久事件必须显式迁移，见[同步与迁移入口](Documentation/NetClient-Unity-Source-Sync.zh-CN.md)。包 ID 使用 `com.xmjgame.*`，代码命名空间仍为 `PulletFramework.*`，不要因同一版本字符串而混用旧包体。
+2026-10-18 的五包版本仍为 `3.0.0-pre.1`，已纳入本地主分支，但不是正式发布或业务工程升级。raw 不再包含 Discovery/RPC/默认 JSON。旧 Manager API、发现 Inspector 字段和持久事件必须显式迁移，见[同步与迁移入口](Documentation/NetClient-Unity-Source-Sync.zh-CN.md)。包 ID 使用 `com.xmjgame.*`，代码命名空间仍为 `PulletFramework.*`，不要因同一版本字符串而混用旧包体；安装固定到实际已核对的提交。
 
 ## 安装
 
