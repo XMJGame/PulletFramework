@@ -1,5 +1,11 @@
 # NetClient 开发源与安装副本同步
 
+## 2026-10-19 最新：统一包pre.3原生输入升级
+
+开发源bce839b已通过隔离验收后同步160个源文件：raw/Messaging DLL取自准确29d923e原始Windows CI，Discovery仍原d05c59c锁。未改包装代码/全部meta/其它基础模块。包内NativeInput与[导出收据](Evidence/netclient-native-input-sync.json)固定实际哈希；完整pre.2副本保存在PulletNet的artifacts/unity-native-input-20261019-29d923e/BeforeSync，可成套回退。使用自身Packages副本，不自动追随开发目录。
+
+上游导出9项、Editor177项、PlayMode与Mono Player各16场景22回显通过；再同步妈祖，正式Editor20及真实业务流程与原2b046d5服务器通过，资源归零/正常退出。未重建妈祖Standalone，Android/IL2CPP/PICO和跨机等仍待验。本地提交，不推送/新CI/发布；以下pre.2/五包段落保持历史身份，不作为当前安装步骤。
+
 ## 2026-10-19 当前：统一网络包pre.2本地镜像
 
 本地同步源为PulletNet的6e9591a，PulletFramework.NetClient固定160文件与开发源导出逐字节一致。原Discovery/Messaging及两个组合包已移入主包Modules，删除的是旧包安装入口，不是内部职责/测试；只保留com.xmjgame.pullet-framework.netclient一个UPM包。五asmdef、namespace、原GUID/DLL锁保持；统一携带Newtonsoft3.2.1。

@@ -1,6 +1,6 @@
 # PulletFramework.NetClient
 
-Unity统一客户端包，开发版本3.0.0-pre.2。包ID保持
+Unity统一客户端包，开发版本3.0.0-pre.3。包ID保持
 `com.xmjgame.pullet-framework.netclient`，namespace保持`PulletFramework.NetClient`。
 唯一开发源是PulletNet仓库UnityPackages；Framework和业务工程只是另行安排的固定安装副本。
 
@@ -11,7 +11,7 @@ Unity统一客户端包，开发版本3.0.0-pre.2。包ID保持
 不使用的功能不自动启动，不新增Host或Payload队列。服务端/NuGet拆分不变。
 
 原始连接程序集只负责Unity主线程交付、连接配置、生命周期和默认来源Manager。NativeInput锁定
-2205c8d / Windows CI39058109182 attempt1的Protocol(netstandard2.0)与ClientSDK(netstandard2.1)
+29d923e / Windows CI39205953671 attempt1的Protocol(netstandard2.0)与ClientSDK(netstandard2.1)
 两份实际DLL，不含NetCore/Hosting，不原地重建DLL。
 raw程序集不引用Messaging/Discovery/Json.NET，也不提供默认业务codec；
 消息与发现的程序集位于Modules/，按需使用，不再逐个导入4份附加UPM包。
@@ -23,7 +23,8 @@ raw程序集不引用Messaging/Discovery/Json.NET，也不提供默认业务code
 Discovery保留独立程序集，连接核心不持有发现Socket/DTO/策略。
 Modules/Discovery提供独立DiscoveryRuntime，Modules/NetClient.Discovery提供组合选择策略与Inspector桥接；
 Modules/Messaging提供独立消息会话，Modules/NetClient.Messaging提供现有Runtime上的typed绑定。
-各模块NativeInput保留自己的实际来源，本次不更新为最新原生候选DLL。
+Messaging与raw同为29d923e原始候选DLL；Discovery保留d05c59c独立输入。
+NativeInput锁定实际包/DLL字节，不能仅凭同名rc.1版本推断来源一致。
 
 ## 从旧五包布局迁移
 

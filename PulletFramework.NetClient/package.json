@@ -1,7 +1,7 @@
 {
   "name": "com.xmjgame.pullet-framework.netclient",
   "displayName": "Pullet Framework NetClient",
-  "version": "3.0.0-pre.2",
+  "version": "3.0.0-pre.3",
   "unity": "2021.3",
   "description": "Single Unity package for PulletNet connections, typed messaging and LAN discovery; separate assemblies and explicit lifecycle ownership. See README for validated platforms and native input identities.",
   "keywords": [

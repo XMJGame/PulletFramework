@@ -1,10 +1,10 @@
 # 安装、回退与原生Player协作清单
 
-2026-10-19更新。开发源是PulletNet仓库UnityPackages，当前为3.0.0-pre.2一个完整netclient包；Framework/业务仍是旧固定安装副本，本次未升级。布局及当前有限验收见[单包整合](Single-Package-Consolidation.zh-CN.md)，不是正式发布；旧U11及安装回执保持原身份，不能替代当前文件核对。
+2026-10-19更新。开发源是PulletNet仓库UnityPackages，当前为3.0.0-pre.3一个完整netclient包，原生输入升级见[候选输入记录](Native-Candidate-Input-Upgrade.zh-CN.md)。布局沿用[单包整合](Single-Package-Consolidation.zh-CN.md)，不是正式发布；旧U11及pre.2安装回执保持原身份，不能替代当前文件核对。
 
 ## 当前交接范围与按需使用
 
-主包从本仓库UnityPackages/PulletFramework.NetClient取得，不以Framework/业务副本作为开发源。内部五个程序集保持独立，所有功能只需安装这一包；功能按需构造，不默认启动。raw/Messaging的原生输入仍2205c8d，Discovery仍自己的独立锁，不因合包重建DLL或升级到29d923e。
+主包从本仓库UnityPackages/PulletFramework.NetClient取得，不以Framework/业务副本作为开发源。内部五个程序集保持独立，所有功能只需安装这一包；功能按需构造，不默认启动。raw/Messaging原生输入为准确29d923e原始Windows CI产物，Discovery仍自己的d05c59c独立锁。禁止重新构建同版本DLL后沿用旧哈希或混用其它平台的候选产物。
 
 | 应用需求 | 包内模块 | 依赖与约束 |
 | --- | --- | --- |
