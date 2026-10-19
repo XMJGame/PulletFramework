@@ -1,5 +1,9 @@
 # NetClient 开发源与安装副本同步
 
+## 最新：3.0.0固定镜像
+
+当前160个包源文件来自PulletNet Unity源48eb791；四个原生DLL来自准确2f0cfc3的3.0.0产物，wire3/discovery1不变。原始c7bee1c双平台CI run39221865861/attempt1全通过后同步；妈祖Editor20及真实CharacterFoundation与原2b046d5服务器的兼容和退出验证通过。当前步骤见[3.0.0安装说明](NetClient-3.0.0-Installation.zh-CN.md)及[完整导出收据](Evidence/netclient-3.0.0-export.json)。下面pre.3等段落仅为历史时点，不再作为当前输入；其它模块不升级，不公开发包或打标签。
+
 ## 2026-10-19 最新：统一包pre.3原生输入升级
 
 开发源bce839b已通过隔离验收后同步160个源文件：raw/Messaging DLL取自准确29d923e原始Windows CI，Discovery仍原d05c59c锁。未改包装代码/全部meta/其它基础模块。包内NativeInput与[导出收据](Evidence/netclient-native-input-sync.json)固定实际哈希；完整pre.2副本保存在PulletNet的artifacts/unity-native-input-20261019-29d923e/BeforeSync，可成套回退。使用自身Packages副本，不自动追随开发目录。

@@ -1,5 +1,7 @@
 # 安装、回退与原生Player协作清单
 
+> 当前已升级统一3.0.0包，准确输入与安装步骤见[当前清单](NetClient-3.0.0-Installation.zh-CN.md)。本页下列pre.3/U11内容保留历史身份，不替代本次安装验收。设备等未验范围继续保持。
+
 2026-10-19更新。开发源是PulletNet仓库UnityPackages，当前为3.0.0-pre.3一个完整netclient包，原生输入升级见[候选输入记录](Native-Candidate-Input-Upgrade.zh-CN.md)。布局沿用[单包整合](Single-Package-Consolidation.zh-CN.md)，不是正式发布；旧U11及pre.2安装回执保持原身份，不能替代当前文件核对。
 
 ## 当前交接范围与按需使用

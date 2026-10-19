@@ -1,0 +1,28 @@
+# NetClient 3.0.0 安装与版本边界
+
+本仓库的PulletFramework.NetClient是PulletNet开发源的固定安装镜像，不在两处独立开发。只安装一个完整包com.xmjgame.pullet-framework.netclient；五个内部程序集仍独立，不另装旧四个模块UPM。
+
+## 当前固定输入
+
+- Unity源48eb7918863ce77364a7267db7a3c7cabbe342a9，完整160源文件逐字节复制；UPM版本3.0.0。
+- Protocol/ClientSDK/Messaging/Discovery四DLL均来自2f0cfc33575cc6e10398d499b2d7898c9f0a716c干净导出的实际3.0.0包；wire3与discovery1不变。包内三份NativeInput锁定原nupkg和DLL哈希。
+- 推送门槛为c7bee1c / 原始run39221865861 attempt1，包含私有TCP测试入口修正；生产与版本配置和原生封包输入一致，实际DLL仍保留2f0cfc3身份，不冒称CI构建副本。
+- 精确包快照见[镜像收据](Evidence/netclient-3.0.0-export.json)。旧pre.3及更早收据保留历史身份，不作为当前安装输入。
+
+## 安装与使用
+
+Unity业务工程复制完整包到自身Packages/com.xmjgame.pullet-framework.netclient，不通过工程外绝对路径/软链接跟随开发仓库。保留所有meta，移出旧独立Discovery/Messaging/组合包及manifest/testables登记，避免重复DLL/程序集/GUID。
+
+简单连接用现有Manager/Prefab；多连接用PulletClientRuntime和准确来源。按需构造消息或发现，不默认多建网络Host/队列。默认不自动连接，由应用选择唯一连接入口并每帧推进；Payload仅回调借用，跨异步/帧持有需owned副本并Dispose。
+
+退出显式await各owner的关闭，不在回调中Wait/Result或等待自身退出；OnDestroy/OnApplicationQuit本身不会等待异步清理。通用typed绑定一次连接代际，不支持透明恢复/UDP保留重绑。发现不是鉴权，发送接纳不是对端ACK或业务执行成功。
+
+完整功能/原生接入/配置/运维/未来路线图在PulletNet仓库Docs/README.md；旧发现资产和RPC/JSON接口需按该仓库Docs/Unity迁移合同处理。脚本GUID保留不等于已退役API可继续使用。
+
+## 验证、回退与限制
+
+上游本地原生3432、九包/2358结构签名与消费者通过；Unity2022.3.62f3包Editor177、实际PlayMode/Mono Player各16场景22回显通过。对应原始双平台CI门槛及本次妈祖验证另由PulletNet的同步记录固定，不用历史pre.3结果补签。
+
+本次只更新NetClient镜像与说明，不升级基础Framework/其它模块、不修改用户未跟踪对齐文档。旧pre.3包及说明完整备份在PulletNet artifacts/release-3.0.0-sync-20261019-fixed/Before。关闭Unity后可成套恢复原包、项目manifest/lock；不只覆盖旧DLL。业务服务器独立选择版本，本次不自动升级。
+
+没有公开发包、v3.0.0标签、GitHub Release或新许可证授权。Android/IL2CPP/PICO、OS真实后台、跨机广播/NAT及容量仍按各自证据限制声明；妈祖没有新Standalone构建。其它基础Framework仍保持自身开发状态，不因NetClient3.0.0而称整体稳定发布。
