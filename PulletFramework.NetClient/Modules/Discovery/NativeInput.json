@@ -1,13 +1,16 @@
 {
   "schema": 1,
-  "purpose": "U9-A optional Unity discovery input from the verified local nine-package gate; not remote CI, release or device acceptance",
-  "source": "d05c59ca5e629e246a0db9fa0cf0fe52e015a984",
-  "nativePackageVersion": "3.0.0-discovery.candidate.20261018",
+  "purpose": "Local 3.0.0 package input from a clean source export; validation recorded in Docs/Release-3.0.0.md, not remote CI or public publication",
+  "source": "2f0cfc33575cc6e10398d499b2d7898c9f0a716c",
+  "nativePackageVersion": "3.0.0",
+  "buildKind": "local-clean-export",
   "discoveryProtocolVersion": 1,
-  "libraries": [{
-    "assembly": "PulletNet.Discovery",
-    "framework": "netstandard2.1",
-    "packageSha256": "d7a8840613a2645ddfb362bf5eabbc6ac812675a19fb29709050dc102da6d963",
-    "librarySha256": "13df8d0b8724769dda24113ef128d4582fadab9a66e9ea1e8afd4cb07d771cf8"
-  }]
+  "libraries": [
+    {
+      "assembly": "PulletNet.Discovery",
+      "framework": "netstandard2.1",
+      "packageSha256": "D004234D50563A6D808CF1D7D791A380EDECAAA12C01F8509C5196A61277A6BA",
+      "librarySha256": "96944FA729F08B3E20075780C2BFBA66DBEA5FC277DF2BF11B34017BE648E181"
+    }
+  ]
 }

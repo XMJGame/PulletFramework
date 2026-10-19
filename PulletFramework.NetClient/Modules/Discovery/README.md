@@ -47,9 +47,9 @@ IsCanceled. Subscriber failures are isolated, counted and optionally sent to
 CallbackError; a failing diagnostic does not abort cleanup. Invalid options are
 rejected by the native module, not by a duplicated Unity validation algorithm.
 
-NativeInput locks one DLL from the already verified local package gate. Its
-package version/source are different from the NetClient package's rc.1 input;
-this is intentional and not a claim that Discovery ran in the Windows RC CI.
+NativeInput locks the actual 3.0.0 DLL from clean source 2f0cfc3, aligned with the
+other native inputs. Discovery-v1 itself is unchanged. This local package gate
+does not claim new remote CI or device acceptance; see Docs/Release-3.0.0.md.
 Unity2021.3 in package.json is a declared floor, not a tested-platform statement.
 
 U9-B has retired the legacy NetClient discovery loop/APIs. Raw NetClient can be

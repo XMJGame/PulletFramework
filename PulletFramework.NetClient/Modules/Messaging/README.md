@@ -5,7 +5,7 @@ namespace/程序集仍为PulletFramework.Messaging；包版本与迁移步骤见
 U10-A只提供MessageSession，不创建/接管网络客户端、不拥有Socket、不引用NetClient或UnityEngine，
 不增加Payload队列，不重写RPC计时、额度或订阅算法。
 
-NativeInput锁定29d923e / CI39205953671 attempt1的PulletNet.Messaging netstandard2.1实际DLL。
+NativeInput锁定2f0cfc3干净导出的3.0.0 PulletNet.Messaging netstandard2.1实际DLL，不冒充旧RC远端CI产物。
 只包含这一份无外部依赖的DLL；不包含Messaging.ClientSDK（它自己拥有NetClient）或默认JSON/Protobuf库。
 
 ## 使用边界

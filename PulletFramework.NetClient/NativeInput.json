@@ -1,24 +1,22 @@
 {
   "schema": 1,
-  "purpose": "Unity pre.3 native input from verified original Windows CI packages; platform validation recorded separately, not a release",
-  "source": "29d923e6c543fd965f4c034aa284c477e7e111a7",
-  "ciRun": 39205953671,
-  "ciAttempt": 1,
-  "ciPlatform": "windows-only",
-  "nativePackageVersion": "3.0.0-rc.1",
+  "purpose": "Local 3.0.0 package input from a clean source export; validation recorded in Docs/Release-3.0.0.md, not remote CI or public publication",
+  "source": "2f0cfc33575cc6e10398d499b2d7898c9f0a716c",
+  "nativePackageVersion": "3.0.0",
+  "buildKind": "local-clean-export",
   "wireVersion": 3,
   "libraries": [
     {
       "assembly": "PulletNet.Protocol",
       "framework": "netstandard2.0",
-      "packageSha256": "4F8F25047913F1AB723C5BFCBDB83DD821D5A8515BB44F4AE6CC8F632A9D7EAB",
-      "librarySha256": "6B24A4C756BC05559ED24B9CA8577C3C500BE11D557CF136D0192F3AC1A88B13"
+      "packageSha256": "7E00BCF68055A9EFBC42D19E5865B4F0FA1B0B76D7876E67C22A19DD6E4914B8",
+      "librarySha256": "9C08AD5B6E362CDEE674A4FED6156727094E62463CEEB65B31F8FCD108A2F3E2"
     },
     {
       "assembly": "PulletNet.ClientSDK",
       "framework": "netstandard2.1",
-      "packageSha256": "4DAEE6B5C96A07F709CC0DED859F9C8DC97EA01FA4F86568DA9F14209B05787C",
-      "librarySha256": "6778BB517EDB9ED5A1D361B2645C340AAC45860CFCDBDD0E81918A985FA23A59"
+      "packageSha256": "786B24ABE2C0D63EC792B5AEE60EE187BAECAB63B1E1E3B8EC7BB8B6A77D199B",
+      "librarySha256": "91DF30D730549AB4990F46878C6E97526C4728B585F11B77979C4C45FAF30962"
     }
   ]
 }
