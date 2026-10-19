@@ -1,0 +1,8 @@
+{
+  "name": "PulletFramework.NetClient.Discovery.Editor",
+  "references": ["PulletFramework.NetClient.Discovery"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}

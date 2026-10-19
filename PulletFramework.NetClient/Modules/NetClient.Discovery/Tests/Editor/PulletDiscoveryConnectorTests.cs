@@ -43,6 +43,33 @@ namespace PulletFramework.NetClient.Discovery.Tests
             }
             finally { try { await _manager.ShutdownAsync(); } finally { Object.DestroyImmediate(_object); } }
         });
+        [Test] public void CompactInspectorPreservesHiddenDiscoverySettings()
+        {
+            _discovery.discoveryPort = 19002;
+            _discovery.discoveryServiceType = "inspector-test";
+            _discovery.maximumRetainedBytes = 234567;
+            string before = UnityEditor.EditorJsonUtility.ToJson(_discovery);
+            var editor = UnityEditor.Editor.CreateEditor(_discovery);
+            try
+            {
+                Assert.That(editor.GetType().FullName, Is.EqualTo("PulletFramework.NetClient.Discovery.Editor.PulletDiscoveryConnectorEditor"));
+                var foldout = editor.GetType().GetField("_showAdvanced", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(foldout, Is.Not.Null);
+                Assert.That(foldout.GetValue(editor), Is.False);
+                foldout.SetValue(editor, true);
+                foldout.SetValue(editor, false);
+                Assert.That(UnityEditor.EditorJsonUtility.ToJson(_discovery), Is.EqualTo(before));
+                var serialized = new UnityEditor.SerializedObject(_discovery);
+                serialized.FindProperty("maximumResults").intValue = 123;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(_discovery.maximumResults, Is.EqualTo(123));
+                Assert.That(_discovery.discoveryPort, Is.EqualTo(19002));
+                Assert.That(_discovery.maximumRetainedBytes, Is.EqualTo(234567));
+                Assert.That(_discovery.ValidateConfiguration(out var error), Is.True, error);
+            }
+            finally { Object.DestroyImmediate(editor); }
+        }
+
         [Test] public void DefaultsEnumsAndOptionalRelayAreExplicit()
         {
             Assert.That((byte)AutoConnectMode.Direct, Is.EqualTo(0));

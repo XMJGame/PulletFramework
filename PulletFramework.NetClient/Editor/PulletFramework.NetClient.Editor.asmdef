@@ -1,0 +1,8 @@
+{
+  "name": "PulletFramework.NetClient.Editor",
+  "references": ["PulletFramework.NetClient"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": true
+}
