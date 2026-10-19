@@ -6,9 +6,11 @@ using PulletNet.Messaging;
 namespace PulletFramework.Messaging
 {
     /// <summary>
-    /// One message incarnation, not a network client. The application binds its exact
+    /// 单个来源代际的消息会话，不是网络客户端。应用绑定准确的可靠有序发送方/来源，
+    /// 在创建它的Unity线程提交借用Payload；保留原网络会话时不可重建registry，否则会重置RPC编号。
+    /// <para>One message incarnation, not a network client. The application binds its exact
     /// reliable-ordered sender/source and feeds borrowed payloads on the creating Unity thread.
-    /// Never replace this registry on a preserved wire session; it would reset RPC IDs.
+    /// Never replace this registry on a preserved wire session; it would reset RPC IDs.</para>
     /// </summary>
     public sealed class MessageSession : IAsyncDisposable
     {

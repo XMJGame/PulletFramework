@@ -2,7 +2,11 @@
 
 本仓库的PulletFramework.NetClient是PulletNet开发源的固定安装镜像，不在两处独立开发。只安装一个完整包com.xmjgame.pullet-framework.netclient；五个内部程序集仍独立，不另装旧四个模块UPM。
 
-## 当前编辑器增量
+## 当前中文展示与双语注释增量
+
+当前镜像为PulletNet a472f82的完整170文件快照，包含三种连接模式的中文选项/日志、高级参数Tooltip、单层折叠和关键类型中英summary。网络策略和序列化字段值不变，原生四DLL保持原2f0cfc3字节；Runtime注释/属性/日志文本已更新。当前固定来源见[导出收据](Evidence/netclient-chinese-a472f82-export.json)，同步及限制见[记录](NetClient-Unity-Source-Sync.zh-CN.md)。这是3.0.0上的显式源码增量，不覆盖原正式封包或旧d60a0ac收据。
+
+## 历史d60a0ac编辑器增量
 
 当前镜像已加入PulletNet d60a0ac的Inspector增量，完整170源文件。两个Editor-only程序集不进入Player，五个运行时程序集和四DLL仍原3.0.0字节；详细来源与验证见[同步记录](NetClient-Unity-Source-Sync.zh-CN.md)。包版号未变化，安装必须按准确收据/源提交区分，不把本增量当作重新发布的同名nupkg或原160文件封包。旧[正式快照收据](Evidence/netclient-3.0.0-export.json)不覆盖；当前见[增量收据](Evidence/netclient-inspector-d60a0ac-export.json)。
 

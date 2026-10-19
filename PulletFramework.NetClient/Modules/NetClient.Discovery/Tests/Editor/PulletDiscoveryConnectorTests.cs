@@ -83,6 +83,32 @@ namespace PulletFramework.NetClient.Discovery.Tests
             Assert.That(relay.onDiscoveryFailed, Is.Not.Null);
             Assert.That(relay.onDiscoveryStopped, Is.Not.Null);
         }
+
+        [Test] public void DiscoveryInspectorHasChineseHintsAndPreservesCustomAddress()
+        {
+            var serialized = new UnityEditor.SerializedObject(_discovery);
+            foreach (var name in new[] { "autoConnectMode", "connectOnStart", "enableDiscovery", "discoveryAddress",
+                "discoveryPort", "discoveryTimeoutSeconds", "discoveryMaxAttempts", "discoverySendIntervalSeconds",
+                "discoveryRetrySeconds", "retryDiscoveryUntilConnected", "discoveryServiceType", "maximumResults",
+                "maximumReceivedDatagrams", "maximumRetainedBytes", "enableLogs" })
+                Assert.That(serialized.FindProperty(name).tooltip, Does.Match("[\u4e00-\u9fff]"), name);
+
+            var labels = serialized.FindProperty("autoConnectMode").enumDisplayNames;
+            Assert.That(labels, Is.EqualTo(new[] { "直接连接（Direct）", "先发现再连接（DiscoverFirst）", "先直连，失败后发现（DirectThenDiscover）" }));
+            _discovery.discoveryAddress = "192.168.10.255";
+            var editor = UnityEditor.Editor.CreateEditor(_discovery);
+            try
+            {
+                var foldout = editor.GetType().GetField("_showAdvanced", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(foldout, Is.Not.Null);
+                Assert.That(foldout.GetValue(editor), Is.False);
+                foldout.SetValue(editor, true);
+                foldout.SetValue(editor, false);
+                Assert.That(_discovery.discoveryAddress, Is.EqualTo("192.168.10.255"));
+                Assert.That(_discovery.ValidateConfiguration(out var error), Is.True, error);
+            }
+            finally { Object.DestroyImmediate(editor); }
+        }
         [Test] public void InvalidDiscoveryAttemptsAreRejectedByOptionalOwner()
         {
             _discovery.discoveryMaxAttempts = 0;

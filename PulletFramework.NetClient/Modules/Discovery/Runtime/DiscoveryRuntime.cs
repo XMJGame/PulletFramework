@@ -7,8 +7,11 @@ using PulletNet.Discovery;
 namespace PulletFramework.Discovery
 {
     /// <summary>
-    /// One bounded discovery round and its Unity handoff. Construct/Discover/Update on the Unity thread.
-    /// Native Discovery owns IO/codec/limits. Close joins IO and entered callbacks without needing Update.
+    /// 拥有一轮有界发现及Unity交付；构造、Discover和Update在Unity主线程执行。
+    /// 原生Discovery负责IO、编码与限额；关闭等待IO和已进入的回调退出，不依赖后续Update。
+    /// <para>One bounded discovery round and its Unity handoff. Construct/Discover/Update on
+    /// the Unity thread. Native Discovery owns IO/codec/limits; close joins IO and entered
+    /// callbacks without requiring further Update calls.</para>
     /// </summary>
     public sealed class DiscoveryRuntime : IAsyncDisposable
     {
