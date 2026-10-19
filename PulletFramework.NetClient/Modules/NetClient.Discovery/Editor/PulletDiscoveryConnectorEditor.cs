@@ -8,6 +8,18 @@ namespace PulletFramework.NetClient.Discovery.Editor
     public sealed class PulletDiscoveryConnectorEditor : UnityEditor.Editor
     {
         private bool _showAdvanced;
+        // Explicit labels: enumDisplayNames does not honor InspectorName consistently
+        // across supported Unity versions. Values are wire-independent serialized facts.
+        private static readonly GUIContent[] ModeLabels =
+        {
+            new GUIContent("直接连接（Direct）", "只连接Manager的固定地址，失败不启动发现。"),
+            new GUIContent("先发现再连接（DiscoverFirst）", "跳过固定地址，发现候选后连接；不回退固定地址。"),
+            new GUIContent("先直连，失败后发现（DirectThenDiscover）", "固定连接失败并清理后，进入发现流程。")
+        };
+        private static readonly int[] ModeValues =
+        {
+            (int)AutoConnectMode.Direct, (int)AutoConnectMode.DiscoverFirst, (int)AutoConnectMode.DirectThenDiscover
+        };
 
         public override void OnInspectorGUI()
         {
@@ -15,7 +27,7 @@ namespace PulletFramework.NetClient.Discovery.Editor
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Script"));
 
-            Property("autoConnectMode");
+            DrawConnectionMode();
             Property("connectOnStart");
             Property("enableDiscovery");
             var discovery = serializedObject.FindProperty("enableDiscovery");
@@ -44,6 +56,32 @@ namespace PulletFramework.NetClient.Discovery.Editor
             }
             Property("enableLogs");
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DrawConnectionMode()
+        {
+            var mode = serializedObject.FindProperty("autoConnectMode");
+            var label = new GUIContent(mode.displayName, mode.tooltip);
+            var rect = EditorGUILayout.GetControlRect();
+            // The property wrapper keeps prefab override and mixed-selection semantics.
+            // Only an actual user change writes the serialized value; repaint must never
+            // normalize an unknown value or copy one target's mode onto the others.
+            EditorGUI.BeginProperty(rect, label, mode);
+            bool previousMixed = EditorGUI.showMixedValue;
+            try
+            {
+                EditorGUI.showMixedValue = mode.hasMultipleDifferentValues;
+                EditorGUI.BeginChangeCheck();
+                int selected = EditorGUI.IntPopup(rect, label, mode.intValue, ModeLabels, ModeValues);
+                if (EditorGUI.EndChangeCheck()) mode.intValue = selected;
+            }
+            finally
+            {
+                EditorGUI.showMixedValue = previousMixed;
+                EditorGUI.EndProperty();
+            }
+            if (!mode.hasMultipleDifferentValues && System.Array.IndexOf(ModeValues, mode.intValue) < 0)
+                EditorGUILayout.HelpBox("未知的连接策略值；请显式选择模式，Inspector不会自动重置旧值。", MessageType.Warning);
         }
 
         private void Property(string name) => EditorGUILayout.PropertyField(serializedObject.FindProperty(name), true);

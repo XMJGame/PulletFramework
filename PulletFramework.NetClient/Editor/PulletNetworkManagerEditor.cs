@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using PulletNet.ClientSDK;
 
 namespace PulletFramework.NetClient.Editor
 {
@@ -20,15 +21,16 @@ namespace PulletFramework.NetClient.Editor
             var mode = serializedObject.FindProperty("connectionMode");
             // Mixed selections retain all transport fields so multi-editing never
             // silently applies one selected object's transport to the others.
-            if (mode.hasMultipleDifferentValues || mode.intValue == 1) Property("udpPort");
-            if (mode.hasMultipleDifferentValues || mode.intValue == 4) Property("tcpPort");
-            if (mode.hasMultipleDifferentValues || mode.intValue == 5)
+            if (mode.hasMultipleDifferentValues || mode.intValue == (int)ConnectionMode.UdpOnly) Property("udpPort");
+            if (mode.hasMultipleDifferentValues || mode.intValue == (int)ConnectionMode.TcpOnly) Property("tcpPort");
+            if (mode.hasMultipleDifferentValues || mode.intValue == (int)ConnectionMode.WebSocketOnly)
             {
                 Property("webSocketPort");
                 Property("webSocketPath");
                 Property("webSocketUseTls");
             }
-            if (!mode.hasMultipleDifferentValues && mode.intValue != 1 && mode.intValue != 4 && mode.intValue != 5)
+            if (!mode.hasMultipleDifferentValues && mode.intValue != (int)ConnectionMode.UdpOnly &&
+                mode.intValue != (int)ConnectionMode.TcpOnly && mode.intValue != (int)ConnectionMode.WebSocketOnly)
                 EditorGUILayout.HelpBox("请选择 UdpOnly、TcpOnly 或 WebSocketOnly；旧组合模式不会自动降级。", MessageType.Warning);
 
             Property("connectOnStart");
