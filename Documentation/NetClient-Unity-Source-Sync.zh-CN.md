@@ -1,5 +1,13 @@
 # NetClient 开发源与安装副本同步
 
+## 2026-10-19 当前：统一网络包pre.2本地镜像
+
+本地同步源为PulletNet的6e9591a，PulletFramework.NetClient固定160文件与开发源导出逐字节一致。原Discovery/Messaging及两个组合包已移入主包Modules，删除的是旧包安装入口，不是内部职责/测试；只保留com.xmjgame.pullet-framework.netclient一个UPM包。五asmdef、namespace、原GUID/DLL锁保持；统一携带Newtonsoft3.2.1。
+
+下列五包安装表是旧布局的历史记录，不再是当前安装步骤。升级目标时用完整pre.2副本替换netclient，并移出旧四模块包和manifest/testables登记，不能让新旧同时存在。现行说明见[单包整合](Single-Package-Consolidation.zh-CN.md)和[安装清单](NetClient-Installation-and-Player-Checklist.zh-CN.md)。原生DLL仍原U8/U9，不混称最新29d923e候选。
+
+旧包/说明备份在PulletNet本地artifacts/unity-single-package-sync-20261019/Before/Framework，用户未跟踪的对齐文档及其它模块保持。本批同步仅本地，不推送/发包；妈祖验证与安装结果按另行收据记录，不能仅凭复制就声称业务接入通过。
+
 ## 当前主分支整合
 
 2026-10-18按用户确认，本地main已从0712e99快进到已验证的b687018，再归档本段说明；五包代码树和163个实际包文件保持与同步检查点一致，未做内容冲突合并或重编译。用户未提交的对齐文档保留，不纳入提交。下面“本地同步分支/未合入main/未推送”描述此前同步时点，不是另一套执行指令；远端状态以实际推送及main提交核对为准。合并不等于正式发布或妈祖/XR升级，后续业务迁移仍需单独安排。

@@ -1,7 +1,7 @@
 # PulletFramework.Messaging
 
-可选Unity线程消息会话，开发版本3.0.0-pre.1。
-包ID com.xmjgame.pullet-framework.messaging，namespace PulletFramework.Messaging。
+Unity统一netclient包内的可选消息模块，不再作为独立UPM包安装。
+namespace/程序集仍为PulletFramework.Messaging；包版本与迁移步骤见根README。
 U10-A只提供MessageSession，不创建/接管网络客户端、不拥有Socket、不引用NetClient或UnityEngine，
 不增加Payload队列，不重写RPC计时、额度或订阅算法。
 
@@ -41,7 +41,7 @@ Completion不包含外部网络IO处置：若发送不响应取消，网络owner
 
 ## 可选网络绑定与迁移
 
-可选com.xmjgame.pullet-framework.netclient-messaging把本会话接到既有Runtime的准确客户端来源，
+同包内可选NetClient.Messaging模块把本会话接到既有Runtime的准确客户端来源，
 不接管Manager的默认来源或自动恢复。每条绑定只对应一次Connect/NewSession，具体关闭合同见该包README。
 旧Manager RPC/JSON已经退役，raw不再需要JSON依赖；旧接口与测试去向见开发仓库
 Docs/Unity/Messaging-U10-Migration.zh-CN.md。属性推断与默认JSON明确不再作为框架能力。

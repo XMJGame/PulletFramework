@@ -1,24 +1,38 @@
 # PulletFramework.NetClient
 
-Unity原始网络适配，开发版本3.0.0-pre.1。包ID保持
+Unity统一客户端包，开发版本3.0.0-pre.2。包ID保持
 `com.xmjgame.pullet-framework.netclient`，namespace保持`PulletFramework.NetClient`。
 唯一开发源是PulletNet仓库UnityPackages；Framework和业务工程只是另行安排的固定安装副本。
 
 ## 当前范围
 
-只负责Unity主线程交付、连接配置、生命周期和默认来源Manager。NativeInput锁定
+交付只需一个完整UPM包：连接/主线程交付、typed消息、局域网发现及组合适配均包含在内；
+内部仍是五个独立asmdef，命名空间/程序集名/GUID和运行时所有权不变。
+不使用的功能不自动启动，不新增Host或Payload队列。服务端/NuGet拆分不变。
+
+原始连接程序集只负责Unity主线程交付、连接配置、生命周期和默认来源Manager。NativeInput锁定
 2205c8d / Windows CI39058109182 attempt1的Protocol(netstandard2.0)与ClientSDK(netstandard2.1)
 两份实际DLL，不含NetCore/Hosting，不原地重建DLL。
-raw不再内置Messaging/RPC/默认JSON，package.json和asmdef不再依赖Json.NET。
-强类型消息按需嵌入com.xmjgame.pullet-framework.messaging与netclient-messaging组合包；
-不安装可选包也能完整使用原始连接/收发/关闭。
+raw程序集不引用Messaging/Discovery/Json.NET，也不提供默认业务codec；
+消息与发现的程序集位于Modules/，按需使用，不再逐个导入4份附加UPM包。
+统一包因发现协议声明com.unity.nuget.newtonsoft-json 3.2.1依赖；即使只用raw也会解析它，
+这是简化安装的明确取舍，不承诺更小包体或绝对零依赖。
 旧ConfigureMessaging/Subscribe/CallAsync/SendMessageAsync及PulletMessage*接口已移除，
 升级前阅读开发仓库Docs/Unity/Messaging-U10-Migration.zh-CN.md；没有静默转发或旧RPC兼容层。
 
-Discovery已迁为可选包，核心不再引用发现程序集，不再持有发现Socket/DTO/策略。
-需要发现时同时嵌入：
-- com.xmjgame.pullet-framework.discovery：独立DiscoveryRuntime，可单独使用。
-- com.xmjgame.pullet-framework.netclient-discovery：组合选择策略、Inspector和事件桥接。
+Discovery保留独立程序集，连接核心不持有发现Socket/DTO/策略。
+Modules/Discovery提供独立DiscoveryRuntime，Modules/NetClient.Discovery提供组合选择策略与Inspector桥接；
+Modules/Messaging提供独立消息会话，Modules/NetClient.Messaging提供现有Runtime上的typed绑定。
+各模块NativeInput保留自己的实际来源，本次不更新为最新原生候选DLL。
+
+## 从旧五包布局迁移
+
+先备份工程Packages/manifest.json、packages-lock.json及嵌入包，再用完整pre.2固定副本替换旧netclient。
+移除旧discovery/messaging/netclient-discovery/netclient-messaging四个独立包及其manifest/testables登记；
+不能同时保留旧模块包，否则会重复DLL、asmdef和脚本GUID。移动已有文件保留.meta，
+程序集/命名空间/API不因包合并改名，但不承诺此前已退役API自动兼容。
+不要把Modules内文件拆出来再安装成UPM包。先在隔离工程验证，再安排Framework/业务迁移。
+本次只修改开发源，未执行任何下游迁移或原生DLL升级。
 
 旧Manager/Relay发现成员已移除；升级前先保存旧资产/配置/事件备份，
 按开发仓库Docs/Unity/Discovery-U9B-Migration.zh-CN.md逐项迁移。

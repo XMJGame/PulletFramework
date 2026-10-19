@@ -1,7 +1,7 @@
 # PulletFramework.NetClient.Discovery
 
-可选连接选择组合包；不是第二份网络实现。依赖NetClient与Discovery两个嵌入包，
-不会让两者反向依赖。开发版本3.0.0-pre.1，不同步/发布下游。
+统一netclient包内的可选连接选择模块，不再单独安装UPM包；不是第二份网络实现。
+依赖NetClient与Discovery两个程序集，不让两者反向依赖；版本与迁移步骤见根README。
 
 在已有PulletNetworkManager的GameObject上添加PulletDiscoveryConnector。
 关闭Manager.connectOnStart，选择Connector.autoConnectMode（Direct=0、

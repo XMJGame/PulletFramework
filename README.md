@@ -24,11 +24,7 @@ Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小
 | `PulletFramework.YooAsset` | `com.xmjgame.pullet-framework.yooasset` | YooAsset 初始化、多 Package 更新、构建与 CDN 发布 | 否 |
 | `PulletFramework.MiniGame` | `com.xmjgame.pullet-framework.minigame` | 微信、抖音平台能力、SDK 桥接和统一发布窗口 | 否 |
 | `PulletFramework.HybridCLR` | `com.xmjgame.pullet-framework.hybridclr` | HybridCLR 构建、清单与运行时加载 | 否 |
-| `PulletFramework.NetClient` | `com.xmjgame.pullet-framework.netclient` | PulletNet 服务端的独立 Unity TCP、UDP、WebSocket 客户端 | 否 |
-| `PulletFramework.Discovery` | `com.xmjgame.pullet-framework.discovery` | 独立、有界的局域网发现主线程适配 | 否 |
-| `PulletFramework.NetClient.Discovery` | `com.xmjgame.pullet-framework.netclient-discovery` | Manager 的发现选择、Inspector 和事件组合 | 否 |
-| `PulletFramework.Messaging` | `com.xmjgame.pullet-framework.messaging` | 不拥有网络客户端的消息会话；显式 codec/RPC/通知 | 否 |
-| `PulletFramework.NetClient.Messaging` | `com.xmjgame.pullet-framework.netclient-messaging` | 既有 Runtime 上单次准确来源的 typed 连接 | 否 |
+| `PulletFramework.NetClient` | `com.xmjgame.pullet-framework.netclient` | Unity统一网络包：连接、消息、发现及组合，内部仍保持五个独立程序集 | 否 |
 
 推荐组合：
 
@@ -37,10 +33,9 @@ Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小
 - 微信/抖音小游戏：在上一组合基础上增加 `PulletFramework.MiniGame`
 - 需要代码热更新的 App：按需增加 `PulletFramework.HybridCLR`
 - 连接 PulletNet 服务端：独立安装 `PulletFramework.NetClient`，无需安装基础框架
-- Manager 自动发现后连接：raw NetClient + Discovery + NetClient.Discovery；独立发现只装 Discovery（依赖 Json.NET 3.2.1）
-- Runtime 上的 typed 连接：raw NetClient + Messaging + NetClient.Messaging；发现后 typed 再增加独立 Discovery，不需要 Manager 发现组合
+- Manager发现或typed连接：同一个NetClient包中按需使用Modules下的Discovery/Messaging及组合，不再安装其它网络UPM包
 
-2026-10-18 的五包版本仍为 `3.0.0-pre.1`，已纳入本地主分支，但不是正式发布或业务工程升级。raw 不再包含 Discovery/RPC/默认 JSON。旧 Manager API、发现 Inspector 字段和持久事件必须显式迁移，见[同步与迁移入口](Documentation/NetClient-Unity-Source-Sync.zh-CN.md)。包 ID 使用 `com.xmjgame.*`，代码命名空间仍为 `PulletFramework.*`，不要因同一版本字符串而混用旧包体；安装固定到实际已核对的提交。
+2026-10-19本地镜像已同步PulletNet开发源6e9591a的统一网络包 `3.0.0-pre.2`：只需netclient一个UPM包，五个程序集/API/GUID保持，Newtonsoft3.2.1由统一清单声明。原生DLL仍保留原已验输入，不是最新原生候选升级。旧四个模块包不可与统一包共装；迁移见[同步入口](Documentation/NetClient-Unity-Source-Sync.zh-CN.md)。此为本地同步，未推送或正式发布；其它基础模块不变。
 
 ## 安装
 

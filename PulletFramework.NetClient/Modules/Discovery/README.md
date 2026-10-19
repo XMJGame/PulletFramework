@@ -1,6 +1,8 @@
 # PulletFramework.Discovery
 
-Optional Unity main-thread handoff for the independent PulletNet.Discovery module.
+Optional module inside the unified NetClient UPM package; do not install separately.
+Assembly/namespace remain PulletFramework.Discovery; see the root README for migration.
+Unity main-thread handoff for the independent PulletNet.Discovery module.
 It does not reference NetClient, NetCore, Hosting, Messaging or PulletFramework.NetClient.
 Json.NET is supplied by com.unity.nuget.newtonsoft-json. WebGL is excluded.
 The package is a development checkpoint, not a published or device-certified release.
@@ -51,7 +53,7 @@ this is intentional and not a claim that Discovery ran in the Windows RC CI.
 Unity2021.3 in package.json is a declared floor, not a tested-platform statement.
 
 U9-B has retired the legacy NetClient discovery loop/APIs. Raw NetClient can be
-used without this package; optional NetClient.Discovery owns selection policy.
+used without constructing this module; NetClient.Discovery owns selection policy.
 See Docs/Unity/Discovery-U9B-Migration.zh-CN.md in the development repository.
 U11 validates controlled IPv4 loopback discovery, raw/typed composition and
 explicit cleanup in Unity2022.3.62f3 Windows PlayMode and x64 Mono Development

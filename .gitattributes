@@ -1,0 +1,3 @@
+# NetClient is a byte-verified installation mirror; do not rewrite source/meta EOLs.
+PulletFramework.NetClient/** -text
+PulletFramework.NetClient.meta -text

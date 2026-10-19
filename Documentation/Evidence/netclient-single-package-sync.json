@@ -1,0 +1,22 @@
+{
+  "SourceRepository": "PulletNet",
+  "SourceCommit": "6e9591a6b536c66dd238b4aa0519efd5ccca50f1",
+  "FrameworkCommitBefore": "744440cfb76e8d7f6c12d09a89b528882352965b",
+  "SourcePath": "UnityPackages/PulletFramework.NetClient",
+  "PackageId": "com.xmjgame.pullet-framework.netclient",
+  "Version": "3.0.0-pre.2",
+  "FileCount": 160,
+  "AllSourceFilesByteIdentical": true,
+  "OtherTrackedFrameworkFilesUnchanged": 563,
+  "UserDocumentPreserved": {
+    "Path": "G:\\GitHub\\PulletFramework\\Documentation\\NetClient-3.0-Alignment.zh-CN.md",
+    "Sha256": "02C45DFB867A83230BDA0F4F69E4C1D805EE6970EFCD4EEE31DC19160D271DBA"
+  },
+  "Backup": "G:\\XuMingJun\\2026\\PICO GPS XR\\PulletNet\\artifacts\\unity-single-package-sync-20261019\\Before",
+  "EolPolicy": "Root .gitattributes disables text conversion only for the NetClient installation mirror and its root meta; all 160 staged blobs match verified worktree bytes.",
+  "SourceAcceptance": "Unity2022.3.62f3 Windows: Editor177, PlayMode16/22, Mono Player16/22; see single-unity-package-20261019.json",
+  "MazuValidation": "Formal Editor20 and actual CharacterFoundation business integration passed after installing this same package copy; full receipt remains in PulletNet.",
+  "NativeDllsUpdated": false,
+  "Pushed": false,
+  "Scope": "Local source mirror only, package bytes copied; no independent implementation or other module upgrades."
+}
