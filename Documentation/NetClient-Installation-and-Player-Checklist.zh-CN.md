@@ -1,21 +1,21 @@
 # 安装、回退与原生Player协作清单
 
-2026-10-18更新。开发源是PulletNet仓库UnityPackages，Framework是验证后的安装副本，业务工程使用自身Packages内固定副本。当前五包仍为3.0.0-pre.1开发检查点，不是正式发布，不自动升级妈祖/XR。当前有限支持以[U11收据](U11-PC-Acceptance.zh-CN.md)为准；旧版本字符串、旧安装回执不能代替准确文件身份。
+2026-10-19更新。开发源是PulletNet仓库UnityPackages，当前为3.0.0-pre.2一个完整netclient包；Framework/业务仍是旧固定安装副本，本次未升级。布局及当前有限验收见[单包整合](Single-Package-Consolidation.zh-CN.md)，不是正式发布；旧U11及安装回执保持原身份，不能替代当前文件核对。
 
-## 当前交接范围与按需选包
+## 当前交接范围与按需使用
 
-U8—U11开发源和Windows有限验收已完成，不再以“尚待PlayMode/Player”为由继续修改架构。原生DLL沿用2205c8d准确CI输入；五包运行时代码的U11输入为9779ee7，验收工具及结果归档于cc26888，README运行后变化已单独记录。下列包均从本仓库UnityPackages取得，不以Framework或业务安装目录作为开发源。
+主包从本仓库UnityPackages/PulletFramework.NetClient取得，不以Framework/业务副本作为开发源。内部五个程序集保持独立，所有功能只需安装这一包；功能按需构造，不默认启动。raw/Messaging的原生输入仍2205c8d，Discovery仍自己的独立锁，不因合包重建DLL或升级到29d923e。
 
-| 应用需求 | 安装目录名（Packages下） | 额外依赖与约束 |
+| 应用需求 | 包内模块 | 依赖与约束 |
 | --- | --- | --- |
-| 原始连接/字节收发 | com.xmjgame.pullet-framework.netclient | 无Discovery/Messaging/Json.NET依赖 |
-| 独立发现 | com.xmjgame.pullet-framework.discovery | Json.NET 3.2.1；不依赖NetClient |
-| Manager发现后连接 | 上述raw、Discovery及com.xmjgame.pullet-framework.netclient-discovery | 组合不拥有Manager，分别关闭并等待 |
-| 无网络消息会话 | com.xmjgame.pullet-framework.messaging | 显式IMessageCodec，不默认提供JSON/Protobuf实现 |
-| 既有Runtime上的typed连接 | raw、Messaging及com.xmjgame.pullet-framework.netclient-messaging | 单次来源；显式关闭自动重连，不支持typed透明恢复/保留重绑 |
-| 发现后typed连接 | Discovery及上述typed三包，共四包 | 应用先选端点再创建typed来源；无需Manager发现组合包 |
+| 原始连接/字节收发 | Runtime | raw程序集不引用消息/发现，但完整包仍携带它们和Json.NET依赖 |
+| 独立发现 | Modules/Discovery | 独立程序集；Json.NET 3.2.1 |
+| Manager发现后连接 | Modules/NetClient.Discovery | 组合不拥有Manager，分别关闭并等待 |
+| 无网络消息会话 | Modules/Messaging | 显式IMessageCodec，不默认提供JSON/Protobuf实现 |
+| 既有Runtime上的typed连接 | Modules/NetClient.Messaging | 单次来源；显式关闭自动重连，不支持typed透明恢复/保留重绑 |
+| 发现后typed连接 | Discovery与typed模块组合 | 应用先选端点再创建typed来源；无需Manager发现组合组件 |
 
-实际UPM依赖按各package.json安装；不要将五包全部当成简单raw场景的必需依赖。命名空间和程序集仍用PulletFramework.*，包目录/依赖标识使用表中的com.xmjgame.*。
+只嵌入Packages/com.xmjgame.pullet-framework.netclient。不得另保留四个旧模块包或它们的manifest/testables登记；否则会重复DLL/程序集/GUID。命名空间和程序集仍用PulletFramework.*。合包简化安装，不承诺更少依赖或更小包体。
 
 升级前必须读[发现资产迁移](Discovery-U9B-Migration.zh-CN.md)和[消息API迁移](Messaging-U10-Migration.zh-CN.md)：旧Manager发现/RPC入口、默认JSON及属性推断已退役。保留脚本/Prefab GUID不代表旧持久方法监听仍可用。确认发现迁移是人工核对后的动作，不是自动修复；不得用直接确认或删除Library掩盖丢失配置。
 
@@ -28,11 +28,11 @@ New-Item -ItemType Directory -Path ./artifacts -Force | Out-Null
 ./Tools/Export-PulletNetUnityPackage.ps1 -OutputDirectory ./artifacts/unity-preview-export
 ```
 
-以上入口只导出raw NetClient，不会顺带打包所有可选模块。输出必须是不存在的新目录，父目录必须存在。工具不构建、不覆盖源码DLL、不安装业务工程，不允许输出进入源包、使用带重解析点的路径或覆盖已有证据。输出Package子目录是完整包，receipt.json保存包身份、NativeInput及逐文件SHA256；没有成功收据的部分输出不得安装。
+以上入口导出包含五个程序集的统一包。输出必须是不存在的新目录，父目录必须存在。工具不构建、不覆盖源码DLL、不安装业务工程，不允许输出进入源包、使用带重解析点的路径或覆盖已有证据。输出Package子目录是完整包，receipt.json保存包身份、三份NativeInput及逐文件SHA256；没有成功收据的部分输出不得安装。
 
-可选包使用经核对的完整固定快照，分别保存package.json、全部文件SHA256及来源提交；U11现有五包快照的准确位置见其收据，不覆盖旧快照或为改版本重建DLL。这里不假称raw导出工具已提供五包原子发布功能。
+模块连同主包整体复制，不能单独拆出Modules再安装UPM。U11旧五包快照继续保留回退，不覆盖或为改版本重建DLL；导出是只读固定快照，不是原子发布系统。
 
-导出会校验NativeInput的精确源码标识、wire3和两份DLL hash，再验证复制前后文件。它证明字节快照，不证明该工作区源码已经经过测试、平台验收或正式发布。使用方仍需对照本目录的准确检查点和提交，不可只看相同版本号。可信本地文件系统并发编辑应先停止；工具不是跨进程锁或原子发布系统。
+导出校验三份NativeInput的精确源码标识、raw wire3和全部四份DLL hash，并拒绝额外DLL/嵌套manifest/重复asmdef名或GUID，再验证复制前后文件。它证明字节快照，不自动证明所有平台或正式发布。使用方须对照准确检查点/提交，不可只看版本。可信本地文件系统并发编辑应先停止；工具不是跨进程锁。
 
 旧Build-PulletNetUnityPackage脚本在存在NativeInput锁时直接拒绝，不允许重新编译并覆盖已验收的DLL。需要新Native输入时另建有限验证任务，记录新包/版本/source/hash及兼容性，不修改旧收据为新结果。
 

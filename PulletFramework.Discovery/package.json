@@ -1,9 +1,0 @@
-{
-  "name": "com.xmjgame.pullet-framework.discovery",
-  "displayName": "Pullet Framework Discovery",
-  "version": "3.0.0-pre.1",
-  "unity": "2021.3",
-  "description": "Optional bounded Unity main-thread handoff for PulletNet LAN discovery. No NetClient, sockets or connection policy are implemented by this adapter.",
-  "dependencies": { "com.unity.nuget.newtonsoft-json": "3.2.1" },
-  "author": { "name": "XMJGame" }
-}

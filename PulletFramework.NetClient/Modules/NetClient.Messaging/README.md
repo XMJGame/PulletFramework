@@ -1,7 +1,7 @@
 # PulletFramework.NetClient.Messaging
 
-可选 Unity typed 网络组合包（开发版 3.0.0-pre.1）。
-包 ID：com.xmjgame.pullet-framework.netclient-messaging；namespace：PulletFramework.NetClient.Messaging。
+统一netclient包内的可选Unity typed组合模块，不再独立安装UPM包。
+namespace/程序集仍为PulletFramework.NetClient.Messaging；版本与迁移步骤见根README。
 不包含 DLL、不创建第二个 NetClientHost、不增加 Payload 队列。
 
 ## 一条绑定就是一次网络会话

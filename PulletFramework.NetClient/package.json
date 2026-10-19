@@ -1,9 +1,9 @@
 {
   "name": "com.xmjgame.pullet-framework.netclient",
   "displayName": "Pullet Framework NetClient",
-  "version": "3.0.0-pre.1",
+  "version": "3.0.0-pre.2",
   "unity": "2021.3",
-  "description": "Development preview of the PulletNet 3.0 Unity adapter with bounded multi-client delivery and a single-default-client Manager with awaitable shutdown. Player platform acceptance is pending.",
+  "description": "Single Unity package for PulletNet connections, typed messaging and LAN discovery; separate assemblies and explicit lifecycle ownership. See README for validated platforms and native input identities.",
   "keywords": [
     "pulletnet",
     "networking",
@@ -15,7 +15,7 @@
   "author": {
     "name": "XMJGame"
   },
-  "dependencies": {},
+  "dependencies": { "com.unity.nuget.newtonsoft-json": "3.2.1" },
   "samples": [
     {
       "displayName": "Connection Sample",
