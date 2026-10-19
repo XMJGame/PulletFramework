@@ -8,6 +8,8 @@ namespace PulletFramework.NetClient
     /// <summary>
     /// 可选的 Inspector 事件桥接器。代码模块应直接订阅 PulletNetworkManager 的 C# event；
     /// 只有需要在 Inspector 中拖拽绑定音效、UI 或动画时才挂载此组件。
+    /// <para>Optional Inspector event bridge. Code modules should subscribe to the Manager's
+    /// C# events directly; attach this only for Inspector-wired UI, audio or animation listeners.</para>
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(PulletNetworkManager))]

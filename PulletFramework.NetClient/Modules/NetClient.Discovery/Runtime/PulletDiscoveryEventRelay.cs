@@ -6,7 +6,11 @@ using UnityEngine.Events;
 
 namespace PulletFramework.NetClient.Discovery
 {
-    /// <summary>Optional Inspector listeners only; disabling the relay never owns/stops IO.</summary>
+    /// <summary>
+    /// 可选的Inspector发现事件桥接，不拥有IO；禁用此组件不会停止发现或连接流程。
+    /// <para>Optional Inspector listeners only; disabling this relay does not stop discovery
+    /// or connection workflows and never owns their IO.</para>
+    /// </summary>
     [DisallowMultipleComponent, RequireComponent(typeof(PulletDiscoveryConnector))]
     public sealed class PulletDiscoveryEventRelay : MonoBehaviour
     {

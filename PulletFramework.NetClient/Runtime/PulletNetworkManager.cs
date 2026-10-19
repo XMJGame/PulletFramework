@@ -9,7 +9,13 @@ using UnityEngine.Serialization;
 
 namespace PulletFramework.NetClient
 {
-    /// <summary>Unity 生命周期、原始连接和 PulletNet ClientSDK 的单默认来源入口。</summary>
+    /// <summary>
+    /// Unity单默认连接门面，负责组件生命周期和应用连接意图；底层客户端由Runtime/SDK创建并释放。
+    /// 不强制应用使用本组件；有自有登录、消息来源或多连接流程时可直接使用PulletClientRuntime。
+    /// <para>Optional Unity facade for one default connection and application intent.
+    /// Runtime/SDK owns client creation and final release. Applications with custom login,
+    /// message-source or multi-connection flows may use PulletClientRuntime directly.</para>
+    /// </summary>
     public sealed class PulletNetworkManager : MonoBehaviour
     {
         /// <summary>当前进程中生效的网络管理器实例。</summary>

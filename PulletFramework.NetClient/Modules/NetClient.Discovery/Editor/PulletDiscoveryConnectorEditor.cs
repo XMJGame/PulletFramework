@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEngine;
 
 namespace PulletFramework.NetClient.Discovery.Editor
 {
@@ -21,7 +22,8 @@ namespace PulletFramework.NetClient.Discovery.Editor
             using (new EditorGUI.DisabledScope(!discovery.hasMultipleDifferentValues && !discovery.boolValue))
             {
                 Property("discoveryServiceType");
-                _showAdvanced = EditorGUILayout.Foldout(_showAdvanced, "高级发现配置（广播、重试与限额）", true);
+                _showAdvanced = EditorGUILayout.Foldout(_showAdvanced,
+                    new GUIContent("高级发现配置（广播、重试与限额）", "通常保留默认值；只影响发现请求的目的地、时序和资源上限，不是游戏连接或重连参数。"), true);
                 if (_showAdvanced)
                 {
                     using (new EditorGUI.IndentLevelScope())

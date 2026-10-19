@@ -14,6 +14,32 @@ namespace PulletFramework.NetClient.Discovery.Tests
 {
     public sealed class PulletAutoConnectStrategyTests
     {
+        [UnityTest] public IEnumerator DirectModeLogsChinese()
+            => CheckModeLog(AutoConnectMode.Direct, "直接连接（Direct）", 0);
+        [UnityTest] public IEnumerator DiscoverFirstModeLogsChinese()
+            => CheckModeLog(AutoConnectMode.DiscoverFirst, "先发现再连接（DiscoverFirst）", 1);
+        [UnityTest] public IEnumerator DirectThenDiscoverModeLogsChinese()
+            => CheckModeLog(AutoConnectMode.DirectThenDiscover, "先直连，失败后发现（DirectThenDiscover）", 1);
+
+        private static IEnumerator CheckModeLog(AutoConnectMode mode, string label, int expectedDiscoveries)
+            => UnityTaskTest.Run(async () =>
+        {
+            var logs = new List<string>();
+            int directCalls = 0, discoveries = 0;
+            var strategy = new PulletAutoConnectStrategy(
+                token => { directCalls++; return Task.FromResult(Failed()); },
+                token => { discoveries++; return Task.FromResult<IReadOnlyList<DiscoveredServer>>(new[] { Server("selected") }); },
+                (server, token) => Task.FromResult(ConnectionResult.Ok()),
+                () => Task.CompletedTask, () => true, logs.Add, logs.Add);
+
+            var result = await strategy.RunAsync(Options(mode), CancellationToken.None);
+
+            Assert.That(logs[0], Does.Contain(label));
+            Assert.That(directCalls, Is.EqualTo(mode == AutoConnectMode.DiscoverFirst ? 0 : 1));
+            Assert.That(discoveries, Is.EqualTo(expectedDiscoveries));
+            Assert.That(result.IsSuccess, Is.EqualTo(mode != AutoConnectMode.Direct));
+        });
+
         [UnityTest]
         public IEnumerator DiscoveryWaitsForRealFailedAttemptRelease() => UnityTaskTest.Run(async () =>
         {

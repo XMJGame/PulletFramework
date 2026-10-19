@@ -8,10 +8,12 @@ using PulletNet.Messaging;
 namespace PulletFramework.NetClient.Messaging
 {
     /// <summary>
-    /// One explicit connection incarnation, created through the existing Runtime.
-    /// The Runtime alone creates/releases the SDK client; this binding owns only its
-    /// message session and requests removal of its exact source when finished.
-    /// Construct/connect on the Unity thread; pump that Runtime, not another queue.
+    /// 通过既有Runtime创建的一次显式连接代际。Runtime独占SDK客户端创建/释放，
+    /// 本绑定只拥有消息会话，结束时请求移除准确来源；在Unity主线程构造/连接并推进原Runtime。
+    /// <para>One explicit connection incarnation created through the existing Runtime.
+    /// The Runtime alone creates/releases the SDK client; this binding owns its message
+    /// session and requests removal of its exact source when finished. Construct/connect
+    /// on the Unity thread and pump that Runtime, not another queue.</para>
     /// </summary>
     public sealed class PulletMessageConnection : IAsyncDisposable
     {

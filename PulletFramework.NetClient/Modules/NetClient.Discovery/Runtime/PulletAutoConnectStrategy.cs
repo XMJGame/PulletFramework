@@ -56,7 +56,8 @@ namespace PulletFramework.NetClient.Discovery
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (!Enum.IsDefined(typeof(AutoConnectMode), options.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Mode));
             cancellationToken.ThrowIfCancellationRequested();
-            _logInfo($"自动连接开始：Mode={options.Mode}。");
+            string modeName = ModeName(options.Mode);
+            _logInfo($"自动连接开始：模式={modeName}。");
 
             if (!options.EnableDiscovery)
             {
@@ -69,26 +70,26 @@ namespace PulletFramework.NetClient.Discovery
 
             if (options.Mode != AutoConnectMode.DiscoverFirst)
             {
-                _logInfo($"{options.Mode}：正在尝试固定服务器 {options.FixedEndpointDescription}。");
+                _logInfo($"{modeName}：正在尝试固定服务器 {options.FixedEndpointDescription}。");
                 ConnectionResult direct = await _connectFixed(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 if (direct.IsSuccess)
                 {
-                    _logInfo($"{options.Mode}：固定服务器连接成功。");
+                    _logInfo($"{modeName}：固定服务器连接成功。");
                     return direct;
                 }
                 if (options.Mode == AutoConnectMode.Direct)
                 {
-                    _logWarning($"Direct：固定服务器连接失败，不会启动发现。原因：{FormatError(direct)}");
+                    _logWarning($"{modeName}：固定服务器连接失败，不会启动发现。原因：{FormatError(direct)}");
                     return direct;
                 }
 
-                _logWarning($"DirectThenDiscover：固定服务器连接失败，切换到局域网发现。原因：{FormatError(direct)}");
+                _logWarning($"{modeName}：固定服务器连接失败，切换到局域网发现。原因：{FormatError(direct)}");
                 await _releaseFailedConnection();
             }
             else
             {
-                _logInfo("DiscoverFirst：跳过固定地址，优先搜索局域网内可用服务器。");
+                _logInfo($"{modeName}：跳过固定地址，搜索局域网内可用服务器（不回退固定地址）。");
             }
 
             ConnectionResult last = ConnectionResult.Fail(
@@ -150,6 +151,17 @@ namespace PulletFramework.NetClient.Discovery
         {
             if (result.IsSuccess) _logInfo($"自动连接成功：{target}。");
             else _logWarning($"自动连接失败：{target}；原因：{FormatError(result)}");
+        }
+
+        private static string ModeName(AutoConnectMode mode)
+        {
+            switch (mode)
+            {
+                case AutoConnectMode.Direct: return "直接连接（Direct）";
+                case AutoConnectMode.DiscoverFirst: return "先发现再连接（DiscoverFirst）";
+                case AutoConnectMode.DirectThenDiscover: return "先直连，失败后发现（DirectThenDiscover）";
+                default: throw new ArgumentOutOfRangeException(nameof(mode));
+            }
         }
 
         private static string FormatError(ConnectionResult result)

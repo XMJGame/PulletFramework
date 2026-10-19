@@ -12,27 +12,44 @@ using UnityEngine;
 namespace PulletFramework.NetClient.Discovery
 {
     /// <summary>
-    /// Optional selection policy. Owns discovery and its workflow, never the borrowed
-    /// Manager or its client. Close this component and then Shutdown the Manager.
-    /// Construct/use/pump on the Unity thread; Close may be requested from any thread.
+    /// 可选的发现与连接选择策略：拥有发现任务及其流程，不拥有借用的Manager或客户端。
+    /// 在Unity主线程创建、使用和推进；可从其它线程请求关闭。先等待本组件CloseAsync，再关闭Manager。
+    /// <para>Optional selection policy. Owns discovery and its workflow, never the borrowed
+    /// Manager or its client. Construct/use/pump on the Unity thread; Close may be requested
+    /// from any thread. Await this component's close before shutting down the Manager.</para>
     /// </summary>
     [DisallowMultipleComponent, RequireComponent(typeof(PulletNetworkManager))]
     public sealed class PulletDiscoveryConnector : MonoBehaviour
     {
+        [Tooltip("直接连接：只连Manager固定端点；先发现再连接：跳过固定端点；先直连失败后发现：固定连接失败并清理后搜索。关闭发现时三种模式都只走固定连接。")]
         public AutoConnectMode autoConnectMode = AutoConnectMode.DirectThenDiscover;
+        [Tooltip("Unity Start时自动调用一次AutoConnectAsync，执行所选策略。关闭后由按钮/代码显式调用；它不是组件启用开关，也不是持续重试开关。Manager.connectOnStart必须关闭，避免两个启动入口。")]
         public bool connectOnStart;
+        [Tooltip("允许策略使用局域网发现。关闭时AutoConnectAsync只连接Manager固定端点；单独DiscoverAsync会拒绝执行。不会清除已保存的发现配置。")]
         public bool enableDiscovery = true;
+        [Tooltip("IPv4发现目标，默认255.255.255.255为有限广播。指定子网或已知主机时可改成子网广播/单播地址；不保证跨路由器或自动选择所有网卡。")]
         public string discoveryAddress = "255.255.255.255";
+        [Tooltip("发现UDP端口，必须与服务端发现响应器一致；不是游戏连接端口。范围1–65535。")]
         public int discoveryPort = 58888;
-        [Min(.25f)] public float discoveryTimeoutSeconds = 3;
-        [Range(1, 32)] public int discoveryMaxAttempts = 5;
-        [Min(.1f)] public float discoverySendIntervalSeconds = .5f;
-        [Min(.25f)] public float discoveryRetrySeconds = 1;
+        [Min(.25f), Tooltip("一轮发现的最长收集时间（秒），到期返回已收集候选；不是连接超时。必须大于0且不超过60秒。")]
+        public float discoveryTimeoutSeconds = 3;
+        [Range(1, 32), Tooltip("一轮发现最多发送请求次数（1–32）。仍受本轮截止时间限制，不代表固定端点连接重试次数。")]
+        public int discoveryMaxAttempts = 5;
+        [Min(.1f), Tooltip("一轮内两次发现请求的发送间隔（秒），必须大于0且不超过60秒；过短会增加广播与应答压力。")]
+        public float discoverySendIntervalSeconds = .5f;
+        [Min(.25f), Tooltip("启用持续发现重试后，两轮未成功连接的发现流程之间等待的秒数。必须大于0且不超过60秒；不控制已连接后的重连。")]
+        public float discoveryRetrySeconds = 1;
+        [Tooltip("自动连接未成功时继续新一轮发现，直到连接成功、取消、关闭或连接意图被替代。只对发现流程生效，不让Direct模式循环重试，也不接管断线重连。")]
         public bool retryDiscoveryUntilConnected = true;
+        [Tooltip("发现服务类型筛选，应与服务端广告一致，例如pulletnet-xrvehicle；候选匹配不是业务鉴权。")]
         public string discoveryServiceType = "pulletnet";
-        [Range(1, 4096)] public int maximumResults = 256;
-        [Range(1, 65536)] public int maximumReceivedDatagrams = 4096;
+        [Range(1, 4096), Tooltip("一轮最多保留的候选服务器数量（1–4096），达到上限提前结束；不是客户端或玩家数量上限。")]
+        public int maximumResults = 256;
+        [Range(1, 65536), Tooltip("一轮最多处理的接收数据报数量（1–65536），限制无效/重复流量消耗，达到上限提前结束；不是发送次数。")]
+        public int maximumReceivedDatagrams = 4096;
+        [Tooltip("一轮保留候选字符串/键的UTF-16字节预算（1字节–64MiB），达到上限提前结束。不等于进程内存、Socket缓存或Payload队列预算。")]
         public int maximumRetainedBytes = 1024 * 1024;
+        [Tooltip("输出自动连接模式、发现轮次和连接结果等中文诊断；关闭后不输出本组件日志，不影响运行策略。")]
         public bool enableLogs = true;
 
         private readonly object _gate = new object();
@@ -121,7 +138,11 @@ namespace PulletFramework.NetClient.Discovery
             MaximumRetainedBytes = maximumRetainedBytes
         };
 
-        /// <summary>One round; cancellation is observable, not an empty successful result. Pump Update before reusing.</summary>
+        /// <summary>
+        /// 执行一轮发现；取消保持可观察，不伪装成成功空结果。消费Update中的终态后才能复用。
+        /// <para>Run one discovery round. Cancellation is observable, not an empty success;
+        /// pump Update to consume terminal delivery before reuse.</para>
+        /// </summary>
         public Task<DiscoverySnapshot> DiscoverAsync(CancellationToken token = default)
         {
             RequireThread();
@@ -131,6 +152,11 @@ namespace PulletFramework.NetClient.Discovery
             return _discovery.DiscoverAsync(Options(), token);
         }
 
+        /// <summary>
+        /// 在Unity主线程执行所选自动连接策略；关闭connectOnStart不影响显式调用。
+        /// <para>Run the selected connection policy on the Unity thread;
+        /// explicit calls are allowed even when connectOnStart is disabled.</para>
+        /// </summary>
         public Task<ConnectionResult> AutoConnectAsync(CancellationToken token = default)
         {
             RequireThread();
@@ -235,7 +261,11 @@ namespace PulletFramework.NetClient.Discovery
             if (failure != null) throw failure;
         }
 
-        /// <summary>Permanent, shared join of this component only; does not own/close the Manager.</summary>
+        /// <summary>
+        /// 永久关闭本组件接纳并等待其真实退出；共享关闭任务不拥有或关闭Manager。
+        /// <para>Permanently close admission and join this component's work;
+        /// the shared close does not own or close the Manager.</para>
+        /// </summary>
         public Task CloseAsync()
         {
             TaskCompletionSource<bool> owner;

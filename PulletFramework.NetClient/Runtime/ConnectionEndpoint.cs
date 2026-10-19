@@ -1,9 +1,11 @@
 namespace PulletFramework.NetClient
 {
     /// <summary>
-    /// Immutable connection authority and advertised ports, without Discovery metadata.
-    /// Zero denotes an unavailable port. The Manager validates the selected transport;
-    /// WebSocket path/TLS and delivery options remain explicit Manager configuration.
+    /// 不可变的目标主机/端口，不包含发现元数据；端口0代表不可用，由Manager按所选传输校验。
+    /// WebSocket路径/TLS与交付选项仍由Manager显式配置，构造端点不等于目标通过认证。
+    /// <para>Immutable connection authority and advertised ports without Discovery metadata.
+    /// Zero denotes an unavailable port; the Manager validates the selected transport.
+    /// WebSocket path/TLS and delivery options remain explicit Manager configuration.</para>
     /// </summary>
     public sealed class ConnectionEndpoint
     {

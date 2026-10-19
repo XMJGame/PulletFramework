@@ -7,9 +7,11 @@ using PulletNet.ClientSDK;
 namespace PulletFramework.NetClient
 {
     /// <summary>
-    /// Thin Unity delivery adapter. Construct on the Unity main thread and call
-    /// Update there. SDK NetClientHost alone owns client creation/final release.
-    /// No automatic connect, discovery, session simulation or extra payload queue.
+    /// Unity主线程薄交付层：在主线程构造并调用Update；SDK NetClientHost独占客户端创建与最终释放。
+    /// 不负责自动连接、发现或模拟会话，不新增另一套Payload队列。
+    /// <para>Thin Unity delivery adapter. Construct and call Update on the Unity main thread.
+    /// SDK NetClientHost alone owns client creation/final release. No automatic connect,
+    /// discovery, session simulation or extra payload queue.</para>
     /// </summary>
     public sealed class PulletClientRuntime : IAsyncDisposable
     {
@@ -108,7 +110,11 @@ namespace PulletFramework.NetClient
             }
         }
 
-        /// <summary>Irreversible shared close, joining SDK owners AND all already-entered Unity callbacks. Does not need Update to progress.</summary>
+        /// <summary>
+        /// 不可逆的共享关闭：等待SDK所属工作及已经进入的Unity回调退出，不依赖后续Update。
+        /// <para>Irreversible shared close joining SDK owners and already-entered Unity callbacks;
+        /// it does not require further Update calls.</para>
+        /// </summary>
         public Task<PulletClientRuntimeCloseResult> CloseAsync(CancellationToken ct = default)
         {
             if (ct.IsCancellationRequested) return Task.FromCanceled<PulletClientRuntimeCloseResult>(ct);
