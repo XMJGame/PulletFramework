@@ -2,7 +2,11 @@
 
 本仓库的PulletFramework.NetClient是PulletNet开发源的固定安装镜像，不在两处独立开发。只安装一个完整包com.xmjgame.pullet-framework.netclient；五个内部程序集仍独立，不另装旧四个模块UPM。
 
-## 当前固定输入
+## 当前编辑器增量
+
+当前镜像已加入PulletNet d60a0ac的Inspector增量，完整170源文件。两个Editor-only程序集不进入Player，五个运行时程序集和四DLL仍原3.0.0字节；详细来源与验证见[同步记录](NetClient-Unity-Source-Sync.zh-CN.md)。包版号未变化，安装必须按准确收据/源提交区分，不把本增量当作重新发布的同名nupkg或原160文件封包。旧[正式快照收据](Evidence/netclient-3.0.0-export.json)不覆盖；当前见[增量收据](Evidence/netclient-inspector-d60a0ac-export.json)。
+
+## 原始3.0.0固定输入（增量前）
 
 - Unity源48eb7918863ce77364a7267db7a3c7cabbe342a9，完整160源文件逐字节复制；UPM版本3.0.0。
 - Protocol/ClientSDK/Messaging/Discovery四DLL均来自2f0cfc33575cc6e10398d499b2d7898c9f0a716c干净导出的实际3.0.0包；wire3与discovery1不变。包内三份NativeInput锁定原nupkg和DLL哈希。

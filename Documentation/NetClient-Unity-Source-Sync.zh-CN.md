@@ -1,5 +1,11 @@
 # NetClient 开发源与安装副本同步
 
+## 当前：3.0.0编辑器展示增量（d60a0ac）
+
+完整170个包源文件已从PulletNet d60a0ac固定导出同步；新增两个仅Editor程序集及2项测试，Manager按传输隐藏端口/折叠预算，发现广播/重试/限额折叠。五个运行时程序集、全部运行时字段/默认值和四DLL/NativeInput不变，包版号仍3.0.0。这是显式编辑器增量，不是原48eb791正式快照或新原生封包；旧收据保留。
+
+上游Unity2022.3.62f3隔离35项、导出9项和妈祖正式Editor20项通过；没有新Player/真机或业务联调。只同步本Framework和妈祖，不修改XRVehicle。当前收据见[编辑器增量导出](Evidence/netclient-inspector-d60a0ac-export.json)，原3.0.0说明见下段历史。
+
 ## 最新：3.0.0固定镜像
 
 当前160个包源文件来自PulletNet Unity源48eb791；四个原生DLL来自准确2f0cfc3的3.0.0产物，wire3/discovery1不变。原始c7bee1c双平台CI run39221865861/attempt1全通过后同步；妈祖Editor20及真实CharacterFoundation与原2b046d5服务器的兼容和退出验证通过。当前步骤见[3.0.0安装说明](NetClient-3.0.0-Installation.zh-CN.md)及[完整导出收据](Evidence/netclient-3.0.0-export.json)。下面pre.3等段落仅为历史时点，不再作为当前输入；其它模块不升级，不公开发包或打标签。

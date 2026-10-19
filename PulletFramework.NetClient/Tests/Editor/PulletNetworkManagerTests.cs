@@ -36,6 +36,33 @@ namespace PulletFramework.NetClient.Tests
         }
 
         [Test]
+        public void CompactInspectorIsSelectedAndDoesNotResetAdvancedConfiguration()
+        {
+            _manager.payloadQueueCapacity = 321;
+            _manager.payloadQueueBytes = 123456;
+            _manager.tcpPort = 19001;
+            string before = EditorJsonUtility.ToJson(_manager);
+            var editor = UnityEditor.Editor.CreateEditor(_manager);
+            try
+            {
+                Assert.That(editor.GetType().FullName, Is.EqualTo("PulletFramework.NetClient.Editor.PulletNetworkManagerEditor"));
+                var foldout = editor.GetType().GetField("_showAdvanced", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(foldout, Is.Not.Null);
+                Assert.That(foldout.GetValue(editor), Is.False);
+                foldout.SetValue(editor, true);
+                foldout.SetValue(editor, false);
+                Assert.That(EditorJsonUtility.ToJson(_manager), Is.EqualTo(before));
+                var serialized = new SerializedObject(_manager);
+                serialized.FindProperty("payloadQueueCapacity").intValue = 654;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(_manager.payloadQueueCapacity, Is.EqualTo(654));
+                Assert.That(_manager.payloadQueueBytes, Is.EqualTo(123456));
+                Assert.That(_manager.tcpPort, Is.EqualTo(19001));
+            }
+            finally { Object.DestroyImmediate(editor); }
+        }
+
+        [Test]
         public void RawAssemblyDoesNotReferenceOptionalMessagingDiscoveryOrJson()
         {
             var assembly = typeof(PulletNetworkManager).Assembly;
