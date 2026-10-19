@@ -3,6 +3,6 @@
   "references": ["PulletFramework.NetClient"],
   "includePlatforms": ["Editor"],
   "overrideReferences": true,
-  "precompiledReferences": [],
+  "precompiledReferences": ["PulletNet.ClientSDK.dll"],
   "autoReferenced": true
 }

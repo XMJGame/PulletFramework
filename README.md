@@ -35,7 +35,7 @@ Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小
 - 连接 PulletNet 服务端：独立安装 `PulletFramework.NetClient`，无需安装基础框架
 - Manager发现或typed连接：同一个NetClient包中按需使用Modules下的Discovery/Messaging及组合，不再安装其它网络UPM包
 
-2026-10-19网络镜像为统一NetClient **3.0.0**，当前Unity源a472f82的中文展示/双语注释增量（170文件）：三模式中文日志、参数Tooltip和单层高级配置。四DLL仍准确源2f0cfc3，wire3/discovery1及网络策略不变；Runtime注释/属性/日志文本更新。一个UPM、五运行时程序集和两个Editor-only程序集，其它基础模块不升级。隔离45项、导出9项、妈祖Editor20项通过；旧c7bee1c CI及业务收据保持原输入，不代表新Player/全平台验收或公开发包。见[安装说明](Documentation/NetClient-3.0.0-Installation.zh-CN.md)。
+2026-10-19网络镜像为统一NetClient **3.0.0**，当前Unity源42d0dcb的Inspector兼容增量（172文件）：保留中文日志/注释，模式改为显式中文绘制，独立测试含真实Layout/Repaint、Undo/Prefab。Unity2021.3与2022.3各51项、导出9项、妈祖Editor20项通过。四DLL仍准确2f0cfc3，wire3/discovery1、Runtime和网络策略不变；一个UPM、五Runtime程序集和两个Editor-only程序集。旧CI/业务收据保持原身份，不代表公开发包、新Player或全平台验收。见[安装说明](Documentation/NetClient-3.0.0-Installation.zh-CN.md)。
 
 ## 安装
 

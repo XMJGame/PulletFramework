@@ -1,6 +1,12 @@
 # NetClient 开发源与安装副本同步
 
-## 当前：3.0.0中文展示与双语注释增量（a472f82）
+## 当前：Unity Inspector版本兼容增量（42d0dcb）
+
+完整172源文件来自PulletNet 42d0dcb：模式中文标签显式绘制，不依赖2021.3/2022.3不同的enumDisplayNames；未知值保持/警告，混合多选不自动写值，SerializedProperty/Undo/Prefab作用域保留。Manager使用枚举常量判断传输。运行时、DLL、默认配置、连接策略不变，仍3.0.0显式源码增量而非新原生包。
+
+上游Unity2021.3.40f1及2022.3.62f3各51项通过，含真实OnInspectorGUI Layout/Repaint、Undo/Prefab检查；导出9项通过。同步后妈祖正式Editor20项通过。并非人工目测或自动鼠标点击认证；XRVehicle不修改。当前见[导出收据](Evidence/netclient-inspector-42d0dcb-export.json)，旧快照/失败和收据保留原身份。
+
+## 历史：3.0.0中文展示与双语注释增量（a472f82）
 
 完整170源文件来自PulletNet a472f82，包含f87358d的三模式中文名称/日志、发现参数Tooltip，以及a472f82的关键入口双语summary和单层高级配置。枚举值、字段/默认值、网络策略和四DLL/NativeInput不变；运行时源码中的注释、展示属性和日志文本有变化，不冒称整个Runtime源码字节未变。原3.0.0封包与旧收据不覆盖。
 

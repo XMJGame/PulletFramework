@@ -84,7 +84,7 @@ namespace PulletFramework.NetClient.Discovery.Tests
             Assert.That(relay.onDiscoveryStopped, Is.Not.Null);
         }
 
-        [Test] public void DiscoveryInspectorHasChineseHintsAndPreservesCustomAddress()
+        [Test] public void DiscoveryFieldsHaveChineseTooltips()
         {
             var serialized = new UnityEditor.SerializedObject(_discovery);
             foreach (var name in new[] { "autoConnectMode", "connectOnStart", "enableDiscovery", "discoveryAddress",
@@ -93,8 +93,29 @@ namespace PulletFramework.NetClient.Discovery.Tests
                 "maximumReceivedDatagrams", "maximumRetainedBytes", "enableLogs" })
                 Assert.That(serialized.FindProperty(name).tooltip, Does.Match("[\u4e00-\u9fff]"), name);
 
-            var labels = serialized.FindProperty("autoConnectMode").enumDisplayNames;
-            Assert.That(labels, Is.EqualTo(new[] { "直接连接（Direct）", "先发现再连接（DiscoverFirst）", "先直连，失败后发现（DirectThenDiscover）" }));
+        }
+
+        [Test] public void AutoConnectModeHasExpectedLabels()
+        {
+            var editor = UnityEditor.Editor.CreateEditor(_discovery);
+            try
+            {
+                var type = editor.GetType();
+                var labels = (GUIContent[])type.GetField("ModeLabels", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+                var values = (int[])type.GetField("ModeValues", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+                // Check the exact table used by DrawConnectionMode, not Unity-version-specific metadata.
+                Assert.That(Array.ConvertAll(labels, label => label.text), Is.EqualTo(new[]
+                    { "直接连接（Direct）", "先发现再连接（DiscoverFirst）", "先直连，失败后发现（DirectThenDiscover）" }));
+                Assert.That(values, Is.EqualTo(new[] { 0, 1, 2 }));
+                Assert.That(Array.ConvertAll(labels, label => label.tooltip), Has.All.Not.Empty);
+                foreach (var value in new[] { AutoConnectMode.Direct, AutoConnectMode.DiscoverFirst, AutoConnectMode.DirectThenDiscover })
+                    Assert.That(typeof(AutoConnectMode).GetField(value.ToString()).GetCustomAttribute<InspectorNameAttribute>(), Is.Not.Null);
+            }
+            finally { Object.DestroyImmediate(editor); }
+        }
+
+        [Test] public void CustomDiscoveryAddressSurvivesInspectorLifecycle()
+        {
             _discovery.discoveryAddress = "192.168.10.255";
             var editor = UnityEditor.Editor.CreateEditor(_discovery);
             try
