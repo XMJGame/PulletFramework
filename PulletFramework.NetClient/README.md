@@ -4,6 +4,11 @@ Unity统一客户端包，封包版本3.0.0。包ID保持
 `com.xmjgame.pullet-framework.netclient`，namespace保持`PulletFramework.NetClient`。
 唯一开发源是PulletNet仓库UnityPackages；Framework和业务工程只是另行安排的固定安装副本。
 
+参数用途、默认值、传输生效条件和遗留项见包内 [Configuration.md](Configuration.md)。
+此文件由开发源 Docs/Usage/Configuration.md 的固定快照生成，源码链接指向对应提交；
+不将所有原生高级参数自动暴露为 Inspector 配置。相同 3.0.0 的本地重封包须按 NativeInput
+和同步收据的准确源码、哈希识别，不能仅凭版本号判断新旧。
+
 ## 当前范围
 
 交付只需一个完整UPM包：连接/主线程交付、typed消息、局域网发现及组合适配均包含在内；
@@ -11,7 +16,7 @@ Unity统一客户端包，封包版本3.0.0。包ID保持
 不使用的功能不自动启动，不新增Host或Payload队列。服务端/NuGet拆分不变。
 
 原始连接程序集只负责Unity主线程交付、连接配置、生命周期和默认来源Manager。NativeInput锁定
-2f0cfc33575cc6e10398d499b2d7898c9f0a716c干净导出的3.0.0 Protocol(netstandard2.0)与ClientSDK(netstandard2.1)
+10f9619f670d97853e170e668e83db43833986c6干净导出的3.0.0 Protocol(netstandard2.0)与ClientSDK(netstandard2.1)
 两份实际DLL，不含NetCore/Hosting。此输入是本地封包，不伪装为旧RC的Windows CI产物。
 raw程序集不引用Messaging/Discovery/Json.NET，也不提供默认业务codec；
 消息与发现的程序集位于Modules/，按需使用，不再逐个导入4份附加UPM包。
@@ -23,13 +28,13 @@ raw程序集不引用Messaging/Discovery/Json.NET，也不提供默认业务code
 Discovery保留独立程序集，连接核心不持有发现Socket/DTO/策略。
 Modules/Discovery提供独立DiscoveryRuntime，Modules/NetClient.Discovery提供组合选择策略与Inspector桥接；
 Modules/Messaging提供独立消息会话，Modules/NetClient.Messaging提供现有Runtime上的typed绑定。
-Messaging、Discovery与raw均为同一干净源码2f0cfc3的3.0.0产物；Discovery自身协议仍为1。
+Messaging、Discovery与raw均为同一干净源码10f9619的3.0.0产物；Discovery自身协议仍为1。
 NativeInput锁定实际包/DLL字节，不能仅凭版本推断来源一致。实际PC验证和未验平台
-见开发仓库Docs/Release-3.0.0.md；Framework/妈祖原pre.3副本未自动升级。
+见开发仓库Docs/Releases/Support-Matrix.md；本次本地同版本重封包与同步收据另行记录，不改写原发布证据。
 
 ## 从旧五包布局迁移
 
-先备份工程Packages/manifest.json、packages-lock.json及嵌入包，再用完整pre.2固定副本替换旧netclient。
+先备份工程Packages/manifest.json、packages-lock.json及嵌入包，再用完整且已校验的3.0.0固定副本替换旧netclient。
 移除旧discovery/messaging/netclient-discovery/netclient-messaging四个独立包及其manifest/testables登记；
 不能同时保留旧模块包，否则会重复DLL、asmdef和脚本GUID。移动已有文件保留.meta，
 程序集/命名空间/API不因包合并改名，但不承诺此前已退役API自动兼容。

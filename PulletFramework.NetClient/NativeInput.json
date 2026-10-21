@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "purpose": "Local 3.0.0 package input from a clean source export; validation recorded in Docs/Release-3.0.0.md, not remote CI or public publication",
-  "source": "2f0cfc33575cc6e10398d499b2d7898c9f0a716c",
+  "purpose": "User-authorized local 3.0.0 configuration repack; exact source/hash distinguish prior same-version artifacts; not public publication or new platform certification",
+  "source": "10f9619f670d97853e170e668e83db43833986c6",
   "nativePackageVersion": "3.0.0",
   "buildKind": "local-clean-export",
   "wireVersion": 3,
@@ -9,14 +9,14 @@
     {
       "assembly": "PulletNet.Protocol",
       "framework": "netstandard2.0",
-      "packageSha256": "7E00BCF68055A9EFBC42D19E5865B4F0FA1B0B76D7876E67C22A19DD6E4914B8",
-      "librarySha256": "9C08AD5B6E362CDEE674A4FED6156727094E62463CEEB65B31F8FCD108A2F3E2"
+      "packageSha256": "620DEC041584ED37E17837F29D08EC754087B85A79BBB1DD2EF83F2DC56A2D22",
+      "librarySha256": "C7F7DC57E2EB1A0513D77E679D103F880A8B1E084AC37AF9C666EF5F599C1C57"
     },
     {
       "assembly": "PulletNet.ClientSDK",
       "framework": "netstandard2.1",
-      "packageSha256": "786B24ABE2C0D63EC792B5AEE60EE187BAECAB63B1E1E3B8EC7BB8B6A77D199B",
-      "librarySha256": "91DF30D730549AB4990F46878C6E97526C4728B585F11B77979C4C45FAF30962"
+      "packageSha256": "53655D130DC31E7BB5A346EEB1D141BC4DD1D4044D86658348D2F5DC8F2F6875",
+      "librarySha256": "8C903BC3AA408083B5857B4653033354D47A03F31A6B9D6F063684CAAC81153E"
     }
   ]
 }
