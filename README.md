@@ -2,7 +2,7 @@
 
 面向 Unity 的模块化客户端框架，整理项目中重复出现的窗口、事件、状态机、资源生命周期、对象池和音频能力，并提供资源更新、小游戏适配与编辑器工具。
 
-框架关注的是**模块如何组合、异步工作由谁持有、资源何时释放**。资源加载复用 YooAsset，代码热更新复用 HybridCLR，网络客户端复用 PulletNet；不把第三方系统重新包装成另一套完整实现。
+资源管理基于 YooAsset，代码热更新使用 HybridCLR，网络客户端对接 PulletNet。框架负责将这些能力接入项目，统一常用模块和编辑器工具。
 
 ## 能做什么
 
@@ -20,8 +20,8 @@
 ## 几个设计选择
 
 - **窗口逻辑不要求继承 MonoBehaviour。** UI 由普通 C# 的窗口类型管理生命周期与交互，Unity 对象承载视图；导航、缓存、返回拦截和异步打开由窗口系统处理。
-- **不再造一个 YooAsset。** 框架负责资源包准备与自身资源适配，业务仍直接使用 YooAsset 的 `ResourcePackage` API。
-- **明确异步操作与资源的所有者。** 窗口、音频和对象池需要处理取消、关闭与迟到结果，不能把“请求取消”当成“资源已释放”。
+- **资源包管理与业务加载分开。** 框架准备资源包并适配内部加载，业务直接使用 YooAsset 的 `ResourcePackage` API。
+- **按模块管理异步任务和资源。** 窗口、音频和对象池分别处理加载、取消、关闭与释放。
 - **平台能力是可选依赖。** PC、App 或 VR 项目不应被迫引入微信、抖音 SDK；具体 SDK 绑定位于独立桥接层。
 - **编辑器采用模块注册。** 工作台通过接口发现扩展页面，核心编辑器不反向依赖每一个可选包。
 
@@ -66,9 +66,9 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 
 ## 状态与验证
 
-各包独立版本管理，多数框架包仍处于 0.x，NetClient 为 3.0.0；后者不代表整个仓库已经稳定发布。接入项目时请固定提交，并验证目标 Unity 版本、平台和第三方 SDK 组合。
+各包独立版本管理，多数框架包处于 0.x，NetClient 为 3.0.0。项目接入建议固定提交。
 
-已有记录覆盖核心模块的 Windows Player、微信/抖音开发者工具基础流程、HybridCLR 的 Windows IL2CPP 流程，以及 NetClient 的 Unity Editor 和 Windows Mono 连接验证。它们不是全平台或任意版本组合的保证。**NetClient 当前不支持 WebGL、微信或抖音小游戏。**
+已运行的环境包括 Windows Player、微信/抖音开发者工具、HybridCLR 的 Windows IL2CPP，以及 NetClient 的 Editor/Windows Mono。具体版本与结果见测试记录。NetClient 暂不支持 WebGL、微信和抖音小游戏。
 
 - [模块状态与路线图](Documentation/Roadmap.zh-CN.md)
 - [验证范围与记录](Documentation/Validation.zh-CN.md)
@@ -85,4 +85,4 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 
 ## 许可
 
-当前仓库未提供开源许可证。公开可读不等于已授予复制、修改、分发或商用许可；第三方组件分别遵循各自许可证。使用或再分发前，请先确认授权范围。
+仓库尚未提供开源许可证，使用或再分发请先联系作者确认授权；第三方组件遵循各自许可证。

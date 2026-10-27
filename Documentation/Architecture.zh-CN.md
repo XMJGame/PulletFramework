@@ -51,7 +51,7 @@ PulletFramework 以 UPM 包提供安装边界，以 asmdef 提供程序集边界
 - MiniGame：共享初始化有明确会话，旧平台结果不能覆盖新平台的存储后端。
 - NetClient：SDK负责连接生命周期，Unity层负责主线程交付与其预算，项目负责业务协议与业务任务。
 
-这些机制解决不同职责的问题，不应因此叠加一套通用全局协调器。测试与支持范围见[验证说明](Validation.zh-CN.md)。
+相关测试见[测试记录](Validation.zh-CN.md)。
 
 ## 网络模块的维护来源
 
