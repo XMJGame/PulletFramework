@@ -21,7 +21,7 @@ using UnityEngine;
 namespace PulletFramework
 {
 	/// <summary>
-	/// 框架相关
+	/// 通用子系统的初始化、逐帧驱动与关闭入口，须在Unity主线程使用。
 	/// </summary>
     public static class PulletFrameworks
 	{

@@ -52,7 +52,7 @@ namespace PulletFramework.Pooling
 		}
 
 		/// <summary>
-		/// 销毁事件
+		/// 最后一个活跃实例归还后的空闲销毁阈值，单位秒；小于零表示不自动销毁。
 		/// </summary>
 		public float DestroyTime
 		{

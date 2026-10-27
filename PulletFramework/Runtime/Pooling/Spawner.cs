@@ -124,7 +124,7 @@ namespace PulletFramework.Pooling
         /// <param name="location">资源定位地址</param>
         /// <param name="dontDestroy">资源常驻不销毁</param>
         /// <param name="initCapacity">对象池的初始容量</param>
-        /// <param name="maxCapacity">对象池的最大容量</param>
+        /// <param name="maxCapacity">最多保留的空闲缓存实例数，不限制同时借出的实例数量</param>
         /// <param name="destroyTime">静默销毁时间（注意：小于零代表不主动销毁）</param>
         public CreatePoolOperation CreateGameObjectPoolAsync(string location, bool dontDestroy = false, int initCapacity = 0, int maxCapacity = int.MaxValue, float destroyTime = -1f)
         {
@@ -137,7 +137,7 @@ namespace PulletFramework.Pooling
         /// <param name="location">资源定位地址</param>
         /// <param name="dontDestroy">资源常驻不销毁</param>
         /// <param name="initCapacity">对象池的初始容量</param>
-        /// <param name="maxCapacity">对象池的最大容量</param>
+        /// <param name="maxCapacity">最多保留的空闲缓存实例数，不限制同时借出的实例数量</param>
         /// <param name="destroyTime">静默销毁时间（注意：小于零代表不主动销毁）</param>
         public CreatePoolOperation CreateGameObjectPoolSync(string location, bool dontDestroy = false, int initCapacity = 0, int maxCapacity = int.MaxValue, float destroyTime = -1f)
         {
