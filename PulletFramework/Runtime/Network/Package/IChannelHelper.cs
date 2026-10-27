@@ -16,7 +16,7 @@ namespace PulletFramework.Network
         }
 
         /// <summary>
-        /// 心跳间隔 单位秒
+        /// 自动心跳间隔，单位秒；小于等于零表示关闭自动心跳。
         /// </summary>
         int HeartBeatInterval
         {
@@ -25,7 +25,7 @@ namespace PulletFramework.Network
         /// <summary>
         /// 获取心跳消息包。
         /// </summary>
-        /// <returns>是否发送心跳消息包成功。</returns>
+        /// <returns>已编码前的心跳消息包；返回null表示本次不发送。</returns>
         NetPackage GetHeartBeat();
 
         /// <summary>
@@ -41,16 +41,13 @@ namespace PulletFramework.Network
         /// 反序列消息包头。
         /// </summary>
         /// <param name="source">要反序列化的来源流。</param>
-        /// <param name="customErrorData">用户自定义错误数据。</param>
         /// <returns>反序列化后的消息包头。</returns>
         NetPackageHeader DeserializePackageHeader(Stream source);
 
         /// <summary>
         /// 反序列化消息包。
         /// </summary>
-        /// <param name="packetHeader">消息包头。</param>
         /// <param name="source">要反序列化的来源流。</param>
-        /// <param name="customErrorData">用户自定义错误数据。</param>
         /// <returns>反序列化后的消息包。</returns>
         NetPackage DeserializePackage(Stream source);
 

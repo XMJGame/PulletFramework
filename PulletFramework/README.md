@@ -279,6 +279,26 @@ PulletUIFeedback.ShowToast("保存成功", EUIToastType.Success);
 
 多个系统同时请求 Loading 时会进行引用计数，只有最后一个令牌释放后才隐藏。业务异常时可以调用 `ClearLoading()` 兜底。
 
+## 事件派发
+
+`PulletEvent`与`EventGroup`只在Unity主线程使用。监听保持后注册先调用的顺序；每次派发固定当前监听集合，回调中新增的监听不参与本次派发，尚未执行的退订与清空立即生效。回调异常记录后继续其他监听，不会使延迟事件自动重试。
+
+`PostMessage`最早在下一帧执行；回调里新投递的事件至少再等一帧。`ClearAll`和`Destroy`也作废当前批次尚未交付的事件，关闭后的退订不会重新初始化事件系统。建议用`EventGroup`按使用者寿命集中退订，不在回调里等待主线程工作。
+
+## Core 通用 TCP
+
+Core的`PulletNetwork.CreateTcpClient`与独立的PulletFramework.NetClient是两种能力，分别维护。前者使用`IChannelHelper`定义应用自己的帧与编码，后者连接PulletNet服务端；协议不能直接互通。
+
+连接、Update与用户回调在Unity主线程执行。同一实例只允许一个候选连接或活动通道；重复连接会明确拒绝。网络故障关闭当前通道后可以显式重连；`Dispose`则是不可逆终态，之后需要新建客户端。候选Socket由客户端持有，Dispose关闭它并抑制迟到的连接通知；仍在途的物理IO由完成回调释放，不依赖后续Unity Update。
+
+发送按在途批次累计完成字节，短写会保留剩余部分，不会被新批次覆盖。序列化或解码失败关闭通道并通知调用方，用户通知异常不再逃逸到驱动循环。
+
+Send/SendPackage返回只表示进入本地队列，不代表物理发送完成或对端收到。入队后不要再修改NetPackage及正文数组；业务序列化与响应确认仍由调用方负责。
+
+**兼容变化**：`Send`/`SendPackage`在未连接或已释放时抛出异常，不再静默丢弃。`Send(id, object)`只接受已编码的`byte[]`或null；其他对象请先编码，旧实现会忽略该参数。默认帧仍为4字节长度、4字节消息ID及正文，修正接收端按16位读取ID的问题，发送字节格式不变。
+
+Core TCP未因此增加TLS、队列资源上限或浏览器支持。公网安全、负载与资源保护需按项目需求单独验证，不将本批正确性修复描述为完整生产验收。
+
 ## HTTP 和 HTTPS
 
 HTTP 与 HTTPS 使用同一个 `PulletHttp` 入口。默认传输层是 `UnityWebRequest`，默认最多同时执行 4 个请求：

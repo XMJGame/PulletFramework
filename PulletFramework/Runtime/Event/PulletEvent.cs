@@ -13,230 +13,169 @@ using UnityEngine;
 
 namespace PulletFramework.Event
 {
-	/// <summary>
-	/// 事件系统。
-	/// </summary>
-	public static class PulletEvent
+    /// <summary>
+    /// 主线程事件派发。监听逆序执行；回调中新增监听不参与当前Send，退订与清空立即生效。
+    /// Post最早在下一帧执行，回调异常只记录，不自动重试事件。
+    /// </summary>
+    public static class PulletEvent
     {
-        private class PostWrapper
+        private sealed class Listener
         {
-            public int postFrame;
-            public int eventID;
-            public IEventMessage message;
-
-            public void OnRelease()
-            {
-                postFrame = 0;
-                eventID = 0;
-                message = null;
-            }
+            public Action<IEventMessage> Callback;
+            public bool Active = true;
         }
 
-        private static bool m_IsInitialize = false;
-        private static readonly Dictionary<int, LinkedList<Action<IEventMessage>>> m_Listeners = new Dictionary<int, LinkedList<Action<IEventMessage>>>(1000);
+        private sealed class ListenerSet
+        {
+            public readonly List<Listener> Items = new List<Listener>();
+            private Listener[] snapshot;
+            public Listener[] Snapshot => snapshot ?? (snapshot = Items.ToArray());
+            public void Invalidate() => snapshot = null;
+        }
+
+        private sealed class PostWrapper
+        {
+            public int Frame;
+            public int EventId;
+            public IEventMessage Message;
+        }
+
+        private static bool m_IsInitialize;
+        private static readonly Dictionary<int, ListenerSet> m_Listeners = new Dictionary<int, ListenerSet>(1000);
         private static readonly List<PostWrapper> m_PostingList = new List<PostWrapper>(1000);
-		private static GameObject m_GameObject;
-		public static GameObject gameObject { get { return m_GameObject; } }
-		public static Transform transform { get { return m_GameObject.transform; } }
-		/// <summary>
-		/// 初始化事件系统
-		/// </summary>
-		public static void Initialize()
-        {
-			if (m_IsInitialize)
-			{
-				return;
-			}
+        // 本帧已接纳的批次由Update独占，ClearAll通过版本作废，不能在用户回调中改动其下标。
+        private static readonly List<PostWrapper> m_Ready = new List<PostWrapper>();
+        private static bool m_IsUpdating;
+        private static long m_Version;
+        private static GameObject m_GameObject;
+        public static GameObject gameObject => m_GameObject;
+        public static Transform transform => m_GameObject.transform;
 
-            if (m_IsInitialize == false)
-            {
-                // 创建驱动器
-                m_IsInitialize = true;
-				m_GameObject = PulletFrameworks.AddSubsystemGameObject($"[{nameof(PulletEvent)}]");
-				PLogger.Log($"{nameof(PulletEvent)} initalize !");
-            }
+        public static void Initialize()
+        {
+            if (m_IsInitialize) return;
+            m_GameObject = PulletFrameworks.AddSubsystemGameObject($"[{nameof(PulletEvent)}]");
+            m_IsInitialize = true;
+            PLogger.Log($"{nameof(PulletEvent)} initialized.");
         }
 
-        /// <summary>
-		/// 销毁事件系统
-		/// </summary>
         public static void Destroy()
         {
-            if (m_IsInitialize)
-            {
-                ClearAll();
-
-                m_IsInitialize = false;
-				if (gameObject != null)
-					GameObject.Destroy(gameObject);
-				PLogger.Log($"{nameof(PulletEvent)} destroy all !");
-            }
+            if (!m_IsInitialize) return;
+            m_IsInitialize = false;
+            ClearAll();
+            var root = m_GameObject;
+            m_GameObject = null;
+            if (root != null) GameObject.Destroy(root);
         }
 
-        /// <summary>
-        /// 更新事件系统
-        /// </summary>
         internal static void Update(float deltaTime, float unscaledDeltaTime)
         {
-			if (!m_IsInitialize) return;
-            for (int i = m_PostingList.Count - 1; i >= 0; i--)
+            if (!m_IsInitialize || m_IsUpdating) return;
+            m_IsUpdating = true;
+            long version = m_Version;
+            try
             {
-                var wrapper = m_PostingList[i];
-                if (UnityEngine.Time.frameCount > wrapper.postFrame)
+                // 先从等待队列移交，再进入外部回调；保留原来的后投递先执行顺序。
+                int retained = 0;
+                for (int i = 0; i < m_PostingList.Count; i++)
                 {
-                    SendMessage(wrapper.eventID, wrapper.message);
-                    m_PostingList.RemoveAt(i);
+                    var post = m_PostingList[i];
+                    if (Time.frameCount > post.Frame) m_Ready.Add(post);
+                    else m_PostingList[retained++] = post;
+                }
+                // 一次压缩待处理队列，避免逐项删除混合批次时反复搬移元素。
+                m_PostingList.RemoveRange(retained, m_PostingList.Count - retained);
+                for (int i = m_Ready.Count - 1; i >= 0; i--)
+                {
+                    if (version != m_Version || !m_IsInitialize) break;
+                    var post = m_Ready[i];
+                    SendMessage(post.EventId, post.Message);
                 }
             }
+            finally { m_Ready.Clear(); m_IsUpdating = false; }
         }
 
-        /// <summary>
-		/// 清空所有监听
-		/// </summary>
-		public static void ClearAll()
+        /// <summary>移除全部监听与待投递事件，同时作废当前批次尚未交付的事件。</summary>
+        public static void ClearAll()
         {
-            foreach (int eventId in m_Listeners.Keys)
-            {
-                m_Listeners[eventId].Clear();
-            }
+            foreach (var set in m_Listeners.Values)
+                foreach (var listener in set.Items) listener.Active = false;
             m_Listeners.Clear();
             m_PostingList.Clear();
+            m_Version++;
         }
 
-		/// <summary>
-		/// 添加监听
-		/// </summary>
-		public static void AddListener<TEvent>(System.Action<IEventMessage> listener) where TEvent : IEventMessage
-		{
-			System.Type eventType = typeof(TEvent);
-			int eventId = eventType.GetHashCode();
-			AddListener(eventId, listener);
-		}
-
-        /// <summary>
-        /// 添加监听
-        /// </summary>
-        public static void AddListener(System.Type eventType, System.Action<IEventMessage> listener)
+        public static void AddListener<TEvent>(Action<IEventMessage> listener) where TEvent : IEventMessage
+            => AddListener(typeof(TEvent), listener);
+        public static void AddListener(Type eventType, Action<IEventMessage> listener)
         {
-            int eventId = eventType.GetHashCode();
-            AddListener(eventId, listener);
+            if (eventType == null) throw new ArgumentNullException(nameof(eventType));
+            AddListener(eventType.GetHashCode(), listener);
         }
-
-        /// <summary>
-        /// 添加监听
-        /// </summary>
-        public static void AddListener(int eventId, System.Action<IEventMessage> listener)
-		{
-			if (!m_IsInitialize)
-			{
-				Initialize();
-			}
-			if (m_Listeners.ContainsKey(eventId) == false)
-				m_Listeners.Add(eventId, new LinkedList<Action<IEventMessage>>());
-			if (m_Listeners[eventId].Contains(listener) == false)
-				m_Listeners[eventId].AddLast(listener);
-		}
-
-
-		/// <summary>
-		/// 移除监听
-		/// </summary>
-		public static void RemoveListener<TEvent>(System.Action<IEventMessage> listener) where TEvent : IEventMessage
-		{
-			System.Type eventType = typeof(TEvent);
-			int eventId = eventType.GetHashCode();
-			RemoveListener(eventId, listener);
-		}
-
-        /// <summary>
-        /// 移除监听
-        /// </summary>
-        public static void RemoveListener(System.Type eventType, System.Action<IEventMessage> listener)
+        public static void AddListener(int eventId, Action<IEventMessage> listener)
         {
-            int eventId = eventType.GetHashCode();
-            RemoveListener(eventId, listener);
+            if (listener == null) throw new ArgumentNullException(nameof(listener));
+            if (!m_IsInitialize) Initialize();
+            if (!m_Listeners.TryGetValue(eventId, out var set))
+                m_Listeners.Add(eventId, set = new ListenerSet());
+            foreach (var item in set.Items) if (item.Callback == listener) return;
+            set.Items.Add(new Listener { Callback = listener });
+            set.Invalidate();
         }
 
-        /// <summary>
-        /// 移除监听
-        /// </summary>
-        public static void RemoveListener(int eventId, System.Action<IEventMessage> listener)
-		{
-			if (!m_IsInitialize)
-			{
-				Initialize();
-			}
-			if (m_Listeners.ContainsKey(eventId))
-			{
-				if (m_Listeners[eventId].Contains(listener))
-					m_Listeners[eventId].Remove(listener);
-			}
-		}
+        public static void RemoveListener<TEvent>(Action<IEventMessage> listener) where TEvent : IEventMessage
+            => RemoveListener(typeof(TEvent), listener);
+        public static void RemoveListener(Type eventType, Action<IEventMessage> listener)
+        {
+            if (eventType == null) throw new ArgumentNullException(nameof(eventType));
+            RemoveListener(eventType.GetHashCode(), listener);
+        }
+        public static void RemoveListener(int eventId, Action<IEventMessage> listener)
+        {
+            if (!m_IsInitialize || !m_Listeners.TryGetValue(eventId, out var set)) return;
+            for (int i = 0; i < set.Items.Count; i++)
+            {
+                var item = set.Items[i];
+                if (item.Callback != listener) continue;
+                item.Active = false;
+                set.Items.RemoveAt(i);
+                set.Invalidate();
+                if (set.Items.Count == 0) m_Listeners.Remove(eventId);
+                return;
+            }
+        }
 
+        public static void SendMessage(IEventMessage message)
+        {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            SendMessage(message.GetType().GetHashCode(), message);
+        }
+        public static void SendMessage<TEvent>() where TEvent : IEventMessage
+            => SendMessage(Activator.CreateInstance<TEvent>());
 
-		/// <summary>
-		/// 实时广播事件
-		/// </summary>
-		public static void SendMessage(IEventMessage message)
-		{
-			int eventId = message.GetType().GetHashCode();
-			SendMessage(eventId, message);
-		}
+        public static void SendMessage(int eventId, IEventMessage message)
+        {
+            if (!m_Listeners.TryGetValue(eventId, out var set)) return;
+            var snapshot = set.Snapshot;
+            for (int i = snapshot.Length - 1; i >= 0; i--)
+            {
+                var listener = snapshot[i];
+                if (!listener.Active) continue;
+                try { listener.Callback(message); }
+                catch (Exception error) { PLogger.Exception(error, $"Event listener failed: {eventId}"); }
+            }
+        }
 
-		/// <summary>
-		/// 实时广播事件
-		/// </summary>
-		/// <typeparam name="TEvent"></typeparam>
-		public static void SendMessage<TEvent>() where TEvent : IEventMessage
-		{
-			TEvent message = Activator.CreateInstance<TEvent>();
-			int eventId = message.GetType().GetHashCode();
-			SendMessage(eventId, message);
-		}
-
-		/// <summary>
-		/// 实时广播事件
-		/// </summary>
-		public static void SendMessage(int eventId, IEventMessage message)
-		{
-			if (m_Listeners.ContainsKey(eventId) == false)
-				return;
-
-			LinkedList<Action<IEventMessage>> listeners = m_Listeners[eventId];
-			if (listeners.Count > 0)
-			{
-				var currentNode = listeners.Last;
-				while (currentNode != null)
-				{
-					currentNode.Value.Invoke(message);
-					currentNode = currentNode.Previous;
-				}
-			}
-		}
-
-		/// <summary>
-		/// 延迟广播事件
-		/// </summary>
-		public static void PostMessage(IEventMessage message)
-		{
-			int eventId = message.GetType().GetHashCode();
-			PostMessage(eventId, message);
-		}
-
-		/// <summary>
-		/// 延迟广播事件
-		/// </summary>
-		public static void PostMessage(int eventId, IEventMessage message)
-		{
-			if (!m_IsInitialize)
-			{
-				Initialize();
-			}
-			var wrapper = new PostWrapper();
-			wrapper.postFrame = UnityEngine.Time.frameCount;
-			wrapper.eventID = eventId;
-			wrapper.message = message;
-			m_PostingList.Add(wrapper);
-		}
-	}
+        public static void PostMessage(IEventMessage message)
+        {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            PostMessage(message.GetType().GetHashCode(), message);
+        }
+        public static void PostMessage(int eventId, IEventMessage message)
+        {
+            if (!m_IsInitialize) Initialize();
+            m_PostingList.Add(new PostWrapper { Frame = Time.frameCount, EventId = eventId, Message = message });
+        }
+    }
 }

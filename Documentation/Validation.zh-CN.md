@@ -19,6 +19,7 @@
 | NetClient统一安装包 | 一个UPM入口，内部程序集保持分离 | [合包记录](Single-Package-Consolidation.zh-CN.md) |
 | NetClient Inspector兼容性 | 2021.3/2022.3中文标签、Tooltip与绘制路径等，见对应输入记录 | [安装历史](NetClient-3.0.0-Installation.zh-CN.md) |
 | 当前网络配置封包 | 2026-10-21配置整理来源及安装验证；不等于全模块、Player或真机重新验收 | [配置封包记录](NetClient-Configuration-Repack-20261021.md) |
+| Core事件与通用TCP维护 | Unity PlayMode37项、EditMode8项；源码诊断21项重复20个进程；不是PulletNet链路或设备验收 | [行为与兼容说明](Core-Event-Tcp.zh-CN.md) |
 | 平台问题 | 微信/抖音SDK、启动与资源流程的问题及处理 | [故障排查](../PulletFramework.MiniGame/Documentation/PlatformTroubleshooting.zh-CN.md) |
 
 ## 原始数据

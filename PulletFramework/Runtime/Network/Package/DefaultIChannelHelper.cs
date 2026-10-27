@@ -55,7 +55,7 @@ namespace PulletFramework.Network
                 byte[] bytes = memoryStream.GetBuffer();
                 int packetSize = BitConverter.ToInt32(bytes, 0);
                 packetHeader.PacketLength = packetSize;
-                packetHeader.Id = BitConverter.ToInt16(bytes, 4);
+                packetHeader.Id = BitConverter.ToInt32(bytes, 4);
                 return packetHeader;
             }
             return null;

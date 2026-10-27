@@ -1,375 +1,260 @@
-
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace PulletFramework.Network
 {
+    /// <summary>
+    /// Core TCP的一次连接。Update与业务回调在主线程，IO线程只提交完成记录。
+    /// 关闭后拒收新发送；Socket完成前保留缓冲区，不依赖后续Update释放。
+    /// </summary>
     internal class TcpChannel : IDisposable
     {
-        public HandleErrorDelegate channelHandleError;
-        private readonly SocketAsyncEventArgs m_ReceiveArgs = new SocketAsyncEventArgs();
-        private readonly SocketAsyncEventArgs m_SendArgs = new SocketAsyncEventArgs();
-
-        private Queue<NetPackage> m_SendQueue = new Queue<NetPackage>(1000);
-        private Queue<NetPackage> m_ReceiveQueue = new Queue<NetPackage>(1000);
-
-        private SendPackageStream m_SendPackageStream = new SendPackageStream();
-        private bool m_IsSending = false;
-        private ReceivePackageStream m_ReceivePackageStream = new ReceivePackageStream();
-        private bool m_IsReceiving = false;
-
-        private float m_HeartBeatTime = 0;
-
-        /// <summary>
-        /// 通信Socket
-        /// </summary>
-        private Socket m_Socket;
-        /// <summary>
-        /// 包体解析
-        /// </summary>
-        private IChannelHelper m_ChannelHelper;
-        public IChannelHelper channelHelper { get { return m_ChannelHelper; } }
-        private ThreadSyncContext m_SyncContext;
-
-        public void InitChannel(Socket socket, IChannelHelper channelHelper, ThreadSyncContext syncContext)
+        private sealed class IoCompletion
         {
-            m_Socket = socket;
-            m_Socket.NoDelay = true;
-            m_SyncContext = syncContext;
-
-            //编码解码器
-            m_ChannelHelper = channelHelper;
-            m_ChannelHelper.RigistHandleErrorCallback(HandleError);
-            // 创建IOCP接收类
-            m_ReceivePackageStream.Reset();
-            m_ReceiveArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-            m_ReceiveArgs.SetBuffer(m_ReceivePackageStream.stream.GetBuffer(), m_ReceivePackageStream.offset, m_ReceivePackageStream.count);
-
-            // 创建IOCP发送类
-            m_SendPackageStream.Reset();
-            m_SendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-            m_SendArgs.SetBuffer(m_SendPackageStream.stream.GetBuffer(), m_SendPackageStream.offset, m_SendPackageStream.count);
-
-            m_HeartBeatTime = 0;
+            public bool Send;
+            public int Bytes;
+            public SocketError Error;
         }
 
-        /// <summary>
-        /// 发送网络包
-        /// </summary>
+        public HandleErrorDelegate channelHandleError;
+        private readonly object gate = new object();
+        private readonly SocketAsyncEventArgs m_ReceiveArgs = new SocketAsyncEventArgs();
+        private readonly SocketAsyncEventArgs m_SendArgs = new SocketAsyncEventArgs();
+        private readonly Queue<NetPackage> m_SendQueue = new Queue<NetPackage>(1000);
+        private readonly Queue<NetPackage> m_ReceiveQueue = new Queue<NetPackage>(1000);
+        private readonly SendPackageStream m_SendPackageStream = new SendPackageStream();
+        private readonly ReceivePackageStream m_ReceivePackageStream = new ReceivePackageStream();
+        private Socket m_Socket;
+        private IChannelHelper m_ChannelHelper;
+        private ThreadSyncContext m_SyncContext;
+        private bool m_IsSending, m_IsReceiving, disposed, resourcesReleased;
+        private int pendingIo;
+        private float m_HeartBeatTime;
+        public IChannelHelper channelHelper => m_ChannelHelper;
+
+        public void InitChannel(Socket socket, IChannelHelper helper, ThreadSyncContext context)
+        {
+            if (socket == null) throw new ArgumentNullException(nameof(socket));
+            if (helper == null) throw new ArgumentNullException(nameof(helper));
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            lock (gate)
+            {
+                if (disposed) throw new ObjectDisposedException(nameof(TcpChannel));
+                if (m_Socket != null) throw new InvalidOperationException("Channel already initialized.");
+                m_Socket = socket;
+                m_ChannelHelper = helper;
+                m_SyncContext = context;
+                m_Socket.NoDelay = true;
+                if (helper.PackageHeaderLength <= 0) throw new ArgumentOutOfRangeException(nameof(helper.PackageHeaderLength));
+                m_ReceivePackageStream.PrepareForPacketHeader(helper.PackageHeaderLength);
+                m_SendArgs.Completed += IO_Completed;
+                m_ReceiveArgs.Completed += IO_Completed;
+                helper.RigistHandleErrorCallback(HandleError);
+            }
+        }
+
         public void SendPackage(NetPackage package)
         {
-            lock (m_SendQueue)
+            if (package == null) throw new ArgumentNullException(nameof(package));
+            lock (gate)
             {
+                if (disposed) throw new ObjectDisposedException(nameof(TcpChannel));
                 m_SendQueue.Enqueue(package);
             }
         }
 
-        /// <summary>
-        /// 检测Socket是否已连接
-        /// </summary>
         public bool IsConnected()
         {
-            if (m_Socket == null)
-                return false;
-            return m_Socket.Connected;
+            lock (gate) return !disposed && m_Socket != null && m_Socket.Connected;
         }
 
-        /// <summary>
-        /// 每当在套接字上完成接收或发送操作时，就调用此方法
-        /// </summary>
-        private void IO_Completed(object sender, SocketAsyncEventArgs e)
+        // 完成记录不借用可被Dispose/reuse的EventArgs。关闭后的物理完成直接清理，不投递无主回调。
+        private void IO_Completed(object sender, SocketAsyncEventArgs args)
         {
-            switch (e.LastOperation)
+            lock (gate)
             {
-                case SocketAsyncOperation.Receive:
-                    m_SyncContext.Post(ProcessReceive, e);
-                    break;
-                case SocketAsyncOperation.Send:
-                    m_SyncContext.Post(ProcessSend, e);
-                    break;
-                case SocketAsyncOperation.Disconnect:
-                    PLogger.Error("断开连接了");
-                    break;
-                default:
-                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
+                var result = Capture(args, ReferenceEquals(args, m_SendArgs));
+                pendingIo--;
+                if (!disposed) m_SyncContext.Post(ApplyCompletion, result);
+                ReleaseClosedResources();
             }
         }
 
-        #region 接受消息
-        /// <summary>
-        /// 数据接收完成时
-        /// </summary>
-        private void ProcessReceive(object obj)
+        private static IoCompletion Capture(SocketAsyncEventArgs args, bool send)
+            => new IoCompletion { Send = send, Bytes = args.BytesTransferred, Error = args.SocketError };
+
+        private void ApplyCompletion(object state)
         {
-            if (m_Socket == null)
-                return;
-
-            SocketAsyncEventArgs e = obj as SocketAsyncEventArgs;
-
-            if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
+            lock (gate)
             {
-                m_ReceivePackageStream.stream.Position += e.BytesTransferred;
+                if (disposed) return;
+                var result = (IoCompletion)state;
+                if (result.Send) ProcessSend(result);
+                else ProcessReceive(result);
+            }
+        }
 
-                //长度不够
-                if (m_ReceivePackageStream.stream.Position < m_ReceivePackageStream.stream.Length)
-                {
-                    m_IsReceiving = false;
-                    return;
-                }
+        private void ProcessSend(IoCompletion result)
+        {
+            m_IsSending = false;
+            if (result.Error != SocketError.Success || result.Bytes <= 0 || result.Bytes > m_SendPackageStream.count)
+            {
+                HandleError(true, $"TCP send failed: {result.Error}, bytes={result.Bytes}");
+                return;
+            }
+            // 保留本批次及偏移，只有全部字节发完才允许Reset和取下一批。
+            m_SendPackageStream.stream.Position += result.Bytes;
+        }
 
-                m_ReceivePackageStream.stream.Position = 0L;
-
-                bool processSuccess = false;
-                //获取包头
+        private void ProcessReceive(IoCompletion result)
+        {
+            m_IsReceiving = false;
+            if (result.Error != SocketError.Success || result.Bytes <= 0 || result.Bytes > m_ReceivePackageStream.count)
+            {
+                HandleError(true, $"TCP receive ended: {result.Error}, bytes={result.Bytes}");
+                return;
+            }
+            try
+            {
+                var stream = m_ReceivePackageStream.stream;
+                stream.Position += result.Bytes;
+                if (stream.Position < stream.Length) return;
+                stream.Position = 0;
                 if (m_ReceivePackageStream.packageHeader == null)
                 {
-                    processSuccess = ProcessPacketHeader();
+                    var header = m_ChannelHelper.DeserializePackageHeader(stream);
+                    if (header == null || header.PacketLength < 0) throw new InvalidOperationException("Invalid TCP frame header.");
+                    m_ReceivePackageStream.PrepareForPacket(header);
+                    if (header.PacketLength != 0) return;
                 }
-                else
-                {
-                    //获取包体
-                    processSuccess = ProcessPacket();
-                }
-
-                if (processSuccess)
-                {
-                    m_IsReceiving = false;
-                    return;
-                }
+                var packet = m_ChannelHelper.DeserializePackage(m_ReceivePackageStream.stream);
+                if (packet == null) throw new InvalidOperationException("Invalid TCP frame body.");
+                packet.msgId = m_ReceivePackageStream.packageHeader.Id;
+                m_ReceiveQueue.Enqueue(packet);
+                m_ReceivePackageStream.PrepareForPacketHeader(m_ChannelHelper.PackageHeaderLength);
             }
-            else
-            {
-                HandleError(true, $"ProcessReceive error : {e.SocketError}");
-            }
+            catch (Exception error) { HandleError(true, $"TCP frame decode failed: {error.Message}"); }
         }
-
-        private bool ProcessPacketHeader()
-        {
-            try
-            {
-                NetPackageHeader packetHeader = m_ChannelHelper.DeserializePackageHeader(m_ReceivePackageStream.stream);
-                if (packetHeader != null)
-                {
-                    m_ReceivePackageStream.PrepareForPacket(packetHeader);
-
-                    //没有消息体
-                    if (packetHeader.PacketLength <= 0)
-                    {
-                        bool processSuccess = ProcessPacket();
-                        return processSuccess;
-                    }
-                }
-                else
-                {
-                    //
-                    throw new Exception("Packet header is invalid.");
-                }
-            }
-            catch (Exception exception)
-            {
-                PLogger.Error(exception.Message);
-                return false;
-                throw;
-            }
-            return true;
-        }
-
-        private bool ProcessPacket()
-        {
-            try
-            {
-                NetPackage packet = m_ChannelHelper.DeserializePackage(m_ReceivePackageStream.stream);
-                if (packet != null)
-                {
-                    packet.msgId = m_ReceivePackageStream.packageHeader.Id;
-                    //分发消息
-                    m_ReceiveQueue.Enqueue(packet);
-                }
-
-                m_ReceivePackageStream.PrepareForPacketHeader();
-            }
-            catch (Exception exception)
-            {
-                PLogger.Error(exception.Message);
-                return false;
-
-                throw;
-            }
-
-            return true;
-        }
-
-        #endregion
-
-        #region 发送消息
-        /// <summary>
-		/// 数据发送完成时
-		/// </summary>
-		private void ProcessSend(object obj)
-        {
-            if (m_Socket == null)
-                return;
-
-            SocketAsyncEventArgs e = obj as SocketAsyncEventArgs;
-            if (e.SocketError == SocketError.Success)
-            {
-                m_IsSending = false;
-            }
-            else
-            {
-                HandleError(true, $"ProcessSend error : {e.SocketError}");
-            }
-        }
-
-        #endregion
 
         internal void Update(float deltaTime, float unscaledDeltaTime)
         {
-            if (m_Socket == null || m_Socket.Connected == false)
-                return;
-            //发送心跳包
-            SendHeartBeat(unscaledDeltaTime);
-
-            // 发送数据
-            UpdateSending();
-
-            // 接收数据
-            UpdateReceiving();
-
-            //处理接受到的消息
-            ReceivingDispose();
-        }
-
-        private void SendHeartBeat(float unscaledDeltaTime)
-        {
-            m_HeartBeatTime += unscaledDeltaTime;
-            if (m_HeartBeatTime >= m_ChannelHelper.HeartBeatInterval)
+            lock (gate)
             {
-                m_HeartBeatTime = 0;
-                if (m_ChannelHelper.GetHeartBeat() != null)
+                if (disposed || m_Socket == null) return;
+                try
                 {
-                    SendPackage(m_ChannelHelper.GetHeartBeat());
+                    m_HeartBeatTime += unscaledDeltaTime;
+                    if (m_ChannelHelper.HeartBeatInterval > 0 && m_HeartBeatTime >= m_ChannelHelper.HeartBeatInterval)
+                    {
+                        m_HeartBeatTime = 0;
+                        var heartbeat = m_ChannelHelper.GetHeartBeat();
+                        if (heartbeat != null) SendPackage(heartbeat);
+                    }
+                    if (!disposed) UpdateSending();
+                    if (!disposed) UpdateReceiving();
+                }
+                catch (Exception error) { HandleError(true, $"TCP IO failed: {error.Message}"); }
+                while (!disposed && m_ReceiveQueue.Count > 0)
+                {
+                    var packet = m_ReceiveQueue.Dequeue();
+                    try { MessageDistribute.MessageDispose(this, packet); }
+                    catch (Exception error) { PLogger.Exception(error, $"TCP message callback failed: {packet.msgId}"); }
                 }
             }
         }
 
         private void UpdateSending()
         {
-            if (m_IsSending == false && m_SendQueue.Count > 0)
+            if (m_IsSending) return;
+            if (m_SendPackageStream.count == 0)
+            {
+                if (m_SendQueue.Count == 0) return;
+                m_SendPackageStream.Reset();
+                int count = m_SendQueue.Count;
+                for (int i = 0; i < count && !disposed; i++)
+                {
+                    var packet = m_SendQueue.Dequeue();
+                    if (!m_ChannelHelper.Serialize(packet, m_SendPackageStream.stream))
+                        throw new InvalidOperationException("TCP serializer rejected a packet.");
+                }
+                if (disposed) return;
+                m_SendPackageStream.stream.Position = 0;
+            }
+            while (!disposed && m_SendPackageStream.count > 0)
             {
                 m_IsSending = true;
-
-                // 清空缓存
-                m_SendPackageStream.Reset();
-                //// 合并数据一起发送
-                while (m_SendQueue.Count > 0)
-                {
-                    NetPackage packet = null;
-                    lock (m_SendQueue)
-                    {
-                        packet = m_SendQueue.Dequeue();
-                    }
-
-                    bool serializeResult = false;
-                    try
-                    {
-						PLogger.DebugLog($"发送消息：" + packet.msgId);
-                        serializeResult = m_ChannelHelper.Serialize(packet, m_SendPackageStream.stream);
-                    }
-                    catch (Exception exception)
-                    {
-                        PLogger.Error(exception.Message);
-                        throw;
-                    }
-                }
-
-                m_SendPackageStream.stream.Position = 0;
-
-                // 请求操作
-                m_SendArgs.SetBuffer(m_SendPackageStream.stream.GetBuffer(), m_SendPackageStream.offset, m_SendPackageStream.count);
-                bool willRaiseEvent = m_Socket.SendAsync(m_SendArgs);
-                if (!willRaiseEvent)
-                {
-                    ProcessSend(m_SendArgs);
-                }
+                var completion = StartIo(true);
+                if (completion == null) return;
+                ProcessSend(completion);
             }
         }
 
         private void UpdateReceiving()
         {
-            if (!m_IsReceiving)
-            {
-                m_IsReceiving = true;
-
-                // 请求操作
-                m_ReceiveArgs.SetBuffer(m_ReceivePackageStream.stream.GetBuffer(), m_ReceivePackageStream.offset, m_ReceivePackageStream.count);
-                bool willRaiseEvent = m_Socket.ReceiveAsync(m_ReceiveArgs);
-                if (!willRaiseEvent)
-                {
-                    ProcessReceive(m_ReceiveArgs);
-                }
-            }
+            if (m_IsReceiving) return;
+            m_IsReceiving = true;
+            var completion = StartIo(false);
+            if (completion != null) ProcessReceive(completion);
         }
 
-        /// <summary>
-        /// 接受的消息处理
-        /// </summary>
-        private void ReceivingDispose()
+        // 调用者持有gate。同步完成在当前线程处理，异步完成由IO_Completed接收；两者只结算一次。
+        private IoCompletion StartIo(bool send)
         {
-            while (m_ReceiveQueue.Count > 0)
+            var args = send ? m_SendArgs : m_ReceiveArgs;
+            if (send) args.SetBuffer(m_SendPackageStream.stream.GetBuffer(), m_SendPackageStream.offset, m_SendPackageStream.count);
+            else args.SetBuffer(m_ReceivePackageStream.stream.GetBuffer(), m_ReceivePackageStream.offset, m_ReceivePackageStream.count);
+            pendingIo++;
+            try
             {
-                NetPackage packet = null;
-                lock (m_ReceiveQueue)
-                {
-                    packet = m_ReceiveQueue.Dequeue();
-                }
-
-                MessageDistribute.MessageDispose(this, packet);
+                bool pending = send ? m_Socket.SendAsync(args) : m_Socket.ReceiveAsync(args);
+                if (pending) return null;
+                pendingIo--;
+                return Capture(args, send);
             }
+            catch { pendingIo--; throw; }
         }
 
         public void Dispose()
         {
-            try
+            lock (gate)
             {
-                if (m_Socket != null)
-                    m_Socket.Shutdown(SocketShutdown.Both);
-
-                m_SendArgs.Dispose();
-                m_ReceiveArgs.Dispose();
-
-                m_SendQueue.Clear();
-                m_ReceiveQueue.Clear();
-
-                m_SendPackageStream.Dispose();
-                m_ReceivePackageStream.Dispose();
-
-                m_IsSending = false;
-                m_IsReceiving = false;
-
+                if (disposed) return;
+                disposed = true;
+                var socket = m_Socket;
+                m_Socket = null;
+                m_SendQueue.Clear(); m_ReceiveQueue.Clear();
+                try { socket?.Dispose(); }
+                finally { ReleaseClosedResources(); }
             }
-            catch (Exception)
-            {
-                // throws if client process has already closed, so it is not necessary to catch.
-            }
+        }
+
+        private void ReleaseClosedResources()
+        {
+            if (!disposed || pendingIo != 0 || resourcesReleased) return;
+            resourcesReleased = true;
+            try { m_SendArgs.Dispose(); }
             finally
             {
-                if (m_Socket != null)
+                try { m_ReceiveArgs.Dispose(); }
+                finally
                 {
-                    m_Socket.Close();
-                    m_Socket = null;
+                    try { m_SendPackageStream.Dispose(); }
+                    finally { m_ReceivePackageStream.Dispose(); }
                 }
             }
         }
 
-        /// <summary>
-        /// 捕获异常错误
-        /// </summary>
-        private void HandleError(bool isReconnection, string error)
+        private void HandleError(bool close, string error)
         {
-            PLogger.Error(error);
-            channelHandleError?.Invoke(isReconnection, error);
+            lock (gate)
+            {
+                if (disposed) return;
+                if (close) Dispose();
+                PLogger.Error(error);
+                try { channelHandleError?.Invoke(close, error); }
+                catch (Exception callbackError) { PLogger.Exception(callbackError, "TCP error callback failed."); }
+            }
         }
     }
 }
