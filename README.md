@@ -17,16 +17,6 @@
 
 核心包可以单独使用；其他包按需安装。NetClient 本身不依赖核心框架，可以独立接入。
 
-## 几个设计选择
-
-- **窗口逻辑不要求继承 MonoBehaviour。** UI 由普通 C# 的窗口类型管理生命周期与交互，Unity 对象承载视图；导航、缓存、返回拦截和异步打开由窗口系统处理。
-- **资源包管理与业务加载分开。** 框架准备资源包并适配内部加载，业务直接使用 YooAsset 的 `ResourcePackage` API。
-- **按模块管理异步任务和资源。** 窗口、音频和对象池分别处理加载、取消、关闭与释放。
-- **平台能力是可选依赖。** PC、App 或 VR 项目不应被迫引入微信、抖音 SDK；具体 SDK 绑定位于独立桥接层。
-- **编辑器采用模块注册。** 工作台通过接口发现扩展页面，核心编辑器不反向依赖每一个可选包。
-
-详细依赖与取舍见[架构说明](Documentation/Architecture.zh-CN.md)。
-
 ## 开始使用
 
 在 Unity Package Manager 中选择 **Add package from git URL**。只体验基础能力时，先安装核心包：
@@ -65,8 +55,6 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 扩展自己的页面，只需在 Editor 程序集中实现 `IPulletWorkspaceModule`。使用方式见[工作台扩展](PulletFramework/README.md#编辑器工作台)。
 
 ## 状态与验证
-
-各包独立版本管理，多数框架包处于 0.x，NetClient 为 3.0.0。项目接入建议固定提交。
 
 已运行的环境包括 Windows Player、微信/抖音开发者工具、HybridCLR 的 Windows IL2CPP，以及 NetClient 的 Editor/Windows Mono。具体版本与结果见测试记录。NetClient 暂不支持 WebGL、微信和抖音小游戏。
 
