@@ -2,10 +2,10 @@
 
 Unity统一netclient包内的可选消息模块，不再作为独立UPM包安装。
 namespace/程序集仍为PulletFramework.Messaging；包版本与迁移步骤见根README。
-U10-A只提供MessageSession，不创建/接管网络客户端、不拥有Socket、不引用NetClient或UnityEngine，
+本模块提供MessageSession，不创建/接管网络客户端、不拥有Socket、不引用NetClient或UnityEngine，
 不增加Payload队列，不重写RPC计时、额度或订阅算法。
 
-NativeInput锁定2f0cfc3干净导出的3.0.0 PulletNet.Messaging netstandard2.1实际DLL，不冒充旧RC远端CI产物。
+底层使用PulletNet.Messaging（netstandard2.1），来源与校验值见NativeInput。
 只包含这一份无外部依赖的DLL；不包含Messaging.ClientSDK（它自己拥有NetClient）或默认JSON/Protobuf库。
 
 ## 使用边界
@@ -25,7 +25,7 @@ Request帧明确拒绝为UnexpectedKind，本层没有业务请求handler。
 Source是本地不可混淆的消息来源对象，不是线协议身份，也不是鉴权证明。
 必须在输入被应用接纳时捕获准确来源，不能消费时改贴成“当前Source”。
 NewSession才新建本对象；PreservedSession不能重置registry/RpcId，否则迟到响应可能撞上新调用。
-它不自动观察网络状态、不承诺透明重连/重绑；这些归U10-B显式绑定验收。
+网络生命周期由调用方管理；需要现成绑定时使用NetClient.Messaging模块。
 
 ## 额度与关闭
 
@@ -48,6 +48,4 @@ Docs/Unity/Messaging-U10-Migration.zh-CN.md。属性推断与默认JSON明确不
 
 本包与可选网络绑定已通过隔离Unity2022.3.62f3 Windows实际PlayMode及x64 Mono Development
 Low裁剪Player的有限收发/生命周期验收；详情见开发仓库Docs/Unity/U11-PC-Acceptance.zh-CN.md。
-不认证Unity2021.3、Android IL2CPP/PICO、跨平台或真实Protobuf实现。
-测试的4字节标量codec是测试夹具，不是Protobuf编解码器。
-完整证据见开发仓库Docs/Unity，不同步Framework或业务工程。
+测试使用简单标量codec。Protobuf及目标设备请按项目的编码模型与平台配置接入。

@@ -1,6 +1,6 @@
 # PulletFramework.NetClient.Discovery
 
-统一netclient包内的可选连接选择模块，不再单独安装UPM包；不是第二份网络实现。
+统一netclient包内的可选连接选择模块，不再单独安装UPM包。
 依赖NetClient与Discovery两个程序集，不让两者反向依赖；版本与迁移步骤见根README。
 
 在已有PulletNetworkManager的GameObject上添加PulletDiscoveryConnector。
@@ -19,7 +19,7 @@ DiscoverFirst=1、DirectThenDiscover=2），由界面await AutoConnectAsync，
 
 退出：先await connector.CloseAsync，再await manager.ShutdownAsync，然后销毁对象。
 Close只等待本组件的策略/发现IO及已进入发现UI回调，不拥有/关闭Manager。
-Unity的OnDisable/OnDestroy不会等待异步任务，需要收据时必须显式await；
+Unity的OnDisable/OnDestroy不会等待异步任务，等待关闭完成时必须显式await；
 回调中可以请求Close，但不能同步等待自己返回。
 
 旧Manager/Relay字段与持久事件必须显式迁移，见开发仓库
@@ -29,4 +29,4 @@ Docs/Unity/Discovery-U9B-Migration.zh-CN.md；保留旧资产备份后再升级�
 
 U11已通过Unity2022.3.62f3 Windows实际PlayMode及x64 Mono Development Low裁剪Player的
 受控回环发现→raw连接/收发/显式退出；独立Discovery→typed也在同轮有限验证。
-详见开发仓库Docs/Unity/U11-PC-Acceptance.zh-CN.md；不认证跨机广播、NAT、OS真实后台或Android/PICO。
+测试环境见开发仓库Docs/Unity/U11-PC-Acceptance.zh-CN.md；跨机广播与设备情况见支持矩阵。

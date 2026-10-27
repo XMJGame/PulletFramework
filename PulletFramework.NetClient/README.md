@@ -1,27 +1,20 @@
 # PulletFramework.NetClient
 
-Unity统一客户端包，封包版本3.0.0。包ID保持
-`com.xmjgame.pullet-framework.netclient`，namespace保持`PulletFramework.NetClient`。
-唯一开发源是PulletNet仓库UnityPackages；Framework和业务工程只是另行安排的固定安装副本。
+Unity网络客户端，提供连接、多连接管理、主线程消息派发、消息会话与局域网发现。
+包ID为`com.xmjgame.pullet-framework.netclient`，命名空间为`PulletFramework.NetClient`。
+开发源位于PulletNet仓库的UnityPackages，PulletFramework仓库提供安装副本。
 
 参数用途、默认值、传输生效条件和遗留项见包内 [Configuration.md](Configuration.md)。
-此文件由开发源 Docs/Usage/Configuration.md 的固定快照生成，源码链接指向对应提交；
-不将所有原生高级参数自动暴露为 Inspector 配置。相同 3.0.0 的本地重封包须按 NativeInput
-和同步收据的准确源码、哈希识别，不能仅凭版本号判断新旧。
+Inspector提供常用连接参数，完整配置见上述指南。底层DLL来源与校验值记录在NativeInput.json。
 
-## 当前范围
+## 模块组成
 
-交付只需一个完整UPM包：连接/主线程交付、typed消息、局域网发现及组合适配均包含在内；
-内部仍是五个独立asmdef，命名空间/程序集名/GUID和运行时所有权不变。
-不使用的功能不自动启动，不新增Host或Payload队列。服务端/NuGet拆分不变。
+安装一个UPM包即可使用连接、消息和发现能力，内部按五个程序集组织。可选功能由应用按需创建。
 
-原始连接程序集只负责Unity主线程交付、连接配置、生命周期和默认来源Manager。NativeInput锁定
-10f9619f670d97853e170e668e83db43833986c6干净导出的3.0.0 Protocol(netstandard2.0)与ClientSDK(netstandard2.1)
-两份实际DLL，不含NetCore/Hosting。此输入是本地封包，不伪装为旧RC的Windows CI产物。
+连接程序集负责Unity主线程派发、配置、生命周期和默认连接Manager，底层使用Protocol与ClientSDK，不包含服务端NetCore或Hosting。
 raw程序集不引用Messaging/Discovery/Json.NET，也不提供默认业务codec；
 消息与发现的程序集位于Modules/，按需使用，不再逐个导入4份附加UPM包。
 统一包因发现协议声明com.unity.nuget.newtonsoft-json 3.2.1依赖；即使只用raw也会解析它，
-这是简化安装的明确取舍，不承诺更小包体或绝对零依赖。
 旧ConfigureMessaging/Subscribe/CallAsync/SendMessageAsync及PulletMessage*接口已移除，
 升级前阅读开发仓库Docs/Unity/Messaging-U10-Migration.zh-CN.md；没有静默转发或旧RPC兼容层。
 
@@ -29,17 +22,14 @@ Discovery保留独立程序集，连接核心不持有发现Socket/DTO/策略。
 Modules/Discovery提供独立DiscoveryRuntime，Modules/NetClient.Discovery提供组合选择策略与Inspector桥接；
 Modules/Messaging提供独立消息会话，Modules/NetClient.Messaging提供现有Runtime上的typed绑定。
 Messaging、Discovery与raw均为同一干净源码10f9619的3.0.0产物；Discovery自身协议仍为1。
-NativeInput锁定实际包/DLL字节，不能仅凭版本推断来源一致。实际PC验证和未验平台
-见开发仓库Docs/Releases/Support-Matrix.md；本次本地同版本重封包与同步收据另行记录，不改写原发布证据。
+版本与平台测试见开发仓库Docs/Releases/Support-Matrix.md。
 
 ## 从旧五包布局迁移
 
 先备份工程Packages/manifest.json、packages-lock.json及嵌入包，再用完整且已校验的3.0.0固定副本替换旧netclient。
 移除旧discovery/messaging/netclient-discovery/netclient-messaging四个独立包及其manifest/testables登记；
 不能同时保留旧模块包，否则会重复DLL、asmdef和脚本GUID。移动已有文件保留.meta，
-程序集/命名空间/API不因包合并改名，但不承诺此前已退役API自动兼容。
-不要把Modules内文件拆出来再安装成UPM包。先在隔离工程验证，再安排Framework/业务迁移。
-本次只修改开发源，未执行任何下游迁移或原生DLL升级。
+合包保留程序集、命名空间和脚本GUID。Modules内的目录不是独立UPM包，不要重复安装。
 
 旧Manager/Relay发现成员已移除；升级前先保存旧资产/配置/事件备份，
 按开发仓库Docs/Unity/Discovery-U9B-Migration.zh-CN.md逐项迁移。
@@ -96,14 +86,10 @@ ShutdownAsync永久关闭接纳，并等待已接纳操作、恢复和Runtime真
 OnDestroy/OnApplicationQuit只请求关闭，Unity不等待这些回调。不可同步Wait/Result堵住主线程。
 使用可选发现组合时先await connector.CloseAsync，再await manager.ShutdownAsync。
 
-## 支持与验证边界
+## 运行环境
 
-当前实际工具链Unity2022.3.62f3/Windows Editor及x64 Mono Development Low裁剪Player。
-U11已用实际PlayMode和最小raw/可选组合Player完成有限收发/场景/退出验收，
-准确范围见开发仓库Docs/Unity/U11-PC-Acceptance.zh-CN.md；不是容量、全部平台或正式发布认证。
-清单最低2021.3不是已实测声明；早期U6/U7 PlayMode/Mono Player只认证当时输入。
-U9发现检查点不替代U11；当前仍不认证OS真实后台、Android IL2CPP/PICO或跨机广播。
-WebGL/小游戏暂不支持；网络核心、KCP和目标平台扩展不在本批。
+连接与组合功能已有Unity2022.3.62f3 Windows Editor及x64 Mono Player测试，详见开发仓库Docs/Unity/U11-PC-Acceptance.zh-CN.md。
+Inspector另有Unity2021.3兼容测试。设备、系统后台和跨机广播测试按支持矩阵查询；WebGL与小游戏暂不支持。
 
 安装使用完整固定包的嵌入副本，不使用工程外绝对路径、软链接或自动追随开发源。
 Tools/Export-PulletNetUnityPackage.ps1仅做只读新目录导出；不更新DLL或自动安装下游。

@@ -64,7 +64,7 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 
 ## 文档导航
 
-- [架构与设计取舍](Documentation/Architecture.zh-CN.md)
+- [架构说明](Documentation/Architecture.zh-CN.md)
 - [文档索引](Documentation/README.md)
 - [NetClient 配置指南](PulletFramework.NetClient/Configuration.md)
 - [微信与抖音常见问题](PulletFramework.MiniGame/Documentation/PlatformTroubleshooting.zh-CN.md)

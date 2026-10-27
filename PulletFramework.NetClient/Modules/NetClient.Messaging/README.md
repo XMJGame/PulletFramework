@@ -19,7 +19,6 @@ namespace/程序集仍为PulletFramework.NetClient.Messaging；版本与迁移�
 第一版明确使用一次性 incarnation：一个绑定只允许一次 Connect 尝试。
 显式关闭并等待 connection.Completion 后，才能使用同名的新绑定连接新 Session。
 失败重试也创建新绑定，不在原 HostedClient 上重置 RpcId；名称复用不复用来源身份。
-这不是临时兼容层，不承诺这个对象以后能变成透明自动重连管理器。
 
 network.Reconnect.EnableReconnect 必须由调用者显式设为 false，否则构造时拒绝、不会修改配置。
 通道必须是 ReliableOrdered，默认 ChannelId=0；不按 DeliveryMode 枚举值猜 ID。
@@ -62,5 +61,4 @@ U10已迁出旧Manager RPC/JSON；raw无消息路由或Json.NET依赖，不需�
 公开入口、关闭语义及旧测试行为去向见开发仓库Docs/Unity/Messaging-U10-Migration.zh-CN.md。
 U11已完成Unity2022.3.62f3 Windows实际PlayMode及x64 Mono Development Low裁剪Player有限验收，
 含发现后typed、回调关闭、pending退役和双来源隔离；详见开发仓库Docs/Unity/U11-PC-Acceptance.zh-CN.md。
-Android IL2CPP/PICO、Unity2021.3、跨平台、真实系统后台及保留重绑仍未验或未支持。
-测试的4字节标量 codec 只借用编码辨识值，不是 Protobuf 实现或兼容性认证。
+测试使用标量codec。目标设备情况见支持矩阵；同一绑定的重连、保留重绑仍不支持。

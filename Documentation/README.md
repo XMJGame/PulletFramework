@@ -3,7 +3,7 @@
 ## 使用与设计
 
 - [项目首页](../README.md)：模块选择、安装与使用入口
-- [架构与设计取舍](Architecture.zh-CN.md)
+- [架构说明](Architecture.zh-CN.md)
 - [模块状态与路线图](Roadmap.zh-CN.md)
 - [验证范围与记录](Validation.zh-CN.md)
 - [Core事件与通用TCP的行为与兼容说明](Core-Event-Tcp.zh-CN.md)

@@ -5,7 +5,6 @@ Assembly/namespace remain PulletFramework.Discovery; see the root README for mig
 Unity main-thread handoff for the independent PulletNet.Discovery module.
 It does not reference NetClient, NetCore, Hosting, Messaging or PulletFramework.NetClient.
 Json.NET is supplied by com.unity.nuget.newtonsoft-json. WebGL is excluded.
-The package is a development checkpoint, not a published or device-certified release.
 
 ```csharp
 // Construct on the Unity thread; call Update from the application's frame owner.
@@ -47,15 +46,11 @@ IsCanceled. Subscriber failures are isolated, counted and optionally sent to
 CallbackError; a failing diagnostic does not abort cleanup. Invalid options are
 rejected by the native module, not by a duplicated Unity validation algorithm.
 
-NativeInput locks the actual 3.0.0 DLL from clean source 2f0cfc3, aligned with the
-other native inputs. Discovery-v1 itself is unchanged. This local package gate
-does not claim new remote CI or device acceptance; see Docs/Release-3.0.0.md.
-Unity2021.3 in package.json is a declared floor, not a tested-platform statement.
+NativeInput records the installed DLL source and hashes. Discovery uses its own v1 protocol.
 
 U9-B has retired the legacy NetClient discovery loop/APIs. Raw NetClient can be
 used without constructing this module; NetClient.Discovery owns selection policy.
 See Docs/Unity/Discovery-U9B-Migration.zh-CN.md in the development repository.
 U11 validates controlled IPv4 loopback discovery, raw/typed composition and
 explicit cleanup in Unity2022.3.62f3 Windows PlayMode and x64 Mono Development
-Low-stripping Player. This is not cross-machine broadcast/NAT, Android/PICO,
-OS-background or arbitrary-platform acceptance. No downstream install is automatic.
+Low-stripping Player. Cross-machine broadcast, NAT, device and background behavior require separate platform testing.

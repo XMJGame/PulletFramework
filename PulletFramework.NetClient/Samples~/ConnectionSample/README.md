@@ -9,10 +9,10 @@
 
 代码调用可等待 `ConnectAsync`、`SendAsync`、`DisconnectAsync`、`ShutdownAsync`；Inspector的ContextMenu命令只负责触发并报告结果，异常在UI边界观察。
 
-`Disconnect`允许以后重新连接，`Shutdown (Permanent)`不可逆。切换/退出场景前需要真实退出收据时，由场景流程显式 `await sample.ShutdownAsync()`，随后再销毁Manager或卸载场景。不能同步Wait/Result堵住Unity主线程，也不能把OnDestroy/OnApplicationQuit返回当作清理完成。
+`Disconnect`允许以后重新连接，`Shutdown (Permanent)`不可逆。切换/退出场景前等待连接退出时，由场景流程显式 `await sample.ShutdownAsync()`，随后再销毁Manager或卸载场景。不能同步Wait/Result堵住Unity主线程，也不能把OnDestroy/OnApplicationQuit返回当作清理完成。
 
 示例和可选Relay只订阅事件，不拥有网络。OnDisable只取消自己的订阅，不擅自断开别人的Manager。`dontDestroyOnLoad=true`的Manager跨场景保留，仍需明确的应用退出owner；不要为了多连接创建多个单例Manager，多连接使用独立 `PulletClientRuntime`。
 
-Unity 2022.3.62f3 Windows Editor已在独立PlayMode工程验证示例公开Task API、Relay启停、场景卸载和组合通知，证据在开发仓库Docs/Unity。该结果不是Android/IL2CPP/PICO、操作系统切后台或实际进程退出的验收。
+Unity 2022.3.62f3 Windows Editor已在独立PlayMode工程验证示例公开Task API、Relay启停、场景卸载和组合通知，证据在开发仓库Docs/Unity。其他平台请参考支持矩阵。
 
 此示例只演示客户端接入流程。业务消息格式和序列化由具体项目负责，不应放进通用网络包。
