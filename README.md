@@ -1,121 +1,88 @@
 # Pullet Framework
 
-> [!IMPORTANT]
-> 这是作者用于个人学习、架构实验和 Unity 小游戏适配验证的公开仓库，不是稳定发行的商业框架或开箱即用的项目模板。当前 API、目录、配置和模块边界仍可能发生不兼容调整，请不要仅因为仓库公开就默认它已经适合生产环境。
+面向 Unity 的模块化客户端框架，整理项目中重复出现的窗口、事件、状态机、资源生命周期、对象池和音频能力，并提供资源更新、小游戏适配与编辑器工具。
 
-Pullet Framework 正在探索一套面向 Unity 游戏、App 和微信/抖音小游戏的模块化基础架构。基础框架只保留通用运行时能力，资源管理、小游戏平台和 HybridCLR 作为可选模块按需组合。这些实现主要用于沉淀思路、验证技术路线和复盘实际问题，也欢迎作为学习参考。
+框架关注的是**模块如何组合、异步工作由谁持有、资源何时释放**。资源加载复用 YooAsset，代码热更新复用 HybridCLR，网络客户端复用 PulletNet；不把第三方系统重新包装成另一套完整实现。
 
-当前版本处于 `0.x` 开发阶段，只维护 `main` 分支，尚未承诺稳定 API 或长期兼容性。项目已在 Unity `2022.3.62f3` 中完成三种全新 UPM 组合编译、Windows x64 Player 构建与运行，以及微信、抖音开发者工具基础运行验证；小游戏真机缓存、完整平台能力和性能仍待验收。
+## 能做什么
 
-## 使用前须知
+| 模块 | 主要能力 | 使用入口 |
+| --- | --- | --- |
+| PulletFramework | 窗口导航与缓存、事件、状态机、配置表、对象池、音频、设置及框架资源接口 | [核心模块](PulletFramework/README.md) |
+| PulletFramework.YooAsset | 默认包与多资源包初始化、更新、下载、清理及构建 | [资源管理](PulletFramework.YooAsset/README.md) |
+| PulletFramework.AssetPublishing | 编辑器资源发布、供应商接口、腾讯云 COS 与 CORS 配置 | [资源发布](PulletFramework.AssetPublishing/README.md) |
+| PulletFramework.MiniGame | 微信/抖音平台接口、生命周期、登录、分享、广告和发布工具 | [小游戏适配](PulletFramework.MiniGame/README.md) |
+| PulletFramework.HybridCLR | 热更新程序集构建、清单与运行时加载 | [代码热更新](PulletFramework.HybridCLR/README.md) |
+| PulletFramework.NetClient | Unity 连接生命周期、多连接、主线程消息交付、消息会话和局域网发现 | [网络客户端](PulletFramework.NetClient/README.md) |
 
-- **适合**：阅读实现、讨论架构、验证 YooAsset/CDN/小游戏流程，以及在可自行维护的实验项目中试用。
-- **暂不建议直接用于**：无法接受破坏性变更、缺少独立回归能力或需要正式技术支持承诺的生产项目。
-- 自动化测试和已记录的运行结果只覆盖文档注明的版本与场景，不代表所有 Unity、YooAsset、微信 SDK、TTSDK 或设备组合均已通过。
-- 在实际项目中使用时，请自行审查源码、第三方依赖许可、安全配置和平台规则，并固定到经过自己验证的提交。
-- 本仓库不提供稳定性、兼容性或持续维护承诺；已知边界和待验证事项以[开发状态文档](Documentation/DevelopmentStatus.zh-CN.md)为准。
+核心包可以单独使用；其他包按需安装。NetClient 本身不依赖核心框架，可以独立接入。
 
-## 模块
+## 几个设计选择
 
-| 目录 | Package | 用途 | 是否必需 |
-| --- | --- | --- | --- |
-| `PulletFramework` | `com.xmjgame.pullet-framework` | Window、事件、状态机、网络、音频、对象池、设置和资源抽象 | 是 |
-| `PulletFramework.AssetPublishing` | `com.xmjgame.pullet-framework.asset-publishing` | 编辑器资源发布与对象存储供应商抽象 | 否 |
-| `PulletFramework.YooAsset` | `com.xmjgame.pullet-framework.yooasset` | YooAsset 初始化、多 Package 更新、构建与 CDN 发布 | 否 |
-| `PulletFramework.MiniGame` | `com.xmjgame.pullet-framework.minigame` | 微信、抖音平台能力、SDK 桥接和统一发布窗口 | 否 |
-| `PulletFramework.HybridCLR` | `com.xmjgame.pullet-framework.hybridclr` | HybridCLR 构建、清单与运行时加载 | 否 |
-| `PulletFramework.NetClient` | `com.xmjgame.pullet-framework.netclient` | Unity统一网络包：连接、消息、发现及组合，内部仍保持五个独立程序集 | 否 |
+- **窗口逻辑不要求继承 MonoBehaviour。** UI 由普通 C# 的窗口类型管理生命周期与交互，Unity 对象承载视图；导航、缓存、返回拦截和异步打开由窗口系统处理。
+- **不再造一个 YooAsset。** 框架负责资源包准备与自身资源适配，业务仍直接使用 YooAsset 的 `ResourcePackage` API。
+- **明确异步操作与资源的所有者。** 窗口、音频和对象池需要处理取消、关闭与迟到结果，不能把“请求取消”当成“资源已释放”。
+- **平台能力是可选依赖。** PC、App 或 VR 项目不应被迫引入微信、抖音 SDK；具体 SDK 绑定位于独立桥接层。
+- **编辑器采用模块注册。** 工作台通过接口发现扩展页面，核心编辑器不反向依赖每一个可选包。
 
-推荐组合：
+详细依赖与取舍见[架构说明](Documentation/Architecture.zh-CN.md)。
 
-- 普通 Unity 游戏：`PulletFramework`
-- 使用 YooAsset：`PulletFramework` + `PulletFramework.AssetPublishing` + `PulletFramework.YooAsset`
-- 微信/抖音小游戏：在上一组合基础上增加 `PulletFramework.MiniGame`
-- 需要代码热更新的 App：按需增加 `PulletFramework.HybridCLR`
-- 连接 PulletNet 服务端：独立安装 `PulletFramework.NetClient`，无需安装基础框架
-- Manager发现或typed连接：同一个NetClient包中按需使用Modules下的Discovery/Messaging及组合，不再安装其它网络UPM包
+## 开始使用
 
-2026-10-19网络镜像为统一NetClient **3.0.0**，当前Unity源42d0dcb的Inspector兼容增量（172文件）：保留中文日志/注释，模式改为显式中文绘制，独立测试含真实Layout/Repaint、Undo/Prefab。Unity2021.3与2022.3各51项、导出9项、妈祖Editor20项通过。四DLL仍准确2f0cfc3，wire3/discovery1、Runtime和网络策略不变；一个UPM、五Runtime程序集和两个Editor-only程序集。旧CI/业务收据保持原身份，不代表公开发包、新Player或全平台验收。见[安装说明](Documentation/NetClient-3.0.0-Installation.zh-CN.md)。
-
-## 安装
-
-在 Unity Package Manager 中选择 **Add package from git URL**，按依赖顺序添加需要的模块：
+在 Unity Package Manager 中选择 **Add package from git URL**。只体验基础能力时，先安装核心包：
 
 ```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework
+```
+
+由应用的唯一入口初始化；停止所有使用者后再关闭：
+
+```csharp
+PulletFramework.PulletFrameworks.Initialize();
+
+// 应用退出时，先完成窗口、音频和其他资源使用者的关闭。
+PulletFramework.PulletFrameworks.Destroy();
+```
+
+使用 YooAsset 时，先安装 YooAsset 与发布模块，再安装适配模块；运行时先准备默认资源包，再初始化框架。安装顺序和完整示例见[核心模块](PulletFramework/README.md)与[YooAsset 模块](PulletFramework.YooAsset/README.md)。
+
+可选包的 Git URL：
+
+```text
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.AssetPublishing
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.YooAsset
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.MiniGame
+https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.HybridCLR
 https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 ```
 
-以上地址跟随 `main`，适合体验最新开发状态。需要可重复构建时，应在 URL 末尾固定已自行验证的 commit，例如：
+这些地址跟随 main。需要可重复构建时，在 URL 末尾添加 `#<commit>` 固定版本，并按包文档安装第三方依赖。YooAsset 适配使用 3.0.5；小游戏 SDK 和 HybridCLR 需另行安装。不要同时安装同一模块的两份源码。
 
-```text
-https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework#<commit>
-```
+## 统一编辑器工作台
 
-当前尚未提供稳定版标签，不建议把未固定的 `main` 依赖直接用于正式项目。
+安装核心包后，通过 `Pullets/Workspace` 打开工作台。Player 构建、资源包、对象存储发布、小游戏发布和 HybridCLR 页面随所安装的模块注册，不各自增加一组顶级菜单。
 
-`PulletFramework.YooAsset` 使用 YooAsset `3.0.5`。若项目无法从依赖声明自动解析 YooAsset，请先安装：
+扩展自己的页面，只需在 Editor 程序集中实现 `IPulletWorkspaceModule`。使用方式见[工作台扩展](PulletFramework/README.md#编辑器工作台)。
 
-```text
-https://github.com/tuyoogame/YooAsset.git?path=/Assets/YooAsset#3.0.5
-```
+## 状态与验证
 
-微信官方转换 SDK、抖音 TTSDK 和 HybridCLR 需要按各自平台要求单独安装。不要同时导入两份相同模块源码，否则会产生重复程序集或类型冲突。
+各包独立版本管理，多数框架包仍处于 0.x，NetClient 为 3.0.0；后者不代表整个仓库已经稳定发布。接入项目时请固定提交，并验证目标 Unity 版本、平台和第三方 SDK 组合。
 
-## 工作台
+已有记录覆盖核心模块的 Windows Player、微信/抖音开发者工具基础流程、HybridCLR 的 Windows IL2CPP 流程，以及 NetClient 的 Unity Editor 和 Windows Mono 连接验证。它们不是全平台或任意版本组合的保证。**NetClient 当前不支持 WebGL、微信或抖音小游戏。**
 
-安装模块后，通过 Unity 菜单 `Pullets/Workspace` 进入统一工作台：
+- [模块状态与路线图](Documentation/Roadmap.zh-CN.md)
+- [验证范围与记录](Documentation/Validation.zh-CN.md)
+- [验证工程](https://gitee.com/xu_mingjun/pullet-mini-game-validation)
 
-- **框架设置**：运行时日志等级等基础配置。
-- **Player 构建**：Player 版本、场景和 Unity 构建入口。
-- **YooAsset 资源**：运行模式、Package、CDN、构建和发布。
-- **资源发布**：对象存储供应商及凭据配置。
-- **小游戏发布**：微信/抖音切换、平台宏、SDK 参数和导出。
+## 文档导航
 
-`PulletSettings.logLevel` 只过滤游戏运行时日志。编辑器构建、上传和配置错误始终可见。
-
-## 架构边界
-
-- `PulletResources` 只服务框架内部的 UI、Form、Sound 和 Pooling，不替代业务资源系统。
-- 使用 YooAsset 时，业务通过 `PulletYooAssets` 管理 Package 生命周期，再直接使用 YooAsset `ResourcePackage` API 加载业务资源。
-- Player 版本与 YooAsset Package 版本独立。纯资源更新不要求修改 Player 版本。
-- `PulletFramework.MiniGame` 只负责平台能力；平台 SDK 的具体绑定位于独立桥接程序集或 Sample 中。
-- `PulletFramework.NetClient` 不依赖基础框架，底层复用 PulletNet ClientSDK；业务协议、鉴权和消息序列化仍由项目负责。当前不支持 WebGL、微信或抖音小游戏。
-- `PulletPlayerPrefs` 默认使用 Unity 后端，小游戏初始化成功后可切换到微信或抖音存储后端，全程不使用反射。
-
-## 文档
-
-- [当前开发状态](Documentation/DevelopmentStatus.zh-CN.md)
-- [基础框架](PulletFramework/README.md)
-- [YooAsset 模块](PulletFramework.YooAsset/README.md)
-- [小游戏平台模块](PulletFramework.MiniGame/README.md)
-- [资源发布模块](PulletFramework.AssetPublishing/README.md)
-- [HybridCLR 模块](PulletFramework.HybridCLR/README.md)
-- [PulletNet Unity 客户端](PulletFramework.NetClient/README.md)
-- [网络五包同步、按需安装与回退](Documentation/NetClient-Unity-Source-Sync.zh-CN.md)
-- [独立发现](PulletFramework.Discovery/README.md)、[Manager 发现组合](PulletFramework.NetClient.Discovery/README.md)
-- [独立消息会话](PulletFramework.Messaging/README.md)、[Runtime 消息组合](PulletFramework.NetClient.Messaging/README.md)
-- [微信与抖音故障记录](PulletFramework.MiniGame/Documentation/PlatformTroubleshooting.zh-CN.md)
+- [架构与设计取舍](Documentation/Architecture.zh-CN.md)
+- [文档索引](Documentation/README.md)
+- [NetClient 配置指南](PulletFramework.NetClient/Configuration.md)
+- [微信与抖音常见问题](PulletFramework.MiniGame/Documentation/PlatformTroubleshooting.zh-CN.md)
 - [YooAsset CDN 流程](PulletFramework.MiniGame/Documentation/YooAssetCdn.zh-CN.md)
+- [维护约定](CONTRIBUTING.md)
 
-配套验证工程：<https://gitee.com/xu_mingjun/pullet-mini-game-validation>
+## 许可
 
-## 开发约定
-
-- 公共模块以本仓库为源头，再同步到验证工程，不在两处独立演化同一文件。
-- 五个网络相关 Unity 包统一在 PulletNet 的 `UnityPackages` 开发和验证，本仓库只保存固定安装副本；本轮复制已验 DLL，不在镜像内重新编译原生包或另行演化实现。各 NativeInput 记录准确 DLL/CI/源码身份，不能用最新原生 CI 的包名替换已验字节。
-- 当前只维护 `main` 分支；重要阶段使用小而清晰的提交形成回退点。
-- 未明确需要时，不反复执行耗时的 PC 或 WebGL 完整构建。
-- 提交前至少完成相关程序集编译检查，并确认 Pullet 模块没有绕过 `PLogger` 直接输出日志。
-- 不要将 COS、CDN、平台密钥或签名密码提交到公共仓库。已经进入 Git 历史的凭据必须轮换。
-
-## 当前重点
-
-下一阶段是平台真机与性能验收：分别在抖音和微信确认首次下载、失败重试、二次启动缓存命中、前后台恢复和资源占用，并使用 Player Profiler 采集 CPU/GC 数据。具体进度以[开发状态文档](Documentation/DevelopmentStatus.zh-CN.md)为准。
-
-## 许可说明
-
-本仓库当前主要作为公开的个人学习记录，尚未附加开源许可证。仓库公开可见不等于已经授予复制、修改、分发或商用许可；第三方组件仍分别受其自身许可证约束。若后续决定正式开放使用范围，应再添加明确的 `LICENSE` 文件。
+当前仓库未提供开源许可证。公开可读不等于已授予复制、修改、分发或商用许可；第三方组件分别遵循各自许可证。使用或再分发前，请先确认授权范围。

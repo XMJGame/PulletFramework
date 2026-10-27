@@ -1,5 +1,7 @@
 # NetClient 3.0.0 安装与版本边界
 
+> 当前安装内容以[2026-10-21配置封包说明](NetClient-Configuration-Repack-20261021.md)和包内NativeInput为准。下文保留早期3.0.0及Inspector增量的验证历史，各节中的“当前”仅指记录发生时的输入。首次接入请先读[NetClient手册](../PulletFramework.NetClient/README.md)。
+
 本仓库的PulletFramework.NetClient是PulletNet开发源的固定安装镜像，不在两处独立开发。只安装一个完整包com.xmjgame.pullet-framework.netclient；五个内部程序集仍独立，不另装旧四个模块UPM。
 
 ## 当前Unity Inspector版本兼容增量
