@@ -68,7 +68,6 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 - [NetClient 配置指南](PulletFramework.NetClient/Configuration.md)
 - [微信与抖音常见问题](PulletFramework.MiniGame/Documentation/PlatformTroubleshooting.zh-CN.md)
 - [YooAsset CDN 流程](PulletFramework.MiniGame/Documentation/YooAssetCdn.zh-CN.md)
-- [维护约定](CONTRIBUTING.md)
 
 ## 许可
 

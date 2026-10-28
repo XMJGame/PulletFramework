@@ -7,7 +7,7 @@
 - [模块状态与路线图](Roadmap.zh-CN.md)
 - [验证范围与记录](Validation.zh-CN.md)
 - [Core事件与通用TCP的行为与兼容说明](Core-Event-Tcp.zh-CN.md)
-- [维护约定](../CONTRIBUTING.md)
+- [维护约定](Maintenance.zh-CN.md)
 
 ## 模块手册
 
