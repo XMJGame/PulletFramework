@@ -56,7 +56,7 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 
 ## 状态与验证
 
-已验证 Windows、Android、iOS，以及微信、抖音小游戏；小游戏尚未提交上线。另有 HybridCLR 的 Windows IL2CPP 与 NetClient 的 Editor/Windows Mono 测试记录。各模块的验证范围见测试记录。NetClient 暂不支持 WebGL、微信和抖音小游戏。
+已验证 Windows、Android、iOS，以及微信、抖音小游戏；小游戏尚未提交上线。NetClient 目前支持原生平台，暂不支持 WebGL 和小游戏。
 
 - [模块状态与路线图](Documentation/Roadmap.zh-CN.md)
 - [验证范围与记录](Documentation/Validation.zh-CN.md)
