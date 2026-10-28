@@ -200,11 +200,11 @@ YooAsset 业务资源 CDN、平台缓存桥接与验证场景说明见
 BGDT 的安装入口与用法见[官方文档](https://developer.open-douyin.com/docs/resource/zh-CN/mini-game/develop/guide/game-engine/rd-to-SCgame/BGDT-handbook/apply)。
 
 已验证 Unity 2022.3.62f3 编辑器编译、初始化并发/取消/重试/迟到回调，以及关闭 Domain Reload
-后的连续两次 Play Mode 启停。`Platform Diagnostics` Sample 可在平台真机包中逐项验收；
-真实登录、广告、分享和侧边栏返回仍需使用对应开发者账号与真实配置测试。
+后的连续两次 Play Mode 启停。微信、抖音小游戏也已完成测试，尚未提交上线。
+`Platform Diagnostics` Sample 可用于项目接入检查；登录、广告、分享和侧边栏返回使用对应项目的开发者账号与配置。
 
 TTSDK 可选样例与自动注册、平台运行参数配置、侧边栏复访及真机验收面板已经接入。
-下一步完成微信/抖音真机验收与微信开放数据域榜单样例。当前公共模块已发布到仓库 `main`，可通过本页 Git URL 安装；
+当前公共模块已发布到仓库 `main`，可通过本页 Git URL 安装；
 验证工程暂时仍使用 Assets 中的模块副本，便于同步调试和平台回归。
 
 ## 运行配置

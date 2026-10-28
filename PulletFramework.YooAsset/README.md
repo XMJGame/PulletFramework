@@ -260,4 +260,4 @@ YooAsset 3.0 运行时参考：
 
 ## 验证状态
 
-已在 Unity `2022.3.62f3` 的全新本地 UPM 工程中完成核心 + AssetPublishing + YooAsset 组合解析和编译；验证工程已完成默认 Package、远端 COS、内置 Bundle、版本比较、多 Package API 和失败重试测试。微信、抖音真机的首次下载、二次冷启动缓存及断网行为仍以项目真机验收为准。
+已在 Unity `2022.3.62f3` 的全新本地 UPM 工程中完成核心 + AssetPublishing + YooAsset 组合解析和编译；验证工程已完成默认 Package、远端 COS、内置 Bundle、版本比较、多 Package API 和失败重试测试。微信、抖音小游戏也已测试，尚未提交上线；项目接入时按实际资源与发布配置检查。

@@ -561,4 +561,4 @@ IEnumerator Start()
 
 ## 验证状态
 
-最低声明 Unity 版本为 `2021.3`。当前已在 Unity `2022.3.62f3` 的全新 CoreOnly UPM 工程中完成编译，并实际构建、启动 Windows x64 Player，验证框架初始化、运行一帧与销毁。自动化回归当前为 EditMode `45/45`、PlayMode `18/18`；移动端与小游戏性能上限不由这些桌面结果保证。
+最低声明 Unity 版本为 `2021.3`。已完成 Windows、Android、iOS 的构建与运行验证。CoreOnly UPM 工程另有 Unity `2022.3.62f3` 的编译与 Windows x64 Player 初始化、运行一帧及销毁测试；对应自动化回归为 EditMode `45/45`、PlayMode `18/18`。平台与专项测试记录见[测试记录](../Documentation/Validation.zh-CN.md)。
