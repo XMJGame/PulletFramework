@@ -59,7 +59,6 @@ https://github.com/XMJGame/PulletFramework.git?path=/PulletFramework.NetClient
 已验证 Windows、Android、iOS，以及微信、抖音小游戏；小游戏尚未提交上线。NetClient 目前支持原生平台，暂不支持 WebGL 和小游戏。
 
 - [模块状态与路线图](Documentation/Roadmap.zh-CN.md)
-- [验证范围与记录](Documentation/Validation.zh-CN.md)
 - [验证工程](https://gitee.com/xu_mingjun/pullet-mini-game-validation)
 
 ## 文档导航
